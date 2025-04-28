@@ -82,22 +82,42 @@ class FactionBankMenu: ExpansionScriptViewMenu
 		#ifdef EXPANSIONTRACE
 			auto trace = CF_Trace_0(ExpansionTracing.MARKET, this, "SetView");
 		#endif
-		m_FactionBankMenuController.factionBankBalance = m_FactionBankBalance.ToString();
+		m_FactionBankMenuController.factionBankBalance = FormatNumberWithCommas(m_FactionBankBalance);
 		m_FactionBankMenuController.NotifyPropertyChanged("factionBankBalance");
-		m_FactionBankMenuController.MoneyDepositValue = m_ATMData.MoneyDeposited.ToString();
+		
+		m_FactionBankMenuController.MoneyDepositValue = FormatNumberWithCommas(m_ATMData.MoneyDeposited);
 		m_FactionBankMenuController.NotifyPropertyChanged("MoneyDepositValue");
 		SetFocus(AmountValue);
     }
 
 	void UpdateView(bool updatePlayerMoney = true)
 	{
-		m_FactionBankMenuController.factionBankBalance = m_FactionBankBalance.ToString();
+		m_FactionBankMenuController.factionBankBalance = FormatNumberWithCommas(m_FactionBankBalance);
 		m_FactionBankMenuController.NotifyPropertyChanged("factionBankBalance");
-		m_FactionBankMenuController.MoneyDepositValue = m_ATMData.MoneyDeposited.ToString();
+		
+		m_FactionBankMenuController.MoneyDepositValue = FormatNumberWithCommas(m_ATMData.MoneyDeposited);
 		m_FactionBankMenuController.NotifyPropertyChanged("MoneyDepositValue");
 
 	}
 
+	string FormatNumberWithCommas(int number)
+	{
+		string numStr = number.ToString();
+		string formatted = "";
+		int count = 0;
+
+		for (int i = numStr.Length() - 1; i >= 0; i--)
+		{
+			formatted = numStr[i] + formatted;
+			count++;
+			if (count % 3 == 0 && i != 0)
+			{
+				formatted = "," + formatted;
+			}
+		}
+
+		return formatted;
+	}
 	// On Transfer button click
 
 	void OnDonateButtonClick()
