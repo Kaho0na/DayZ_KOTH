@@ -16,6 +16,8 @@ class ExpansionTravelStationsModule: CF_ModuleWorld
 
 	protected ref ExpansionTravelStationsNPCData m_ActiveTravelStationData;
 
+
+
 	void ExpansionTravelStationsModule()
 	{
 		s_ModuleInstance = this;
@@ -231,26 +233,7 @@ class ExpansionTravelStationsModule: CF_ModuleWorld
 		return m_TravelStationsNPCs;
 	}
 
-	// --- Menu Related ---
 
-	void RequestOpenTravelStationsMenuCB(array<int> npcIDs, PlayerIdentity identity)
-	{
-		PlayerBase player = PlayerBase.GetPlayerByUID(identity.GetId());
-		if (!player) return;
-
-		Object target = GetClosestTravelStationsNPCByID(npcIDs, player.GetPosition());
-		if (!target) target = GetClosestTravelStationsObjectByID(npcIDs, player.GetPosition());
-		#ifdef EXPANSIONMODAI
-		if (!target) target = GetClosestTravelStationsNPCAIByID(npcIDs, player.GetPosition());
-		#endif
-		if (!target)
-		{
-			EXError.Error(this, "[Expansion TravelStations] Could not find NPC for IDs: " + npcIDs.ToString());
-			return;
-		}
-
-		RequestOpenTravelStationsMenu(target, identity);
-	}
 
 	//Get Closest Station Manager by ID Depending on Type
 	//! Server
@@ -342,9 +325,44 @@ class ExpansionTravelStationsModule: CF_ModuleWorld
 		return closestNPC;
 	}
 
+	// --- Menu Related ---
+
+	void RequestOpenTravelStationsMenuCB(array<int> npcIDs, PlayerIdentity identity)
+	{
+		PlayerBase player = PlayerBase.GetPlayerByUID(identity.GetId());
+		if (!player) return;
+
+		Object target = GetClosestTravelStationsNPCByID(npcIDs, player.GetPosition());
+		if (!target) target = GetClosestTravelStationsObjectByID(npcIDs, player.GetPosition());
+		#ifdef EXPANSIONMODAI
+		if (!target) target = GetClosestTravelStationsNPCAIByID(npcIDs, player.GetPosition());
+		#endif
+		if (!target)
+		{
+			EXError.Error(this, "[Expansion TravelStations] Could not find NPC for IDs: " + npcIDs.ToString());
+			return;
+		}
+
+		RequestOpenTravelStationsMenu(target, identity);
+	}
+
 
 	void RequestOpenTravelStationsMenu(Object target, PlayerIdentity identity)
 	{
+		ExpansionMarketModule module = ExpansionMarketModule.Cast(CF_ModuleCoreManager.Get(ExpansionMarketModule));
+		if (module && identity)
+		{
+			ref ExpansionMarketATM_Data m_ATMData = module.GetPlayerATMData(identity.GetId());
+			if (m_ATMData)
+			{
+				int PlayerMoney = m_ATMData.MoneyDeposited;
+			}
+			else
+			{
+				Print("[TravelStations] ATM data not found for player: " + identity.GetId());
+			}
+		}
+
 		auto npcAI = ExpansionTravelStationsNPCAIBase.Cast(target);
 		int npcID = npcAI.GetTravelStationsNPCID();
 		Print("[TravelStations] npcID = " + npcID);
@@ -366,6 +384,7 @@ class ExpansionTravelStationsModule: CF_ModuleWorld
 		array<ref TravelStationLocation> stationslist = BuildTravelStationLocationList(false); // send all, not just active?
 		
 		auto rpc = Expansion_CreateRPC("RPC_RequestOpenTravelStationsMenu");
+		rpc.Write(PlayerMoney);
 		rpc.Write(data); // active NPC station
 		Print("[TravelStations] data = " + data);
 		rpc.Write(stationslist.Count());
@@ -394,6 +413,13 @@ class ExpansionTravelStationsModule: CF_ModuleWorld
 
 	protected void RPC_RequestOpenTravelStationsMenu(PlayerIdentity sender, Object target, ParamsReadContext ctx)
 	{
+		int PlayerMoney;
+		if (!ctx.Read(PlayerMoney))
+		{
+			Error("[TravelStations] Failed to read NPC data!");
+			return;
+		}
+		
 		Print("[TravelStations] RPC_RequestOpenTravelStationsMenu called");
 		ExpansionTravelStationsNPCData npcData;
 		if (!ctx.Read(npcData))
@@ -435,17 +461,17 @@ class ExpansionTravelStationsModule: CF_ModuleWorld
 		}
 
 		// Open menu via call queue
-		Exec_ShowTravelStationsMenu(npcData, stationslist);
+		Exec_ShowTravelStationsMenu(PlayerMoney, npcData, stationslist);
 	}
 
-	private void Exec_ShowTravelStationsMenu(ExpansionTravelStationsNPCData npcData, array<ref TravelStationLocation> stations)
+	private void Exec_ShowTravelStationsMenu(int PlayerMoney, ExpansionTravelStationsNPCData npcData, array<ref TravelStationLocation> stations)
 	{
 		if (!OpenTravelStationsMenu())
 		return;
 
 		Print("[TravelStations] Invoking " + npcData + stations);
 		Print("[TravelStations] Exec_ShowTravelStationsMenu() stations count: " + stations.Count());
-		m_TravelStationMenuInvoker.Invoke(npcData, stations);
+		m_TravelStationMenuInvoker.Invoke(PlayerMoney, npcData, stations);
 	}
 
 	bool OpenTravelStationsMenu()
@@ -473,10 +499,12 @@ class ExpansionTravelStationsModule: CF_ModuleWorld
 	}
 
 	//Server Side Teleport Player
-	void SendTeleportRequest(vector pos)
+	void SendTeleportRequest(vector pos, int TravelCost, int timeToTravel)
 	{
 		auto rpc = Expansion_CreateRPC("RPC_TeleportPlayerTo");
 		rpc.Write(pos);
+		rpc.Write(TravelCost);
+		rpc.Write(timeToTravel);
 		rpc.Expansion_Send(null, true, null);  // client → server
 	}
 	
@@ -489,18 +517,55 @@ class ExpansionTravelStationsModule: CF_ModuleWorld
 			Error("[TravelStations] Failed to read position!");
 			return;
 		}
-	
+		
+		int TravelCost;
+		if (!ctx.Read(TravelCost))
+		{
+			Error("[TravelStations] Failed to read position!");
+			return;
+		}
+
+		int timeToTravel;
+		if (!ctx.Read(timeToTravel))
+		{
+			Error("[TravelStations] Failed to read travel time!");
+			return;
+		}
+
 		PlayerBase player = PlayerBase.GetPlayerByUID(sender.GetId());
 		if (!player)
 		{
 			Error("[TravelStations] Server: Player not found for identity " + sender.GetId());
 			return;
 		}
-	
+		ExpansionMarketModule module = ExpansionMarketModule.Cast(CF_ModuleCoreManager.Get(ExpansionMarketModule));
+		if (module)
+		{
+			ExpansionMarketATM_Data data = module.GetPlayerATMData(sender.GetId());
+			if (!data)
+			{
+				Error("ExpansionMarketModule::Exec_RequestDonateMoney - Could not find player atm data!");
+				
+				return;
+			}
+			data.RemoveMoney(TravelCost);
+			data.Save();
+		}
+
+		Print("[TravelStations] Travel delay: " + timeToTravel + "s");
+
+		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(TeleportPlayerAfterDelay, timeToTravel * 1000, false, player, pos);
+
+	}
+
+	void TeleportPlayerAfterDelay(PlayerBase player, vector pos)
+	{
+		if (!player) return;
+
 		Print("[TravelStations] Teleporting player to: " + pos);
 		player.SetPosition(pos);
 	}
-	
+		
 	
 
 	static ExpansionTravelStationsModule GetModuleInstance() { return s_ModuleInstance; }

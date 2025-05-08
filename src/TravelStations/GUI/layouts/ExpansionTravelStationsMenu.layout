@@ -166,7 +166,7 @@ FrameWidgetClass ExpansionTravelStationsMenu {
     }
     WrapSpacerWidgetClass SelectedLocationPanel {
      ignorepointer 1
-     position 0.01 0.06
+     position 0.01 0.09
      size 0.29 0.04
      valign bottom_ref
      hexactpos 0
@@ -235,6 +235,162 @@ FrameWidgetClass ExpansionTravelStationsMenu {
          {
           ScriptParamsClass {
            Binding_Name "SelectedLocation"
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+    WrapSpacerWidgetClass TravelCostPanel {
+     ignorepointer 1
+     position 0.01 0.05
+     size 0.29 0.04
+     valign bottom_ref
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     style Empty
+     Padding 0
+     Margin 0
+     "Size To Content H" 1
+     "Size To Content V" 1
+     {
+      GridSpacerWidgetClass TravelCostGrid {
+       visible 1
+       clipchildren 1
+       ignorepointer 0
+       color 0 0 0 0.8078
+       size 1 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       scriptclass ""
+       style DayZDefaultPanel
+       Padding 0
+       Margin 0
+       Columns 2
+       Rows 1
+       {
+        TextWidgetClass TravelCostLabel {
+         clipchildren 0
+         ignorepointer 1
+         color 0.8627 0.8627 0.8627 1
+         size 0.5 1
+         valign bottom_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Cost to travel:"
+         font "gui/fonts/etelkatextpro22"
+         "text offset" 5 0
+         "exact text" 0
+         "size to text h" 1
+         "size to text v" 1
+         "text valign" center
+        }
+        TextWidgetClass TravelCost {
+         clipchildren 0
+         ignorepointer 1
+         color 0.8627 0.8627 0.8627 1
+         size 0.5 1
+         halign right_ref
+         valign bottom_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         scriptclass "ViewBinding"
+         font "gui/fonts/etelkatextpro22"
+         "text offset" 5 0
+         "exact text" 0
+         "size to text h" 1
+         "size to text v" 1
+         "text valign" center
+         {
+          ScriptParamsClass {
+           Binding_Name "TravelCost"
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+    WrapSpacerWidgetClass PlayerMoneyPanel {
+     ignorepointer 1
+     position 0.01 0.01
+     size 0.29 0.04
+     valign bottom_ref
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     style Empty
+     Padding 0
+     Margin 0
+     "Size To Content H" 1
+     "Size To Content V" 1
+     {
+      GridSpacerWidgetClass PlayerMoneyGrid {
+       visible 1
+       clipchildren 1
+       ignorepointer 0
+       color 0 0 0 0.8078
+       size 1 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       scriptclass ""
+       style DayZDefaultPanel
+       Padding 0
+       Margin 0
+       Columns 2
+       Rows 1
+       {
+        TextWidgetClass PlayerMoneyLabel {
+         clipchildren 0
+         ignorepointer 1
+         color 0.8627 0.8627 0.8627 1
+         size 0.5 1
+         valign bottom_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Money in Bank:"
+         font "gui/fonts/etelkatextpro22"
+         "text offset" 5 0
+         "exact text" 0
+         "size to text h" 1
+         "size to text v" 1
+         "text valign" center
+        }
+        TextWidgetClass PlayerMoney {
+         clipchildren 0
+         ignorepointer 1
+         color 0.8627 0.8627 0.8627 1
+         size 0.5 1
+         halign right_ref
+         valign bottom_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         scriptclass "ViewBinding"
+         font "gui/fonts/etelkatextpro22"
+         "text offset" 5 0
+         "exact text" 0
+         "size to text h" 1
+         "size to text v" 1
+         "text valign" center
+         {
+          ScriptParamsClass {
+           Binding_Name "PlayerMoney"
           }
          }
         }

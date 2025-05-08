@@ -8,6 +8,7 @@ class ExpansionTravelStationsMenu: ExpansionScriptViewMenu
 	ref TravelStationLocation m_SelectedStation;
 	private MissionGameplay m_Mission;
 
+
 	private Widget m_MapSpacer;
 	private MapWidget m_MapWidget;
 	private ButtonWidget m_ConfirmButton;
@@ -15,6 +16,8 @@ class ExpansionTravelStationsMenu: ExpansionScriptViewMenu
 	private ImageWidget m_Background;
 
 	private int m_NextListIndex = 0;
+	private int m_TravelCost;
+	private int timeToTravel;
 
 	void ExpansionTravelStationsMenu()
 	{
@@ -82,7 +85,7 @@ class ExpansionTravelStationsMenu: ExpansionScriptViewMenu
 		Clear();
 	}
 
-	void ShowMenuNow(ExpansionTravelStationsNPCData npcData, array<ref TravelStationLocation> travelStations)
+	void ShowMenuNow(int PlayerMoney, ExpansionTravelStationsNPCData npcData, array<ref TravelStationLocation> travelStations)
 	{
 		m_TravelStationNPCData = npcData;  // ← Update current StationNPC reference
 		Print("[TravelStations] Current Station Data!" + m_TravelStationNPCData.StationName);
@@ -97,6 +100,10 @@ class ExpansionTravelStationsMenu: ExpansionScriptViewMenu
 		}
 	
 		Print("[TravelStations] ShowMenuNow - Binding travelStations to existing menu.");
+
+		m_TravelStationsMenuController.PlayerMoney = "$" + FormatNumberWithCommas(PlayerMoney);
+		m_TravelStationsMenuController.NotifyPropertyChanged("PlayerMoney");
+		
 		menu.SetStations(npcData, travelStations);
 	}
 	
@@ -170,12 +177,22 @@ class ExpansionTravelStationsMenu: ExpansionScriptViewMenu
 	void SetTravelDestination(int index, TravelStationLocation travelStation, bool highlight = true)
 	{
 		m_SelectedStation = travelStation;
-	
+		
+		//Change selected location on menu
 		Print("[TravelStations] Selected travel destination: " + travelStation.StationName);
 		m_TravelStationsMenuController.SelectedLocation = travelStation.StationName;
 		m_TravelStationsMenuController.NotifyPropertyChanged("SelectedLocation");
 
-		float distance = vector.Distance2D(m_TravelStationNPCData.Position, m_SelectedStation.Position);
+		//Calculate cost to travel based on distance
+		float distance = vector.Distance(m_TravelStationNPCData.Position, m_SelectedStation.Position);
+		float m_travelcostpm = GetExpansionSettings().GetTravelStations().TravelCostPerMeter;
+		m_TravelCost = Math.Round(distance * m_travelcostpm);
+		m_TravelStationsMenuController.TravelCost = "$" + m_TravelCost.ToString();
+		m_TravelStationsMenuController.NotifyPropertyChanged("TravelCost");
+
+		//Calculate time to travel based on distance
+		timeToTravel = Math.Clamp(Math.Floor(distance / 200), 3, 10);
+
 		Print("[TravelStations] Distance to selected station: " + distance.ToString());
 
 		for (int i = 0; i < m_TravelStationsMenuController.StationLocationEntries.Count(); i++)
@@ -187,6 +204,26 @@ class ExpansionTravelStationsMenu: ExpansionScriptViewMenu
 		m_TravelStationsMenuController.StationLocationEntries[index].SetSelected(true);
 
 	}
+
+	string FormatNumberWithCommas(int number)
+	{
+		string numStr = number.ToString();
+		string formatted = "";
+		int count = 0;
+
+		for (int i = numStr.Length() - 1; i >= 0; i--)
+		{
+			formatted = numStr[i] + formatted;
+			count++;
+			if (count % 3 == 0 && i != 0)
+			{
+				formatted = "," + formatted;
+			}
+		}
+
+		return formatted;
+	}
+
 	
 	void OnTravelButtonClick()
 	{
@@ -202,7 +239,7 @@ class ExpansionTravelStationsMenu: ExpansionScriptViewMenu
 		Print("[TravelStations] Requesting teleport to: " + spawnPos);
 	
 		// Send RPC to server
-		ExpansionTravelStationsModule.GetModuleInstance().SendTeleportRequest(spawnPos);
+		ExpansionTravelStationsModule.GetModuleInstance().SendTeleportRequest(spawnPos, m_TravelCost, timeToTravel);
 	
 		CloseMenu();
 	}
@@ -230,4 +267,6 @@ class ExpansionTravelStationsMenuController: ExpansionViewController
 {
 	ref ObservableCollection<ref ExpansionTravelStationsMenuLocationEntry> StationLocationEntries = new ObservableCollection<ref ExpansionTravelStationsMenuLocationEntry>(this);
 	string SelectedLocation;
+	string TravelCost;
+	string PlayerMoney;
 }
