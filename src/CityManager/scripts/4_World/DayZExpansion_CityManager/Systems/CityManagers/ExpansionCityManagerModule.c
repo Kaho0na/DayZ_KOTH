@@ -442,7 +442,7 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 		ExpansionCityManagerNPCData foundData;
 		if (m_CityManagersNPCs.Find(id, foundData))
 			return foundData;
-
+		Print("ExpansionCityManagerNPCData GetCityManagerNPCDataByID could not find data");
 		return NULL;
 	}
 
@@ -682,8 +682,22 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 		return s_ModuleInstance;
 	}
 
-	
-	
+	bool isCityLiberated(int cityID)
+	{
+		Print("CityManagerModule: Checking cityID = " + cityID);
+		ExpansionCityManagerNPCData data = GetCityManagerNPCDataByID(cityID);
+
+		if (!data)
+		{
+			Print("CityManagerModule: No data found for cityID = " + cityID);
+			return false;
+		}
+
+		Print("CityManagerModule: Found data for city = " + data.CityName + " (Liberated = " + data.CityLiberated + ")");
+		return data.CityLiberated;
+	}
+
+		
 	
 
 	

@@ -127,7 +127,7 @@ class ExpansionCityManagerNPCData
 		CityLiberated = liberated;
 	}
 
-	bool isCityLiberated()
+	bool GetCityLiberated()
 	{
 		return CityLiberated;
 	}

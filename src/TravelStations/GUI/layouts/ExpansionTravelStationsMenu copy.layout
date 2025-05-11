@@ -21,7 +21,7 @@ FrameWidgetClass ExpansionTravelStationsMenu {
    vexactpos 0
    hexactsize 0
    vexactsize 0
-   imageTexture "{3217767C4722F647}TravelStations/GUI/backgrounds/TravelStation.paa"
+   imageTexture "TravelStations/GUI/backgrounds/TravelStation.paa"
    mode opaque
    "src alpha" 1
    "clamp mode" clamp
@@ -41,89 +41,89 @@ FrameWidgetClass ExpansionTravelStationsMenu {
    priority 1
    draggable 0
    style blank
-   {
+   {  
     FrameWidgetClass NPCImage {
-     ignorepointer 1
-     color 1 1 1 1
-     position 0 0
-     size 512 1024
-     halign right_ref
-     valign center_ref
-     hexactpos 0
-     vexactpos 1
-     hexactsize 1
-     vexactsize 1
-     {
+    ignorepointer 1
+    color 1 1 1 1
+    position 0.15 0
+    size 750 750
+    valign center_ref
+    hexactpos 0
+    vexactpos 1
+    hexactsize 1
+    vexactsize 1
+    {
       ImageWidgetClass StationManagerImage {
-       clipchildren 1
-       ignorepointer 1
-       color 1 1 1 1
-       position 0 0
-       size 1 1
-       hexactpos 0
-       vexactpos 0
-       hexactsize 0
-       vexactsize 0
-       scriptclass "ViewBinding"
-       mode blend
-       "src alpha" 1
-             {
+      clipchildren 1
+      ignorepointer 1
+      color 1 1 1 1
+      position 0 0
+      size 1 1
+      hexactpos 0
+      vexactpos 0
+      hexactsize 0
+      vexactsize 0
+      scriptclass "ViewBinding"
+      imageTexture ""
+      mode blend
+      "src alpha" 1
+      {
               ScriptParamsClass {
-              Binding_Name "StationManagerImage"
+              Binding_Name "CityManagerImage"
               }
             }
-       {
+      {
         ImageWidgetClass atm_header0 {
-         ignorepointer 1
-         color 0 0 0 0.8627
-         size 1 70
-         halign right_ref
-         valign bottom_ref
-         hexactpos 1
-         vexactpos 1
-         hexactsize 0
-         vexactsize 1
-         image0 "set:dayz_gui image:inv_header_2"
-         mode blend
-         "src alpha" 1
-         "clamp mode" wrap
-         "stretch mode" stretch_w_h
-         {
+        ignorepointer 1
+        color 0 0 0 0.8627
+        size 1 70
+        halign right_ref
+        valign bottom_ref
+        hexactpos 1
+        vexactpos 1
+        hexactsize 0
+        vexactsize 1
+        image0 "set:dayz_gui image:inv_header_2"
+        mode blend
+        "src alpha" 1
+        "clamp mode" wrap
+        "stretch mode" stretch_w_h
+        {
           TextWidgetClass NPCName {
-           ignorepointer 1
-           position 0 0
-           size 1 1
-           valign center_ref
-           hexactpos 0
-           vexactpos 0
-           hexactsize 0
-           vexactsize 0
-           scriptclass "ViewBinding"
-           style Normal
-           text "NPCName"
-           font "gui/fonts/sdf_metronbook24"
-           "bold text" 1
-           "exact text" 1
-           "exact text size" 22
-           "text halign" center
-           "text valign" center
-                     {
+          ignorepointer 1
+          position 0 0
+          size 1 1
+          valign center_ref
+          hexactpos 0
+          vexactpos 0
+          hexactsize 0
+          vexactsize 0
+          scriptclass "ViewBinding"
+          style Normal
+          text "NPCName"
+          font "gui/fonts/sdf_metronbook24"
+          "bold text" 1
+          "exact text" 1
+          "exact text size" 22
+          "text halign" center
+          "text valign" center
+          {
               ScriptParamsClass {
                   Binding_Name "NPCName"
                   }
               }
           }
-         }
         }
-       }
+        }
       }
-     }
+      }
+    }
     }
     PanelWidgetClass MapPanel {
      ignorepointer 1
      color 0 0 0 0.8078
-     position 0.29 0.09
-     size 0.40 0.77
+     position 0.21 0.09
+     size 0.45 0.77
      halign right_ref
      hexactpos 0
      vexactpos 0
@@ -191,13 +191,12 @@ FrameWidgetClass ExpansionTravelStationsMenu {
          clipchildren 1
          ignorepointer 1
          color 0.8627 0.8627 0.8627 1
-         position 0 0
          size 1 1
          hexactpos 0
          vexactpos 0
          hexactsize 0
          vexactsize 0
-         text "Train Stations:"
+         text "#STR_EXPANSION_SPAWNSELECTION_SPAWN_POINTS"
          font "gui/fonts/etelkatextpro22"
          "text offset" 5 0
          "exact text" 0
@@ -232,7 +231,7 @@ FrameWidgetClass ExpansionTravelStationsMenu {
          "Size To Content V" 1
          Columns 1
          Rows 10
-                  {
+         {
           ScriptParamsClass {
            Binding_Name "StationLocationEntries"
           }
@@ -310,7 +309,7 @@ FrameWidgetClass ExpansionTravelStationsMenu {
          "size to text h" 1
          "size to text v" 1
          "text valign" center
-                  {
+         {
           ScriptParamsClass {
            Binding_Name "SelectedLocation"
           }
@@ -388,7 +387,7 @@ FrameWidgetClass ExpansionTravelStationsMenu {
          "size to text h" 1
          "size to text v" 1
          "text valign" center
-                  {
+         {
           ScriptParamsClass {
            Binding_Name "TravelCost"
           }
@@ -466,7 +465,7 @@ FrameWidgetClass ExpansionTravelStationsMenu {
          "size to text h" 1
          "size to text v" 1
          "text valign" center
-                  {
+         {
           ScriptParamsClass {
            Binding_Name "PlayerMoney"
           }
@@ -478,7 +477,7 @@ FrameWidgetClass ExpansionTravelStationsMenu {
     }
     ButtonWidgetClass Confirm {
      color 0 0 0 0.8078
-     position 0.52 0.06
+     position 0.42 0.06
      size 0.15 0.04
      halign right_ref
      valign bottom_ref
@@ -490,7 +489,7 @@ FrameWidgetClass ExpansionTravelStationsMenu {
      scriptclass "ViewBinding"
      style DayZDefaultButton
      {
-      TextWidgetClass ConfirmButtonText {
+      TextWidgetClass ConfirmText {
        ignorepointer 1
        color 0.8627 0.8627 0.8627 1
        position 0 0
@@ -501,7 +500,7 @@ FrameWidgetClass ExpansionTravelStationsMenu {
        vexactpos 0
        hexactsize 0
        vexactsize 0
-       text "TRAVEL"
+       text "#STR_EXPANSION_SPAWNSELECTION_SPAWN"
        font "gui/fonts/etelkatextpro"
        "exact text" 0
        "size to text h" 0
@@ -509,7 +508,7 @@ FrameWidgetClass ExpansionTravelStationsMenu {
        "text valign" center
       }
      }
-          {
+     {
       ScriptParamsClass {
        Relay_Command "OnTravelButtonClick"
       }
@@ -517,7 +516,7 @@ FrameWidgetClass ExpansionTravelStationsMenu {
     }
     ButtonWidgetClass Close {
      color 0 0 0 0.8078
-     position 0.35 0.06
+     position 0.13 0.06
      size 0.15 0.04
      halign right_ref
      valign bottom_ref
@@ -540,7 +539,7 @@ FrameWidgetClass ExpansionTravelStationsMenu {
        vexactpos 0
        hexactsize 0
        vexactsize 0
-       text "CLOSE"
+       text "Close"
        font "gui/fonts/etelkatextpro"
        "exact text" 0
        "size to text h" 0
@@ -548,7 +547,7 @@ FrameWidgetClass ExpansionTravelStationsMenu {
        "text valign" center
       }
      }
-          {
+     {
       ScriptParamsClass {
        Relay_Command "CloseMenuButtonClick"
       }
@@ -556,137 +555,39 @@ FrameWidgetClass ExpansionTravelStationsMenu {
     }
    }
   }
-  TextWidgetClass Stationtitle {
-   ignorepointer 1
-   position 0.05 50
-   size 0.35 50
-   halign left_ref
-   hexactpos 0
-   vexactpos 1
-   hexactsize 0
-   vexactsize 1
-   scriptclass "ViewBinding"
-   priority 1
-   style Normal
-   text "Train Station"
-   font "gui/fonts/sdf_metronbook24"
-   "text color" 0.8157 0.1255 0.7843 1
-   "bold text" 1
-   "exact text" 0
-   "size to text h" 0
-   "size to text v" 1
-   "text halign" left
-   "text valign" center
-                     {
-          ScriptParamsClass {
-           Binding_Name "Stationtitle"
-          }
-         }
-  }
-  ImageWidgetClass BlackoutOverlay {
-    visible 0
-   ignorepointer 1
-   position 0 0
-   size 1 1
-   halign center_ref
-   valign center_ref
-   hexactpos 0
-   vexactpos 0
-   hexactsize 0
-   vexactsize 0
-   scriptclass "ViewBinding"
-   imageTexture "TravelStations/GUI/backgrounds/travelloading.paa"
-   mode opaque
-   "src alpha" 1
-   "clamp mode" clamp
-   "stretch mode" stretch_w_h
-   priority 100
-                {
-              ScriptParamsClass {
-              Binding_Name "BlackoutOverlay"
-              }
-            }
-   {
-    TextWidgetClass CountdownText {
-     ignorepointer 1
-     color 1 1 1 1
-     position 0 0
-     size 1 1
-     halign center_ref
-     valign center_ref
-     hexactpos 0
-     vexactpos 0
-     hexactsize 0
-     vexactsize 0
-     text "Traveling..."
-     font "gui/fonts/etelkatextpro"
-     "exact text" 0
-     "size to text h" 0
-     "text halign" center
-     "text valign" center
-    }
-    WrapSpacerWidgetClass StoryPanel {
-     ignorepointer 1
-     position 0.05 0.05
-     size 1 0.1
-     valign bottom_ref
-     hexactpos 0
-     vexactpos 0
-     hexactsize 0
-     vexactsize 0
-     style Empty
-     Padding 0
-     Margin 0
-     "Size To Content H" 1
-     "Size To Content V" 1
-     {
-      GridSpacerWidgetClass StoryGrid {
-       visible 1
-       clipchildren 1
-       ignorepointer 0
-       color 0 0 0 0.8078
-       position 0.1 0
-       size 0.9 0.9
-       hexactpos 0
-       vexactpos 0
-       hexactsize 0
-       vexactsize 0
-       scriptclass ""
-       style DayZDefaultPanel
-       Padding 0
-       Margin 0
-       Columns 2
-       Rows 1
-       {
-        TextWidgetClass StoryText {
-         clipchildren 0
-         ignorepointer 1
-         color 0.8627 0.8627 0.8627 1
-         size 1 1
-         valign bottom_ref
-         hexactpos 0
-         vexactpos 0
-         hexactsize 0
-         vexactsize 0
-         scriptclass "ViewBinding"
-         text "Story Goes Here"
-         font "gui/fonts/etelkatextpro22"
-         "text offset" 5 0
-         "exact text" 0
-         "size to text h" 1
-         "size to text v" 1
-         "text valign" center
-                              {
-          ScriptParamsClass {
-           Binding_Name "StoryText"
-          }
-         }
+    ImageWidgetClass BlackoutOverlay {
+	color 0 0 0 1
+	position 0 0
+	size 1 1
+	halign left_ref
+	valign top_ref
+	hexactpos 0
+	vexactpos 0
+	hexactsize 0
+	vexactsize 0
+	priority 100
+	visible false
+    {
+        TextWidgetClass CountdownText {
+        ignorepointer 1
+        color 1 1 1 1
+        position 0 0
+        size 1 1
+        halign center_ref
+        valign center_ref
+        hexactpos 0
+        vexactpos 0
+        hexactsize 0
+        vexactsize 0
+        text "Traveling..."
+        font "gui/fonts/etelkatextpro"
+        "exact text" 0
+        "size to text h" 0
+        "text halign" center
+        "text valign" center
         }
-       }
       }
-     }
     }
-   }
-  }
+ 
  }
 }
