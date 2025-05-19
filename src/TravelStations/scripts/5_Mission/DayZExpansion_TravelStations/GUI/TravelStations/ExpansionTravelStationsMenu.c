@@ -1,3 +1,9 @@
+enum TravelStationType
+{
+	TRAIN = 1,
+	BUS,
+	TAXI,
+}
 class ExpansionTravelStationsMenu: ExpansionScriptViewMenu
 {
 	private ref array<ref ExpansionTravelStationsMenuMapMarker> m_MapMarkers;
@@ -150,6 +156,7 @@ class ExpansionTravelStationsMenu: ExpansionScriptViewMenu
 
 	void SetStations(ExpansionTravelStationsNPCData npcData, array<ref TravelStationLocation> travelStations)
 	{
+
 		Print("[ExpansionTravelStationsMenu] SetStations called");
 		m_TravelStationNPCData = npcData;
 		m_TravelStationsMenuController.StationLocationEntries.Clear();
@@ -161,7 +168,7 @@ class ExpansionTravelStationsMenu: ExpansionScriptViewMenu
 			return;
 		}
 
-		m_TravelStationsMenuController.Stationtitle = m_TravelStationNPCData.StationName + " Train Station";
+		m_TravelStationsMenuController.Stationtitle = m_TravelStationNPCData.StationName + " " + GetStationTypeName(m_TravelStationNPCData.StationType);
 		m_TravelStationsMenuController.NotifyPropertyChanged("Stationtitle");
 
 		m_TravelStationsMenuController.NPCName = m_TravelStationNPCData.DefaultNPCText;
@@ -171,40 +178,45 @@ class ExpansionTravelStationsMenu: ExpansionScriptViewMenu
 		m_TravelStationsMenuController.NotifyPropertyChanged("StationManagerImage");
 
 		vector playerStationPosition = npcData.Position;
+		int currentStation = m_TravelStationNPCData.StationID;
+		int npc_StationType = m_TravelStationNPCData.StationType;
 
 		for (int i = 0; i < travelStations.Count(); i++)
 		{
 			TravelStationLocation thisStation = travelStations[i];
-			int currentStation = m_TravelStationNPCData.StationID;
+			int curr_StationType = thisStation.StationType;
 
-			if (thisStation.StationID == currentStation)
-				continue; //skip station player is in
+			if(npc_StationType == curr_StationType)
+			{
+				if (thisStation.StationID == currentStation)
+					continue; //skip station player is in
 
-			ExpansionTravelStationsMenuLocationEntry station_entry = new ExpansionTravelStationsMenuLocationEntry(m_NextListIndex, thisStation);
+				ExpansionTravelStationsMenuLocationEntry station_entry = new ExpansionTravelStationsMenuLocationEntry(m_NextListIndex, thisStation);
 
-			station_entry.SetStationKey(thisStation.StationID.ToString());
+				station_entry.SetStationKey(thisStation.StationID.ToString());
 
-			m_TravelStationsMenuController.StationLocationEntries.Insert(station_entry);
+				m_TravelStationsMenuController.StationLocationEntries.Insert(station_entry);
 
-			//Add New Marker
-			int primaryColor = ARGB(255, 220, 60, 60);
-			int liberatedColor = ARGB(255, 50, 200, 90);
-			int hoverColor = ARGB(255,255,255,255);
-			ExpansionTravelStationsMenuMapMarker marker = new ExpansionTravelStationsMenuMapMarker(MapSpacer, Map_Widget, true);
-			string markerIcon = "Map Marker";
-			marker.SetIcon(markerIcon);
-			marker.SetPosition(thisStation.Position);
-			if(thisStation.IsLiberated)
-				marker.SetPrimaryColor(liberatedColor);
-			else
-				marker.SetPrimaryColor(primaryColor);
-			marker.SetHoverColour(hoverColor);
-			marker.SetName(thisStation.StationName);
-			marker.SetLocation(m_NextListIndex, thisStation);
-			marker.Show();
-			m_MapMarkers.Insert(marker);
+				//Add New Marker
+				int primaryColor = ARGB(255, 220, 60, 60);
+				int liberatedColor = ARGB(255, 50, 200, 90);
+				int hoverColor = ARGB(255,255,255,255);
+				ExpansionTravelStationsMenuMapMarker marker = new ExpansionTravelStationsMenuMapMarker(MapSpacer, Map_Widget, true);
+				string markerIcon = "Map Marker";
+				marker.SetIcon(markerIcon);
+				marker.SetPosition(thisStation.Position);
+				if(thisStation.IsLiberated)
+					marker.SetPrimaryColor(liberatedColor);
+				else
+					marker.SetPrimaryColor(primaryColor);
+				marker.SetHoverColour(hoverColor);
+				marker.SetName(thisStation.StationName);
+				marker.SetLocation(m_NextListIndex, thisStation);
+				marker.Show();
+				m_MapMarkers.Insert(marker);
+				m_NextListIndex++;
+			}
 
-			m_NextListIndex++;
 		}
 
 		m_TravelStationsMenuController.NotifyPropertyChanged("StationLocationEntries");
@@ -413,6 +425,24 @@ class ExpansionTravelStationsMenu: ExpansionScriptViewMenu
 			}
 		}
 	}
+
+	string GetStationTypeName(int type)
+	{
+		switch (type)
+		{
+			case TravelStationType.TRAIN:
+				return "Train Station";
+			case TravelStationType.BUS:
+				return "Bus Station";
+			case TravelStationType.TAXI:
+				return "Taxi Station";
+			default:
+				return "Unknown Station";
+		}
+
+		return "Unknown Station"; 
+	}
+
 
 	ButtonWidget GetConfirmButton()
 	{

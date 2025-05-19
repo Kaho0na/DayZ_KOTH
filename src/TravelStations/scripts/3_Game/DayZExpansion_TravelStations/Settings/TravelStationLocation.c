@@ -6,6 +6,7 @@ class TravelStationLocation
 	vector Position;
 	ref array<vector> TPPositions;
 	bool IsLiberated;
+	int StationType;
 
 	void SetTPPositions(vector Position)
 	{
@@ -31,6 +32,7 @@ class TravelStationLocation
 		ctx.Write(TPPositions);
 		ctx.Write(Position);
 		ctx.Write(IsLiberated);
+		ctx.Write(StationType);
 	}
 
 	bool OnReceive(ParamsReadContext ctx)
@@ -61,13 +63,19 @@ class TravelStationLocation
 
 		if (!ctx.Read(Position))
 		{
-			Error(ToString() + "::OnReceive - TPPositions");
+			Error(ToString() + "::OnReceive - Position");
 			return false;
 		}
 
 		if (!ctx.Read(IsLiberated))
 		{
-			Error(ToString() + "::OnReceive - TPPositions");
+			Error(ToString() + "::OnReceive - IsLiberated");
+			return false;
+		}
+
+		if (!ctx.Read(StationType))
+		{
+			Error(ToString() + "::OnReceive - StationType");
 			return false;
 		}
 

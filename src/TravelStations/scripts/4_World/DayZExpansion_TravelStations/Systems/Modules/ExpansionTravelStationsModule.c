@@ -4,7 +4,7 @@ class ExpansionTravelStationsModule: CF_ModuleWorld
 
 	protected static ExpansionTravelStationsModule s_ModuleInstance;
 	protected ref ExpansionMarketModule m_marketModule;
-
+	protected ref ExpansionCityManagerModule m_cityManagerModule;
 	static ref map<int, ExpansionTravelStationsNPCBase> s_TravelStationsNPCEntities = new map<int, ExpansionTravelStationsNPCBase>;
 	static ref map<int, ExpansionTravelStationsStaticObject> s_TravelStationsObjectEntities = new map<int, ExpansionTravelStationsStaticObject>;
 	private ref map<string, int> m_GlobalTravelCooldown = new map<string, int>();
@@ -58,6 +58,23 @@ class ExpansionTravelStationsModule: CF_ModuleWorld
 			else
 				Print("[TravelStations] ExpansionMarketModule found.");
 		}
+
+		if (!m_cityManagerModule)
+		{
+			m_cityManagerModule = ExpansionCityManagerModule.Cast(CF_ModuleCoreManager.Get(ExpansionCityManagerModule));
+			if (!m_cityManagerModule)
+				Print("[TravelStations] Failed to get ExpansionCityManagerModule!");
+			else
+				Print("[TravelStations] ExpansionCityManagerModule found.");
+		}
+
+	}
+
+
+
+	float GetYawFromDirection(vector dir)
+	{
+		return Math.Atan2(dir[0], dir[2]) * Math.RAD2DEG;
 	}
 
 	void ServerModuleInit()
@@ -195,6 +212,7 @@ class ExpansionTravelStationsModule: CF_ModuleWorld
 		loc.Position = npcData.GetPosition();
 		loc.SetTPPositions(loc.Position);  // Generate TPPositions based on Position
 		loc.IsLiberated = checkIfLiberated(loc.CityID);
+		loc.StationType = npcData.GetStationType();
 
 		return loc;
 	}
@@ -601,16 +619,15 @@ class ExpansionTravelStationsModule: CF_ModuleWorld
 
 	bool checkIfLiberated(int cityID)
 	{
-		ExpansionCityManagerModule module = ExpansionCityManagerModule.Cast(CF_ModuleCoreManager.Get(ExpansionCityManagerModule));
-		if (!module)
-			return false;
-
-		ExpansionCityManagerNPCData data = module.GetCityManagerNPCDataByID(cityID);
+		ExpansionCityManagerNPCData data = m_cityManagerModule.GetCityManagerNPCDataByID(cityID);
 		if (!data)
 			return false;
 		Print("[TravelStations] Checking CityID: " + cityID + " → Liberated: " + data.CityLiberated);
 		return data.CityLiberated; 
 	}
+
+
+
 
 	static ExpansionTravelStationsModule GetModuleInstance() { return s_ModuleInstance; }
 }

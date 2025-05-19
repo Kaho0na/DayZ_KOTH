@@ -14,7 +14,7 @@ class ExpansionTravelStationsNPCData
     int CityID;
     string StationName;
     vector Position;
-	bool StationType;
+	int StationType;
 	string StationManagerImage;
 	int StationID;
 
@@ -96,12 +96,12 @@ class ExpansionTravelStationsNPCData
 		return Position;
 	}
 
-	void SetStationType(bool bus)
+	void SetStationType(int type)
 	{
-		StationType = bus;
+		StationType = type;
 	}
 
-	bool GetStationType()
+	int GetStationType()
 	{
 		return StationType;
 	}
@@ -355,9 +355,7 @@ class ExpansionTravelStationsNPCData
 		CityID = npcDataBase.CityID;
 		StationID = npcDataBase.StationID;
         StationName = npcDataBase.StationName;
-
 		StationType = npcDataBase.StationType;
-
 		ClassName = npcDataBase.ClassName;
 		Position = npcDataBase.Position;
 		Orientation = npcDataBase.Orientation;
