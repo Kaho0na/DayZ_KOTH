@@ -175,6 +175,14 @@ class ExpansionDeadDropModule: CF_ModuleWorld
 		deathData.Save(fileName);
 
 		Print("[DeadDrop] Saved inventory for player " + playerName + " (" + steamId + ")");
+		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(DeletePlayerCorpse, 100, false, player);
+	}
+
+	void DeletePlayerCorpse(PlayerBase player)
+	{
+			Print("[DeadDrop] Deleting player corpse for " + player.GetIdentity().GetName());
+			GetGame().ObjectDelete(player);
+
 	}
 
 	void GetInventoryRecursive(EntityAI entity, string slotName, ref array<ref ExpansionDeadDropItemData> result, bool wasInHands = false, ref set<Object> visited = null)
