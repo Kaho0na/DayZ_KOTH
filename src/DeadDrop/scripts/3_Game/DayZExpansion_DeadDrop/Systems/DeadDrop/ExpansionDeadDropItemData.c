@@ -1,11 +1,11 @@
 /**
- * ExpansionDeadDropItem.c
+ * ExpansionDeadDropItemData.c
  *
  * This class defines the structure and data handling
  * for individual items stored in a DeadDrop record.
  */
 
-class DeadDropItem
+class ExpansionDeadDropItemData
 {
 	string type;
 	float health;
@@ -16,18 +16,18 @@ class DeadDropItem
 	bool wasInHands;
 	string slotName;
 
-	ref array<ref DeadDropItem> attachments;
-	ref array<ref DeadDropItem> cargo;
+	ref array<ref ExpansionDeadDropItemData> attachments;
+	ref array<ref ExpansionDeadDropItemData> cargo;
 
 	// Constructor
-	void DeadDropItem()
+	void ExpansionDeadDropItemData()
 	{
-		attachments = new array<ref DeadDropItem>();
-		cargo = new array<ref DeadDropItem>();
+		attachments = new array<ref ExpansionDeadDropItemData>();
+		cargo = new array<ref ExpansionDeadDropItemData>();
 	}
 
 	// Deep copy
-	void CopyFrom(DeadDropItem item)
+	void CopyFrom(ExpansionDeadDropItemData item)
 	{
 		type = item.type;
 		health = item.health;
@@ -38,18 +38,18 @@ class DeadDropItem
 		wasInHands = item.wasInHands;
 		slotName = item.slotName;
 
-		attachments = new array<ref DeadDropItem>();
-		foreach (DeadDropItem att : item.attachments)
+		attachments = new array<ref ExpansionDeadDropItemData>();
+		foreach (ExpansionDeadDropItemData att : item.attachments)
 		{
-			DeadDropItem newAtt = new DeadDropItem();
+			ExpansionDeadDropItemData newAtt = new ExpansionDeadDropItemData();
 			newAtt.CopyFrom(att);
 			attachments.Insert(newAtt);
 		}
 
-		cargo = new array<ref DeadDropItem>();
-		foreach (DeadDropItem carg : item.cargo)
+		cargo = new array<ref ExpansionDeadDropItemData>();
+		foreach (ExpansionDeadDropItemData carg : item.cargo)
 		{
-			DeadDropItem newCargo = new DeadDropItem();
+			ExpansionDeadDropItemData newCargo = new ExpansionDeadDropItemData();
 			newCargo.CopyFrom(carg);
 			cargo.Insert(newCargo);
 		}
@@ -68,11 +68,11 @@ class DeadDropItem
 		ctx.Write(slotName);
 
 		ctx.Write(attachments.Count());
-		foreach (DeadDropItem att : attachments)
+		foreach (ExpansionDeadDropItemData att : attachments)
 			ctx.Write(att);
 
 		ctx.Write(cargo.Count());
-		foreach (DeadDropItem item : cargo)
+		foreach (ExpansionDeadDropItemData item : cargo)
 			ctx.Write(item);
 	}
 
@@ -90,20 +90,20 @@ class DeadDropItem
 
 		int attachmentCount;
 		if (!ctx.Read(attachmentCount)) return false;
-		attachments = new array<ref DeadDropItem>();
+		attachments = new array<ref ExpansionDeadDropItemData>();
 		for (int i = 0; i < attachmentCount; i++)
 		{
-			DeadDropItem att;
+			ExpansionDeadDropItemData att;
 			if (!ctx.Read(att)) return false;
 			attachments.Insert(att);
 		}
 
 		int cargoCount;
 		if (!ctx.Read(cargoCount)) return false;
-		cargo = new array<ref DeadDropItem>();
+		cargo = new array<ref ExpansionDeadDropItemData>();
 		for (int j = 0; j < cargoCount; j++)
 		{
-			DeadDropItem item;
+			ExpansionDeadDropItemData item;
 			if (!ctx.Read(item)) return false;
 			cargo.Insert(item);
 		}

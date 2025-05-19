@@ -51,7 +51,7 @@ class ExpansionDeadDropModule: CF_ModuleWorld
 		EnableClientNew();
 		Expansion_EnableRPCManager();
 		Expansion_RegisterClientRPC("RPC_RequestOpenDeadDropMenu");
-		Expansion_RegisterServerRPC("RPC_ConfirmDeadDropRecovery");
+		Expansion_RegisterServerRPC("RPC_HandleRecoveryRequestDirect");
 	}
 
 	//Spawn Dead Drop NPC
@@ -125,7 +125,6 @@ class ExpansionDeadDropModule: CF_ModuleWorld
 	//Start on death write file
 	void OnPlayerKilled(PlayerBase player, Object killer)
 	{
-
 		if (!GetGame().IsServer() || !player || !player.GetIdentity())
 			return;
 
@@ -144,38 +143,54 @@ class ExpansionDeadDropModule: CF_ModuleWorld
 		deathData.SetISRecovered(false);
 		deathData.SetRecoveryTime("");
 		deathData.SetRecoveredBy("");
-		Print("[DeadDrop] Saved inventory for player " + playerName + " (" + steamId + ")");
 
-		// Serialize inventory
-		ref array<ref DeadDropItem> inventoryData = new array<ref DeadDropItem>();
-		if (EntityAI.Cast(player))
+		ref array<ref ExpansionDeadDropItemData> inventoryData = new array<ref ExpansionDeadDropItemData>();
+		ref set<Object> visited = new set<Object>();
+
+		// Hands
+		EntityAI itemInHands = player.GetHumanInventory().GetEntityInHands();
+		if (itemInHands)
+			GetInventoryRecursive(itemInHands, "RightHand", inventoryData, true, visited);
+
+		// Attached gear (vest, backpack, clothes, etc.)
+		for (int i = 0; i < player.GetInventory().AttachmentCount(); i++)
 		{
-				ref set<Object> visited = new set<Object>();
-				GetInventoryRecursive(EntityAI.Cast(player), "", inventoryData, false, visited);
+			EntityAI attachment = player.GetInventory().GetAttachmentFromIndex(i);
+			if (attachment)
+			{
+				string slotName = "";
+				int slotId = attachment.GetInventory().GetSlotId(0);
+				if (slotId >= 0)
+					slotName = InventorySlots.GetSlotName(slotId);
+
+				GetInventoryRecursive(attachment, slotName, inventoryData, false, visited);
+			}
 		}
+
 		deathData.items = inventoryData;
 
 		string timestamp = GetFormattedDateTime();
 		deathData.SetDeathTime(timestamp);
 		string fileName = steamId + "-" + timestamp;
 		deathData.Save(fileName);
+
+		Print("[DeadDrop] Saved inventory for player " + playerName + " (" + steamId + ")");
 	}
 
-	void GetInventoryRecursive(EntityAI entity, string slotName, ref array<ref DeadDropItem> result, bool wasInHands = false, ref set<Object> visited = null)
+	void GetInventoryRecursive(EntityAI entity, string slotName, ref array<ref ExpansionDeadDropItemData> result, bool wasInHands = false, ref set<Object> visited = null)
 	{
-
 		if (!entity)
 			return;
 
 		if (!visited)
 			visited = new set<Object>();
 
-		if (IsInVisited(entity, visited))
+		if (visited.Find(entity) >= 0)
 			return;
 
 		visited.Insert(entity);
 
-		DeadDropItem itemData = new DeadDropItem();
+		ExpansionDeadDropItemData itemData = new ExpansionDeadDropItemData();
 		itemData.type = entity.GetType();
 		itemData.health = entity.GetHealth("", "");
 		itemData.wasInHands = wasInHands;
@@ -185,43 +200,47 @@ class ExpansionDeadDropModule: CF_ModuleWorld
 		if (itemBase)
 		{
 			itemData.quantity = itemBase.GetQuantity();
+
 			if (itemBase.IsLiquidContainer())
 				itemData.liquidType = "" + itemBase.GetLiquidType();
 			else
 				itemData.liquidType = "";
 
-			itemData.skinIndex = 0;
 			Magazine mag = Magazine.Cast(itemBase);
 			if (mag)
-			{
 				itemData.ammo = mag.GetAmmoCount();
-			}
 			else
-			{
 				itemData.ammo = 0;
-			}
-
 		}
 
 		// Attachments
-		ref array<ref DeadDropItem> attachments = new array<ref DeadDropItem>();
+		ref array<ref ExpansionDeadDropItemData> attachments = new array<ref ExpansionDeadDropItemData>();
 		for (int a = 0; a < entity.GetInventory().AttachmentCount(); a++)
 		{
 			EntityAI attachment = entity.GetInventory().GetAttachmentFromIndex(a);
 			if (attachment)
-				GetInventoryRecursive(attachment, InventorySlots.GetSlotName(attachment.GetInventory().GetSlotId(0)), attachments, false, visited);
+			{
+				string attSlotName = "";
+				int attSlotId = attachment.GetInventory().GetSlotId(0);
+				if (attSlotId >= 0)
+					attSlotName = InventorySlots.GetSlotName(attSlotId);
 
+				GetInventoryRecursive(attachment, attSlotName, attachments, false, visited);
+			}
 		}
 		itemData.attachments = attachments;
 
 		// Cargo
-		ref array<ref DeadDropItem> cargo = new array<ref DeadDropItem>();
-		for (int i = 0; i < entity.GetInventory().GetCargo().GetItemCount(); i++)
+		ref array<ref ExpansionDeadDropItemData> cargo = new array<ref ExpansionDeadDropItemData>();
+		CargoBase cargoBase = entity.GetInventory().GetCargo();
+		if (cargoBase)
 		{
-			EntityAI cargoItem = entity.GetInventory().GetCargo().GetItem(i);
-			if (cargoItem)
-				GetInventoryRecursive(cargoItem, "", cargo, false, visited);
-
+			for (int i = 0; i < cargoBase.GetItemCount(); i++)
+			{
+				EntityAI cargoItem = cargoBase.GetItem(i);
+				if (cargoItem)
+					GetInventoryRecursive(cargoItem, "", cargo, false, visited);
+			}
 		}
 		itemData.cargo = cargo;
 
@@ -393,6 +412,118 @@ class ExpansionDeadDropModule: CF_ModuleWorld
 		Print("[DeadDrop] GetDeadDropMenuSI Invoked");
 		return m_DeadDropMenuInvoker;
 	}
+	//End dead drop menu
+
+	//Start RPC Execute Recovery
+	void ExecuteRecoveryRequest(string fileName)
+	{
+		auto rpc = Expansion_CreateRPC("RPC_HandleRecoveryRequestDirect");
+		rpc.Write(fileName);  // Only write filename
+		rpc.Expansion_Send(null, true, null);  // Send to server
+	}
+
+
+	protected void RPC_HandleRecoveryRequestDirect(PlayerIdentity sender, Object target, ParamsReadContext ctx)
+	{
+		string fileName;
+		if (!ctx.Read(fileName))
+		{
+			Error("[DeadDrop] Failed to read fileName!");
+			return;
+		}
+
+		PlayerBase player = PlayerBase.GetPlayerByUID(sender.GetId());
+		if (!player)
+		{
+			Error("[DeadDrop] Server: Player not found for identity " + sender.GetId());
+			return;
+		}
+
+		ExpansionDeadDropPlayerData data = ExpansionDeadDropPlayerData.Load(fileName);
+		if (!data)
+		{
+			Error("[DeadDrop] Failed to load data file: " + fileName);
+			return;
+		}
+
+		Print("[DeadDrop] Loaded player data, item count = " + data.items.Count());
+
+		if (data.items.Count() == 0)
+		{
+			Error("[DeadDrop] No Items Found.");
+			return;
+		}
+
+		vector position = player.GetPosition();
+
+		ExpansionTemporaryOwnedContainer container;
+		if (!Class.CastTo(container, GetGame().CreateObjectEx("ExpansionTemporaryOwnedContainer", position, ECE_PLACE_ON_SURFACE)))
+		{
+			Error("[DeadDrop] Failed to spawn temporary container.");
+			return;
+		}
+
+		player.Expansion_SetTemporaryOwnedContainer(container);
+
+		foreach (ExpansionDeadDropItemData item : data.items)
+		{
+			SpawnItemRecursiveToContainer(item, player, container);
+		}
+
+
+		data.recovered = true;
+		data.recovered_by = sender.GetName();
+		data.recovery_time = GetFormattedDateTime();
+
+		JsonFileLoader<ExpansionDeadDropPlayerData>.JsonSaveFile(EXPANSION_DEADDROP_FOLDER + "Recovered\\" + fileName, data);
+		DeleteFile(EXPANSION_DEADDROP_FOLDER + "Active\\" + fileName);
+
+		ExpansionNotification("DeadDrop", "Your loot has been recovered.").Success(sender);
+	}
+
+
+	void SpawnItemRecursiveToContainer(ExpansionDeadDropItemData itemData, PlayerBase player, EntityAI parent)
+	{
+		EntityAI item = ExpansionItemSpawnHelper.SpawnInInventorySecure(itemData.type, player, parent);
+		if (!item)
+		{
+			Error("[DeadDrop] Failed to spawn item: " + itemData.type);
+			return;
+		}
+
+		// Set health
+		if (item.IsInherited(ItemBase))
+		{
+			ItemBase ib = ItemBase.Cast(item);
+			ib.SetHealth(itemData.health);
+			ib.SetQuantity(itemData.quantity);
+		}
+
+		// Ammo for mags
+		Magazine magazine = Magazine.Cast(item);
+		if (magazine && itemData.ammo > 0)
+		{
+			if (GetGame().IsServer())
+				magazine.ServerSetAmmoCount(itemData.ammo);
+		}
+
+		// Attachments
+		foreach (ExpansionDeadDropItemData attData : itemData.attachments)
+		{
+			SpawnItemRecursiveToContainer(attData, player, item);
+		}
+
+		// Cargo
+		if (item.GetInventory())
+		{
+			foreach (ExpansionDeadDropItemData cargoData : itemData.cargo)
+			{
+				SpawnItemRecursiveToContainer(cargoData, player, item);
+			}
+		}
+	}
+
+
 
 	static ExpansionDeadDropModule GetModuleInstance() { return s_ModuleInstance; }
 //Module End Here

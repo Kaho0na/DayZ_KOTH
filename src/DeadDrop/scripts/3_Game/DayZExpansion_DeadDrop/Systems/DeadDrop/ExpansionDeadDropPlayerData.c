@@ -13,7 +13,7 @@ class ExpansionDeadDropPlayerData
 	string cause_of_death;
 	vector location;
 
-	ref array<ref DeadDropItem> items;
+	ref array<ref ExpansionDeadDropItemData> items;
 
     [NonSerialized()]
 	static string FILENAME = "NONE";
@@ -23,7 +23,7 @@ class ExpansionDeadDropPlayerData
     void ExpansionDeadDropPlayerData()
 	{
 		s_Instance = this;
-		items = new array<ref DeadDropItem>();
+		items = new array<ref ExpansionDeadDropItemData>();
 	}
 
 	static ExpansionDeadDropPlayerData GetInstance()
@@ -138,24 +138,13 @@ class ExpansionDeadDropPlayerData
 		return GetRecoveryTimeInt() - other.GetRecoveryTimeInt();
 	}
 
-	string m_FileName;
-
-	void SetFileName(string name)
-	{
-		m_FileName = name;
-	}
-
-	string GetFileName()
-	{
-		return m_FileName;
-	}
-
 	static ExpansionDeadDropPlayerData Load(string fileName)
 	{
 		if (!ExpansionString.EndsWithIgnoreCase(fileName, ".json"))
 			fileName += ".json";
-
+		Print("[DEBUG] Load() called with: " + fileName);
 		string fullPath = EXPANSION_DEADDROP_FOLDER + "Active\\" + fileName;
+		
 		Print("[ExpansionDeadDropPlayerData] Loading file: " + fullPath);
 
 		ExpansionDeadDropPlayerData playerData;
@@ -165,8 +154,6 @@ class ExpansionDeadDropPlayerData
 			return null;
 		}
 
-		playerData.SetFileName(fileName);
-		Print("[ExpansionDeadDropPlayerData] Loaded data for: " + playerData.GetPlayerName());
 		return playerData;
 	}
 
@@ -209,10 +196,10 @@ class ExpansionDeadDropPlayerData
 		cause_of_death = PlayerDataBase.cause_of_death;
 		location = PlayerDataBase.location;
 
-		items = new array<ref DeadDropItem>();
-		foreach (DeadDropItem item : PlayerDataBase.items)
+		items = new array<ref ExpansionDeadDropItemData>();
+		foreach (ExpansionDeadDropItemData item : PlayerDataBase.items)
 		{
-			DeadDropItem copy = new DeadDropItem();
+			ExpansionDeadDropItemData copy = new ExpansionDeadDropItemData();
 			copy.CopyFrom(item);
 			items.Insert(copy);
 		}
@@ -231,7 +218,7 @@ class ExpansionDeadDropPlayerData
 		ctx.Write(cause_of_death);
 		ctx.Write(location);
 		ctx.Write(items.Count());
-		foreach (DeadDropItem item : items)
+		foreach (ExpansionDeadDropItemData item : items)
 			ctx.Write(item);
 
 	}
@@ -268,10 +255,10 @@ class ExpansionDeadDropPlayerData
 		int count;
 		if (!ctx.Read(count)) return false;
 
-		items = new array<ref DeadDropItem>();
+		items = new array<ref ExpansionDeadDropItemData>();
 		for (int i = 0; i < count; i++)
 		{
-			DeadDropItem item;
+			ExpansionDeadDropItemData item;
 			if (!ctx.Read(item)) return false;
 			items.Insert(item);
 		}

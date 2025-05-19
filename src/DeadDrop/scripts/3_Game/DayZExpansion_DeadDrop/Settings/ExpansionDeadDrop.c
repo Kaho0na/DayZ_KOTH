@@ -18,13 +18,13 @@ class ExpansionDeadDrop : ExpansionDeadDropBase
 	string cause_of_death;
 	vector location;
 
-	ref array<ref DeadDropItem> items;
+	ref array<ref ExpansionDeadDropItemData> items;
 
 
 	// Constructor
 	void ExpansionDeadDrop()
 	{
-		items = new array<ref DeadDropItem>();
+		items = new array<ref ExpansionDeadDropItemData>();
 	}
 
 	// Load from file
@@ -59,6 +59,6 @@ class ExpansionDeadDrop : ExpansionDeadDropBase
 		cause_of_death = "";
 		location = vector.Zero;
 
-		items = new array<ref DeadDropItem>();
+		items = new array<ref ExpansionDeadDropItemData>();
 	}
 }

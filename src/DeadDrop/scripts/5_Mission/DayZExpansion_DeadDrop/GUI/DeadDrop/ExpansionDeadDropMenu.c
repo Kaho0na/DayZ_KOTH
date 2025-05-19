@@ -180,7 +180,7 @@ class ExpansionDeadDropMenu: ExpansionScriptViewMenu
 	{
 		m_SelectedIndex = index;
 		m_SelectedBodyData = data;  // ← Store selected data for recovery use
-
+		Print("[DeadDrop] Selected entry file: " + m_SelectedBodyData.steam_id + "-" + m_SelectedBodyData.death_time);
 		// Unselect all entries
 		for (int i = 0; i < m_DeadDropMenuController.BodyEntries.Count(); i++)
 		{
@@ -197,6 +197,8 @@ class ExpansionDeadDropMenu: ExpansionScriptViewMenu
 		// Set recovery cost
 		m_RecoveryCost = GetExpansionSettings().GetDeadDrop().RecoveryCost;
 		m_DeadDropMenuController.RecoveryCost = "$" + FormatNumberWithCommas(m_RecoveryCost);
+		
+
 		if (notifyUI)
 			m_DeadDropMenuController.NotifyPropertyChanged("RecoveryCost");
 	}
@@ -208,17 +210,48 @@ class ExpansionDeadDropMenu: ExpansionScriptViewMenu
 		CloseMenu();
 	}
 
-	//On Recover Click Button
+	// On Recover Click Button
 	void OnRecoverButtonClick()
 	{
-		//Click the recover button logic here
+		if (!m_SelectedBodyData)
+		{
+			ExpansionNotification("DeadDrop", "Please select a body to recover.").Error();
+			return;
+		}
+
+		if (m_PlayerMoney < m_RecoveryCost)
+		{
+			ExpansionNotification("Insufficient Funds", "Not enough funds in your ATM account. Maybe try looting?!").Error();
+			return;
+		}
+
+		Print("[DeadDrop] Recover button pressed for: " + m_SelectedBodyData.GetBodyName());
+
+		new ExpansionDeadDropConfirmDialog(this);
 	}
+
 
 	//Confirm Recovery
 	void OnConfirmRecovery()
 	{
-		//Execute recovery after confirm 
+		if (!m_SelectedBodyData)
+		{
+			ExpansionNotification("DeadDrop", "No recovery target selected.").Error();
+			return;
+		}
+
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		if (!player)
+			return;
+
+		// Send RPC to server with selected entry file name
+		string fileName = m_SelectedBodyData.steam_id + "-" + m_SelectedBodyData.death_time + ".json";
+		ExpansionDeadDropModule.GetModuleInstance().ExecuteRecoveryRequest(fileName);
+
+		// Close menu
+		CloseMenu();
 	}
+
 
 	override bool CanClose()
 	{
