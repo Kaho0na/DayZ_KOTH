@@ -478,7 +478,20 @@ class ExpansionDeadDropModule: CF_ModuleWorld
 			SpawnItemRecursiveToContainer(item, player, container);
 		}
 
-
+		int recoveryCost = GetExpansionSettings().GetDeadDrop().RecoveryCost;
+		if (recoveryCost > 0)
+		{
+			if (m_marketModule)
+			{
+				ref ExpansionMarketATM_Data ATMdata = m_marketModule.GetPlayerATMData(sender.GetId());
+				ATMdata.RemoveMoney(recoveryCost);
+			}
+			else
+			{
+				Error("[DeadDrop] Market module not found, cannot deduct recovery cost.");
+				return;
+			}
+		}
 		data.recovered = true;
 		data.recovered_by = sender.GetName();
 		data.recovery_time = GetFormattedDateTime();

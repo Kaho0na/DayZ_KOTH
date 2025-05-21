@@ -119,7 +119,7 @@ FrameWidgetClass ExpansionDeadDropMenu {
       }
      }
     }
-    PanelWidgetClass MapPanel {
+    PanelWidgetClass previewPanel {
      ignorepointer 1
      color 0 0 0 0.8078
      position 0.29 0.09
@@ -131,7 +131,7 @@ FrameWidgetClass ExpansionDeadDropMenu {
      vexactsize 0
      style DayZDefaultPanel
      {
-      PanelWidgetClass MapSpacer {
+      PanelWidgetClass dead_player_preview_container {
        visible 1
        clipchildren 1
        ignorepointer 0
@@ -146,7 +146,7 @@ FrameWidgetClass ExpansionDeadDropMenu {
        vexactsize 0
        priority 1
        {
-        MapWidgetClass Map_Widget {
+        PlayerPreviewWidgetClass dead_player_preview {
          visible 1
          clipchildren 1
          keepsafezone 1
@@ -157,7 +157,13 @@ FrameWidgetClass ExpansionDeadDropMenu {
          vexactpos 0
          hexactsize 0
          vexactsize 0
-         scriptclass ""
+         ignorepointer 0
+         scriptclass "ViewBinding"
+             {
+              ScriptParamsClass {
+               Binding_Name "DeadPlayerPreview"
+              }
+             }
         }
        }
       }

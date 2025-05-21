@@ -5,7 +5,7 @@ class ExpansionDeadDropConfirmDialog: ExpansionDialogBase
 	protected ref ExpansionDeadDropConfirmDialogButton_Cancel m_CancelButton;
 
 	protected ref ExpansionDeadDropMenu m_Menu;
-	protected int m_Cost;
+	int m_Cost;
 
 
 	void ExpansionDeadDropConfirmDialog(ScriptView parentView)

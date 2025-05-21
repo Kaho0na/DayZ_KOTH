@@ -62,6 +62,7 @@ class ExpansionDeadDropMenu: ExpansionScriptViewMenu
 		PPEffects.SetBlurMenu(0.0);
 		m_Mission.GetHud().ShowHud(true);
 		m_Mission.GetHud().ShowQuickBar(true);
+		
 
 		Clear();
 	}
@@ -98,10 +99,8 @@ class ExpansionDeadDropMenu: ExpansionScriptViewMenu
 	//Show Menu
 	void ShowMenuNow(int playerMoney, array<ref ExpansionDeadDropPlayerData> entries)
 	{
-		Print("[DeadDrop] ShowMenuNow called");
 		
 		m_PlayerMoney = playerMoney;
-		Print("[DeadDrop] Player Money: " + m_PlayerMoney);
 		m_DeadDropEntries = entries;
 
 		m_DeadDropMenuController.PlayerMoney = "$" + FormatNumberWithCommas(m_PlayerMoney);
@@ -109,13 +108,12 @@ class ExpansionDeadDropMenu: ExpansionScriptViewMenu
 
 		ExpansionDeadDropSettings settings = GetExpansionSettings().GetDeadDrop();
 		string m_NPCName = settings.NPCName;
-		Print("[DeadDrop] NPC Name: " + m_NPCName);
-		m_DeadDropMenuController.Stationtitle = m_NPCName;
-		m_DeadDropMenuController.NotifyPropertyChanged("Stationtitle");
+		m_DeadDropMenuController.NPCName = m_NPCName;
+		m_DeadDropMenuController.NotifyPropertyChanged("NPCName");
 
 		string m_NPCText = GetRandomUndertakerQuote();
-		m_DeadDropMenuController.NPCName = m_NPCText;
-		m_DeadDropMenuController.NotifyPropertyChanged("NPCName");
+		m_DeadDropMenuController.Stationtitle = m_NPCText;
+		m_DeadDropMenuController.NotifyPropertyChanged("Stationtitle");
 
 		m_DeadDropMenuController.UndertakerImage = settings.DeadDropImage;
 		m_DeadDropMenuController.NotifyPropertyChanged("UndertakerImage");
@@ -175,34 +173,88 @@ class ExpansionDeadDropMenu: ExpansionScriptViewMenu
 	}
 	//END Show Menu
 
-	//On Click Body Entry
-	void SetRecoveryTarget(int index, ExpansionDeadDropPlayerData data, bool notifyUI = true)
+void SetRecoveryTarget(int index, ExpansionDeadDropPlayerData data, bool notifyUI = true)
+{
+	// Store selection
+	m_SelectedIndex = index;
+	m_SelectedBodyData = data;
+
+	Print("[DeadDrop] Selected body: " + data.steam_id + " at " + data.death_time);
+
+	// Deselect all entries and highlight selected
+	for (int i = 0; i < m_DeadDropMenuController.BodyEntries.Count(); i++)
 	{
-		m_SelectedIndex = index;
-		m_SelectedBodyData = data;  // ← Store selected data for recovery use
-		Print("[DeadDrop] Selected entry file: " + m_SelectedBodyData.steam_id + "-" + m_SelectedBodyData.death_time);
-		// Unselect all entries
-		for (int i = 0; i < m_DeadDropMenuController.BodyEntries.Count(); i++)
-		{
-			ExpansionDeadDropMenuLocationEntry entry = ExpansionDeadDropMenuLocationEntry.Cast(m_DeadDropMenuController.BodyEntries[i]);
-			if (entry)
-				entry.SetSelected(i == index);
-		}
-
-		// Update label
-		m_DeadDropMenuController.SelectedBody = data.GetBodyName();
-		if (notifyUI)
-			m_DeadDropMenuController.NotifyPropertyChanged("SelectedBody");
-
-		// Set recovery cost
-		m_RecoveryCost = GetExpansionSettings().GetDeadDrop().RecoveryCost;
-		m_DeadDropMenuController.RecoveryCost = "$" + FormatNumberWithCommas(m_RecoveryCost);
-		
-
-		if (notifyUI)
-			m_DeadDropMenuController.NotifyPropertyChanged("RecoveryCost");
+		ExpansionDeadDropMenuLocationEntry entry = ExpansionDeadDropMenuLocationEntry.Cast(m_DeadDropMenuController.BodyEntries[i]);
+		if (entry)
+			entry.SetSelected(i == index);
 	}
 
+	// Update UI labels
+	m_DeadDropMenuController.SelectedBody = data.GetBodyName();
+	if (notifyUI)
+		m_DeadDropMenuController.NotifyPropertyChanged("SelectedBody");
+
+	m_RecoveryCost = GetExpansionSettings().GetDeadDrop().RecoveryCost;
+	m_DeadDropMenuController.RecoveryCost = "$" + FormatNumberWithCommas(m_RecoveryCost);
+	if (notifyUI)
+		m_DeadDropMenuController.NotifyPropertyChanged("RecoveryCost");
+
+	// Delete old preview
+	if (m_DeadDropMenuController.DeadPlayerPreview)
+	{
+		GetGame().ObjectDelete(m_DeadDropMenuController.DeadPlayerPreview);
+		m_DeadDropMenuController.DeadPlayerPreview = null;
+	}
+
+	// Always use static preview base type (e.g., Mirek)
+	string previewType = "SurvivorM_Mirek";
+
+	// Create preview object locally
+	EntityAI previewEntity = EntityAI.Cast(GetGame().CreateObjectEx(previewType, vector.Zero, ECE_LOCAL | ECE_NOLIFETIME));
+	if (!previewEntity)
+		return;
+
+	// Equip gear
+	foreach (ExpansionDeadDropItemData itemData : data.items)
+	{
+		SpawnPreviewItemRecursive(previewEntity, itemData);
+	}
+
+	// Bind to UI
+	m_DeadDropMenuController.DeadPlayerPreview = previewEntity;
+	m_DeadDropMenuController.NotifyPropertyChanged("DeadPlayerPreview");
+}
+
+
+
+	void SpawnPreviewItemRecursive(EntityAI parent, ExpansionDeadDropItemData itemData)
+	{
+		if (!itemData || !parent)
+			return;
+
+		EntityAI item = EntityAI.Cast(parent.GetInventory().CreateInInventory(itemData.type));
+		if (!item)
+			return;
+
+		ItemBase itemBase = ItemBase.Cast(item);
+		if (itemBase)
+		{
+			itemBase.SetHealth01("", "", itemData.health / itemBase.GetMaxHealth("", ""));
+			itemBase.SetQuantity(itemData.quantity);
+		}
+
+		// Attachments
+		foreach (ExpansionDeadDropItemData attData : itemData.attachments)
+		{
+			SpawnPreviewItemRecursive(item, attData);
+		}
+
+		// Cargo
+		foreach (ExpansionDeadDropItemData cargoItem : itemData.cargo)
+		{
+			SpawnPreviewItemRecursive(item, cargoItem);
+		}
+	}
 
 	//Menu Closing Here
 	void CloseMenuButtonClick()
@@ -260,6 +312,11 @@ class ExpansionDeadDropMenu: ExpansionScriptViewMenu
 
 	void CloseMenu()
 	{
+		if (m_DeadDropMenuController.DeadPlayerPreview)
+		{
+			GetGame().ObjectDelete(m_DeadDropMenuController.DeadPlayerPreview);
+			m_DeadDropMenuController.DeadPlayerPreview = null;
+		}
 		GetDayZExpansion().GetExpansionUIManager().CloseMenu();
 	}
 	//END Menu Closing
@@ -270,6 +327,7 @@ class ExpansionDeadDropMenuController: ExpansionViewController
 {
 	ref array<ref ExpansionDeadDropPlayerData> m_DeadDropEntries = new array<ref ExpansionDeadDropPlayerData>();
 	ref ObservableCollection<ref ExpansionDeadDropMenuLocationEntry> BodyEntries = new ObservableCollection<ref ExpansionDeadDropMenuLocationEntry>(this);
+	Object DeadPlayerPreview;
 	string SelectedLocation;
 	string RecoveryCost;
 	string PlayerMoney;
