@@ -195,6 +195,7 @@ FrameWidgetClass ExpansionCityManagerMenu {
            scriptclass "ViewBinding"
            hexactsize 0
            vexactsize 0
+           "exact text size" 22
            wrap 1
            {
             ScriptParamsClass {
@@ -692,7 +693,7 @@ FrameWidgetClass ExpansionCityManagerMenu {
    filter 0
    nocache 1
   }
-  TextWidgetClass atm_title {
+  TextWidgetClass MenuTitle {
    ignorepointer 1
    position 0.05 80
    size 0.35 50
@@ -703,7 +704,7 @@ FrameWidgetClass ExpansionCityManagerMenu {
    vexactsize 1
    priority 1
    style Normal
-   text "CITY/TOWN MANAGER"
+   scriptclass "ViewBinding"
    font "gui/fonts/sdf_metronbook24"
    "text color" 0.8157 0.1255 0.7843 1
    "bold text" 1
@@ -712,6 +713,11 @@ FrameWidgetClass ExpansionCityManagerMenu {
    "size to text v" 1
    "text halign" right
    "text valign" center
+   {
+            ScriptParamsClass {
+                Binding_Name "MenuTitle"
+                }
+            }
   }
  }
 }

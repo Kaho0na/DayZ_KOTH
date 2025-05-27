@@ -48,6 +48,11 @@ class ExpansionCityManagerNPCData
 	static string FILENAME = "NONE";
 	
 	bool Active = true;
+	string NPCPersonality;
+	string NPCGender;
+	int NPCAge;
+	string NPCJob;
+	string CityType;
 
     void ExpansionCityManagerNPCData()
 	{
@@ -279,6 +284,56 @@ class ExpansionCityManagerNPCData
         return Active;
     }
 
+	void SetPersonality(string personality)
+	{
+		NPCPersonality = personality;
+	}
+	
+	string GetPersonality()
+	{
+		return NPCPersonality;
+	}
+
+	void SetGender(string gender)
+	{
+		NPCGender = gender;
+	}
+	
+	string GetGender()
+	{
+		return NPCGender;
+	}
+
+	void SetAge(int age)
+	{
+		NPCAge = age;
+	}
+
+	int GetAge()
+	{
+		return NPCAge;
+	}
+
+	void SetJob(string job)
+	{
+		NPCJob = job;
+	}
+
+	string GetJob()
+	{
+		return NPCJob;
+	}
+
+	void SetCityType(string type)
+	{
+		CityType = type;
+	}
+
+	string GetCityType()
+	{
+		return CityType;
+	}
+	
     ExpansionCityManagerNPCBase SpawnNPC()
 	{
 		int flags = ECE_ROTATIONFLAGS | ECE_PLACE_ON_SURFACE;
@@ -374,33 +429,35 @@ class ExpansionCityManagerNPCData
 	}
 #endif
 
-        ExpansionCityManagerStaticObject SpawnObject()
-        {
-            Object obj = ExpansionGame.CreateObjectExSafe(ClassName, Position, ECE_ROTATIONFLAGS | ECE_PLACE_ON_SURFACE);
-            ExpansionCityManagerStaticObject questObject;
-            if (!ExpansionCityManagerStaticObject.CastTo(questObject, obj))
-            {
-                Error("ExpansionCityManagerNPCDataBase::SpawnNPC - Used unsupported object " + ClassName + " as AI quest NPC in config. Only objects based on ExpansionCityManagerStaticObject class are allowed!");
-                GetGame().ObjectDelete(obj);
-                return null;
-            }
+	ExpansionCityManagerStaticObject SpawnObject()
+	{
+		Object obj = ExpansionGame.CreateObjectExSafe(ClassName, Position, ECE_ROTATIONFLAGS | ECE_PLACE_ON_SURFACE);
+		ExpansionCityManagerStaticObject questObject;
+		if (!ExpansionCityManagerStaticObject.CastTo(questObject, obj))
+		{
+			Error("ExpansionCityManagerNPCDataBase::SpawnNPC - Used unsupported object " + ClassName + " as AI quest NPC in config. Only objects based on ExpansionCityManagerStaticObject class are allowed!");
+			GetGame().ObjectDelete(obj);
+			return null;
+		}
 
-            if (Position)
-                questObject.SetPosition(Position);
+		if (Position)
+			questObject.SetPosition(Position);
 
-            if (Orientation)
-                questObject.SetOrientation(Orientation);
+		if (Orientation)
+			questObject.SetOrientation(Orientation);
 
-        #ifdef DIAG_DEVELOPER
-            NPCName = NPCName + " | ID: " + ID;
-        #endif
-            questObject.m_Expansion_NetsyncData.Set(0, NPCName);
+	#ifdef DIAG_DEVELOPER
+		NPCName = NPCName + " | ID: " + ID;
+	#endif
+		questObject.m_Expansion_NetsyncData.Set(0, NPCName);
 
-            return questObject;
-        }
+		return questObject;
+	}
 
     static ExpansionCityManagerNPCData Load(string fileName)
 	{
+		fileName.Replace(" ", "");
+		fileName.ToLower();
 		if (!ExpansionString.EndsWithIgnoreCase(fileName, ".json"))
 			fileName += ".json";
 		Print("[ExpansionCityManagerNPCData] Load existing configuration file:" + fileName);
@@ -412,6 +469,8 @@ class ExpansionCityManagerNPCData
 
     void Save(string fileName)
 	{
+		fileName.Replace(" ", "");
+		fileName.ToLower();
 		if (!ExpansionString.EndsWithIgnoreCase(fileName, ".json"))
 			fileName += ".json";
 
@@ -452,6 +511,13 @@ class ExpansionCityManagerNPCData
 		NPCFaction = npcDataBase.NPCFaction;
 	#endif
 		NPCType = npcDataBase.NPCType;
+		Active = npcDataBase.Active;
+		NPCPersonality = npcDataBase.NPCPersonality;
+		NPCGender = npcDataBase.NPCGender;
+		NPCAge = npcDataBase.NPCAge;
+		NPCJob = npcDataBase.NPCJob;
+		CityType = npcDataBase.CityType;
+
 	}
 
     void OnSend(ParamsWriteContext ctx)
@@ -468,6 +534,11 @@ class ExpansionCityManagerNPCData
 		ctx.Write(CityTraders);
 		ctx.Write(CityManagerImage);
 		ctx.Write(NPCName);
+		ctx.Write(NPCPersonality);
+		ctx.Write(NPCGender);
+		ctx.Write(NPCAge);
+		ctx.Write(NPCJob);
+		ctx.Write(CityType);
 	}
 
     bool OnRecieve(ParamsReadContext ctx)
@@ -507,6 +578,22 @@ class ExpansionCityManagerNPCData
 
 		if (!ctx.Read(NPCName))
 		return false;
+
+		if(!ctx.Read(NPCPersonality))
+			return false;
+
+		if(!ctx.Read(NPCGender))
+			return false;
+
+		if(!ctx.Read(NPCAge))
+			return false;
+
+		if(!ctx.Read(NPCJob))
+			return false;
+
+		if(!ctx.Read(CityType))
+			return false;
+			
 		
 		return true;
 	}

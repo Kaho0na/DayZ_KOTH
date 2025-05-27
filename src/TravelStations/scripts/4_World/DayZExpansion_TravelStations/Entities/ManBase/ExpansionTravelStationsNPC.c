@@ -64,3 +64,35 @@ class ExpansionTravelStationsNPCBase: ExpansionNPCBase
 	}
 
 };
+
+class ExpansionTravelStationsNPCMirek: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCDenis: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCBoris: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCCyril: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCElias: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCFrancis: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCGuo: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCHassan: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCIndar: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCJose: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCKaito: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCLewis: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCManua: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCNiki: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCOliver: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCPeter: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCQuinn: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCRolf: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCSeth: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCTaiki: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCLinda: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCMaria: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCFrida: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCGabi: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCHelga: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCIrena: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCJudy: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCKeiko: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCEva: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCNaomi: ExpansionTravelStationsNPCBase {};
+class ExpansionTravelStationsNPCBaty: ExpansionTravelStationsNPCBase {};

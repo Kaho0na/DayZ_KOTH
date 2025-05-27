@@ -28,6 +28,7 @@ class ExpansionCityManagerMenu: ExpansionScriptViewMenu
 
     protected TextWidget CityName;
     protected TextWidget CityCurrentLoyalty;
+	protected TextWidget MenuTitle;
     protected TextWidget LoyaltyCurrencyValue;
     protected EditBoxWidget AmountValue;
     protected ButtonWidget BtnTransfer;
@@ -100,10 +101,14 @@ class ExpansionCityManagerMenu: ExpansionScriptViewMenu
 
     void SetView(ExpansionCityManagerNPCData m_CityManagerData)
 	{
+
+		m_CityManagerMenuController.MenuTitle = m_CityManagerData.CityType + " Manager";
+		m_CityManagerMenuController.NotifyPropertyChanged("MenuTitle");
+
 		m_CityManagerMenuController.CityManagerImage = m_CityManagerData.CityManagerImage;
 		m_CityManagerMenuController.NotifyPropertyChanged("CityManagerImage");
 
-		m_CityManagerMenuController.NPCName = m_CityManagerData.NPCName;
+		m_CityManagerMenuController.NPCName = m_CityManagerData.NPCName + " (" + m_CityManagerData.NPCJob + ")";
 		m_CityManagerMenuController.NotifyPropertyChanged("NPCName");
 
 		m_CityManagerMenuController.DefaultNPCText = m_CityManagerData.DefaultNPCText;
@@ -254,4 +259,5 @@ class ExpansionCityManagerMenuController: ExpansionViewController
 	string CityTrain;
 	string CityBus;
 	string CityManagerImage;
+	string MenuTitle;
 };

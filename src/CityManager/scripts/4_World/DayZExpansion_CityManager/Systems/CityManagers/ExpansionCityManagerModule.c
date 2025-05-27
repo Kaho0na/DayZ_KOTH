@@ -17,12 +17,7 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 	protected ref ScriptInvoker m_CityManagerMenuInvoker; //! Client
 	protected ref ScriptInvoker m_CityManagerMenuCallbackInvoker; //! Client	
 	static ref ScriptInvoker SI_CityManagerMenuCallback = new ScriptInvoker();
-
-	#ifdef EXPANSIONMODNAVIGATION
-   //declares
-	ExpansionMarkerModule m_MarkerModule;
-	ExpansionMarkerData m_ServerMarker;
-	#endif
+	ExpansionMarkerModule markerModule;
 
     void ExpansionCityManagerModule()
 	{
@@ -143,6 +138,7 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 
 		foreach (int id, ExpansionCityManagerNPCData managerNPCData: m_CityManagersNPCs)
 		{
+			vector centerPos = managerNPCData.GetPosition();
 			switch (managerNPCData.GetNPCType())
 			{
 				case ExpansionCityManagerNPCType.NORMAL:
@@ -155,6 +151,11 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 					npc.SetCityManagerNPCData(managerNPCData);
 					npc.SetPosition(managerNPCData.GetPosition());
 					npc.SetOrientation(managerNPCData.GetOrientation());
+					// Spawn Police AI in a circle around the City Manager
+					SpawnPolicePatrols(centerPos, managerNPCData);
+
+					//Place Marker
+					PlaceCityMarker(managerNPCData);
 				}
 				break;
 				case ExpansionCityManagerNPCType.OBJECT:
@@ -167,6 +168,11 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 					object.SetCityManagerNPCData(managerNPCData);
 					object.SetPosition(managerNPCData.GetPosition());
 					object.SetOrientation(managerNPCData.GetOrientation());
+					// Spawn Police AI in a circle around the City Manager
+					SpawnPolicePatrols(centerPos, managerNPCData);
+
+					//Place Marker
+					PlaceCityMarker(managerNPCData);
 				}
 				break;
 			#ifdef EXPANSIONMODAI
@@ -179,18 +185,89 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 					npcAI.SetCityManagerNPCID(managerNPCData.GetID());
 					npcAI.SetCityManagerNPCData(managerNPCData);
 					npcAI.Expansion_SetEmote(managerNPCData.GetEmoteID(), !managerNPCData.IsEmoteStatic());
+
+
+					// Spawn Police AI in a circle around the City Manager
+					SpawnPolicePatrols(centerPos, managerNPCData);
+					//Place Marker
+					PlaceCityMarker(managerNPCData);
 				}
 				break;
 			#endif
-
-					#ifdef EXPANSIONMODNAVIGATION
-					if (CF_Modules<ExpansionMarkerModule>.Get(m_MarkerModule))
-				{
-					m_ServerMarker = m_MarkerModule.CreateServerMarker(managerNPCData.GetCityName(), "Territory", managerNPCData.GetPosition(), ARGB(255, 235, 59, 90), true);
-				}
-				#endif
 			}
 		}
+	}
+
+	void SpawnPolicePatrols(vector centerPos, ExpansionCityManagerNPCData managerNPCData)
+	{
+		if (!GetGame().IsServer() && !GetGame().IsMultiplayer())
+		{
+			EXError.Error(this, "[Expansion CityManagers] Tryed to call SpawnAIPatrols on Client!");
+			return;
+		}
+
+		if (!managerNPCData)
+		{
+			EXError.Error(this, "[Expansion CityManagers] Manager NPC Data is NULL!");
+			return;
+		}
+
+		if(managerNPCData.GetCityLiberated())
+		{
+			return;
+		}
+
+		int radius = managerNPCData.GetCityRadius();
+		vector startPos = centerPos;
+		ref ExpansionAIPatrol config = new ExpansionAIPatrol();
+		config.Faction = "West";
+		config.Loadout = "ChernPolice";
+		config.NumberOfAI = -radius/100;
+		config.Speed = "WALK";
+		config.UnderThreatSpeed = "SPRINT";
+		config.CanBeLooted = true;
+		config.UnlimitedReload = 1;
+		config.AccuracyMin = 0.4;
+		config.AccuracyMax = 0.5;
+		config.LootingBehaviour = "WEAPONS | UPGRADE";
+		config.ThreatDistanceLimit = 300;
+		config.NoiseInvestigationDistanceLimit = 75;
+		config.MinDistRadius = -1;
+		config.MaxDistRadius = -1;
+		config.DespawnRadius = -1;
+		config.MinSpreadRadius = radius/20;
+		config.MaxSpreadRadius = radius/10;
+		config.DespawnTime = -1;
+		config.RespawnTime = -1;
+		config.Behaviour = "ALTERNATE";
+
+		config.Waypoints = new TVectorArray();
+		config.Waypoints.Insert(startPos);
+
+		auto spawnResult = eAIDynamicPatrol.CreateEx(config, startPos, true);
+		Print(string.Format("[CityManager] Guard spawn result: %1", spawnResult != null));
+		Print("[Expansion CityManagers] Spawned AIPatrol at " + managerNPCData.GetCityName());
+	}
+
+	void PlaceCityMarker(ExpansionCityManagerNPCData managerNPCData)
+	{
+		Class.CastTo(markerModule, CF_ModuleCoreManager.Get(ExpansionMarkerModule));
+		string markerID = managerNPCData.GetID().ToString();
+		ExpansionMarkerData markerData = ExpansionMarkerData.Create(ExpansionMapMarkerType.SERVER, markerID);
+		markerData.ApplyVisibility(4);
+		markerData.Set3D(0);
+		markerData.SetName(managerNPCData.GetCityName());
+		markerData.SetIcon("Base");
+		if(managerNPCData.GetCityLiberated())
+		{
+			markerData.SetColor(ARGB(255, 60, 220, 60)); // Green for liberated city
+		}
+		else
+		{
+			markerData.SetColor(ARGB(255, 220, 60, 60)); // Red for non-liberated city
+		}
+		markerData.SetPosition(managerNPCData.GetPosition());
+		GetExpansionSettings().GetMap().AddServerMarker( markerData );
 	}
 
 	//Load City Manager NPC Data from Files
@@ -320,10 +397,8 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 	void RequestOpenCityManagerMenuCB(array<int> managerNPCIDs, PlayerIdentity identity)
 	{
 		PlayerBase player = PlayerBase.GetPlayerByUID(identity.GetId());
-		
 		if (!player)
 			return;
-
 		Object target = GetClosestCityManagerNPCByID(managerNPCIDs, player.GetPosition());
 		if (!target)
 			target = GetClosestCityManagerObjectByID(managerNPCIDs, player.GetPosition());
@@ -346,10 +421,37 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 	void RequestOpenCityManagerMenu(Object target, PlayerIdentity identity)
 	{
 
+		auto npc = ExpansionCityManagerNPCBase.Cast(target);
+	#ifdef EXPANSIONMODAI
 		auto npcAI = ExpansionCityManagerNPCAIBase.Cast(target);
+	#endif
+		auto npcObject = ExpansionCityManagerStaticObject.Cast(target);
+
+			#ifdef EXPANSIONMODAI
+		if (!npc && !npcAI && !npcObject)
+	#else
+		if (!npc && !npcObject)
+	#endif
+		{
+			EXError.Error(this, "[Expansion CityManagers] Manager NPC object is NULL!");
+			return;
+		}
 
 		int managerNPCID = -1;
-		managerNPCID = npcAI.GetCityManagerNPCID();
+		if (npc)
+		{
+			managerNPCID = npc.GetCityManagerNPCID();
+		}
+		else if (npcObject)
+		{
+			managerNPCID = npcObject.GetCityManagerNPCID();
+		}
+	#ifdef EXPANSIONMODAI
+		else if (npcAI)
+		{
+			managerNPCID = npcAI.GetCityManagerNPCID();
+		}
+	#endif
 
 		if (managerNPCID == -1)
 		{
@@ -529,15 +631,38 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 			
 	
 			ExpansionNotification(data.CityName + " Joined the Resistance", "Thanks to your efforts, the city has pledged its allegiance.").Info(ident);
-	
+
+
+			//Update Marker Color
+			ExpansionMapSettings mapSettings = GetExpansionSettings().GetMap();
+			if (!mapSettings)
+				return;
+
+			string markerID = data.GetID().ToString();
+
+			foreach (ExpansionMarkerData marker : mapSettings.ServerMarkers)
+			{
+				if (marker && marker.GetUID() == markerID)
+				{
+					marker.SetColor(ARGB(255, 60, 220, 60));
+					
+					auto rpc = GetExpansionSettings().CreateRPC("RPC_AddServerMarker");
+					rpc.Write(marker.GetUID());
+					marker.OnSendFull(rpc);
+					rpc.Expansion_Send(true, null);
+					break;
+				}
+			}
+
+
+
 			// TODO: Run liberation logic:
 			// - Disable city manager interaction
 			// - Change traders
 			// - Disable loot spawning in city radius
 			// - Spawn resistance objects
-			// - Enable bus/train travel
-			// - Show city marker joined resistance
-			// - Show notification joined resistance
+
+
 		}
 		else
 		{

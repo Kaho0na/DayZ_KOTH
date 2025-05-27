@@ -373,15 +373,45 @@ class ExpansionTravelStationsModule: CF_ModuleWorld
 	void RequestOpenTravelStationsMenu(Object target, PlayerIdentity identity)
 	{
 		//Get NPC Data
+
+		auto npc = ExpansionTravelStationsNPCBase.Cast(target);
+	#ifdef EXPANSIONMODAI
 		auto npcAI = ExpansionTravelStationsNPCAIBase.Cast(target);
-		int npcID = npcAI.GetTravelStationsNPCID();
+	#endif
+		auto npcObject = ExpansionTravelStationsStaticObject.Cast(target);
+
+	#ifdef EXPANSIONMODAI
+		if (!npc && !npcAI && !npcObject)
+	#else
+		if (!npc && !npcObject)
+	#endif
+		{
+			EXError.Error(this, "[Expansion TravelStations] Travel Station NPC object is NULL!");
+			return;
+		}
+
+		int npcID = -1;
+		if (npc)
+		{
+			npcID = npc.GetTravelStationsNPCID();
+		}
+		else if (npcObject)
+		{
+			npcID = npcObject.GetTravelStationsNPCID();
+		}
+	#ifdef EXPANSIONMODAI
+		else if (npcAI)
+		{
+			npcID = npcAI.GetTravelStationsNPCID();
+		}
+	#endif
 
 		if (npcID == -1)
 		{
-			EXError.Error(this, "[Expansion TravelStations] Invalid NPC ID!");
+			EXError.Error(this, "[Expansion TravelStations] Could not get quest NPC ID from quest NPC object!");
 			return;
 		}
-	
+
 		ExpansionTravelStationsNPCData data = GetTravelStationsNPCDataByID(npcID);
 
 		if (!data)

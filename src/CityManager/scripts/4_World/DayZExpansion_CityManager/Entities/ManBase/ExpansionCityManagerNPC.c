@@ -64,3 +64,35 @@ class ExpansionCityManagerNPCBase: ExpansionNPCBase
 	}
 
 };
+
+class ExpansionCityManagerNPCMirek: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCDenis: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCBoris: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCCyril: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCElias: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCFrancis: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCGuo: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCHassan: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCIndar: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCJose: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCKaito: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCLewis: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCManua: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCNiki: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCOliver: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCPeter: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCQuinn: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCRolf: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCSeth: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCTaiki: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCLinda: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCMaria: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCFrida: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCGabi: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCHelga: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCIrena: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCJudy: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCKeiko: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCEva: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCNaomi: ExpansionCityManagerNPCBase {};
+class ExpansionCityManagerNPCBaty: ExpansionCityManagerNPCBase {};
