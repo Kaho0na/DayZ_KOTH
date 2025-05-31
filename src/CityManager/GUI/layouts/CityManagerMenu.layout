@@ -34,6 +34,8 @@ FrameWidgetClass ExpansionCityManagerMenu {
      imageTexture ""
      mode blend
      "src alpha" 1
+    "clamp mode" wrap
+    "stretch mode" fit_w
      {
             ScriptParamsClass {
              Binding_Name "CityManagerImage"
@@ -195,6 +197,7 @@ FrameWidgetClass ExpansionCityManagerMenu {
            scriptclass "ViewBinding"
            hexactsize 0
            vexactsize 0
+           "exact text" 1
            "exact text size" 22
            wrap 1
            {

@@ -33,7 +33,7 @@ class ExpansionActionOpenFactionMenu: ActionInteractBase
 			if ( !target.GetObject() )
 				return false;
 
-			m_Text = "Access Faction Bank";
+			m_Text = "Open Resistance Bank";
 		}
 
 		return true;

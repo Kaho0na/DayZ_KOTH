@@ -24,7 +24,9 @@ class ExpansionFactionBankSettings: ExpansionFactionBankSettingsBase
     int FactionBankBalance;
 	int SalaryTimerInterval;
 	int BaseSalaryAmount;
+	int MaxSalaryCap;
 	float SalaryMultiplier;
+
 
 	[NonSerialized()]
 	private bool m_IsLoaded;
@@ -41,6 +43,7 @@ class ExpansionFactionBankSettings: ExpansionFactionBankSettingsBase
 		ctx.Read(s.FactionBankBalance);
 		ctx.Read(s.SalaryTimerInterval);
 		ctx.Read(s.BaseSalaryAmount);
+		ctx.Read(s.MaxSalaryCap);
 		ctx.Read(s.SalaryMultiplier);
 
 		CopyInternal(s);
@@ -60,6 +63,7 @@ class ExpansionFactionBankSettings: ExpansionFactionBankSettingsBase
 		ctx.Write(FactionBankBalance);
 		ctx.Write(SalaryTimerInterval);
 		ctx.Write(BaseSalaryAmount);
+		ctx.Write(MaxSalaryCap);
 		ctx.Write(SalaryMultiplier);
 
 	}
@@ -98,6 +102,7 @@ class ExpansionFactionBankSettings: ExpansionFactionBankSettingsBase
 		FactionBankBalance = s.FactionBankBalance;
 		SalaryTimerInterval = s.SalaryTimerInterval;
 		BaseSalaryAmount = s.BaseSalaryAmount;
+		MaxSalaryCap = s.MaxSalaryCap;
 		SalaryMultiplier = s.SalaryMultiplier;
 
 		ExpansionFactionBankSettings sb = s;
@@ -197,6 +202,7 @@ class ExpansionFactionBankSettings: ExpansionFactionBankSettingsBase
 		FactionBankBalance = 0;
 		SalaryTimerInterval = 60; // 1 minute
 		BaseSalaryAmount = 100; // Base salary amount;
+		MaxSalaryCap = 100000; // Maximum salary cap
 		SalaryMultiplier = 1.0; // Multiplier for salary calculation
 	}
 

@@ -123,6 +123,7 @@ class FactionBankSalary: MissionServer
     {
         bool useReputation = GetExpansionSettings().GetHardline().UseReputation;
         bool factionEnabledReputation = GetExpansionSettings().GetFactionBank().FactionBankEnableReputation;
+        int maxSalaryCap = GetExpansionSettings().GetFactionBank().MaxSalaryCap;
 
         if (!useReputation || !factionEnabledReputation)
             return m_BaseSalaryAmount;
@@ -132,8 +133,10 @@ class FactionBankSalary: MissionServer
 
         float reputationRatio = (float)playerReputation / (float)m_MaxReputation;
         int bonus = m_FactionBankBalance * reputationRatio * m_SalaryMultiplier;
-        if (bonus > m_BaseSalaryAmount)
+        if (bonus > m_BaseSalaryAmount && bonus <= maxSalaryCap)
             return bonus;
+        else if (bonus > maxSalaryCap)
+            return maxSalaryCap;
         else
             return m_BaseSalaryAmount;
     }

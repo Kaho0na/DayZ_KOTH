@@ -5,6 +5,7 @@ class ExpansionCityManagerModule: CF_ModuleWorld
     static ref map<int, ExpansionCityManagerStaticObject> s_CityManagerObjectEntities = new map<int, ExpansionCityManagerStaticObject>; //! Server & Client
     protected ref map<int, ref ExpansionCityManagerNPCData> m_CityManagersNPCs; //! Server
 	protected ref ExpansionMarketModule m_MarketModule;
+	ref map<string, bool> m_LiberatedCityGrids;
 
 
     #ifdef EXPANSIONMODAI
@@ -18,11 +19,13 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 	protected ref ScriptInvoker m_CityManagerMenuCallbackInvoker; //! Client	
 	static ref ScriptInvoker SI_CityManagerMenuCallback = new ScriptInvoker();
 	ExpansionMarkerModule markerModule;
+	private int m_LiberatedCitiesIncome;
+
 
     void ExpansionCityManagerModule()
 	{
         s_ModuleInstance = this;
-
+		m_LiberatedCitiesIncome = 0;
 		if (!m_MarketModule)
 		m_MarketModule = ExpansionMarketModule.Cast(CF_ModuleCoreManager.Get(ExpansionMarketModule));
 		
@@ -43,10 +46,8 @@ class ExpansionCityManagerModule: CF_ModuleWorld
         }
 	}
 
-    override void OnInit()
+	override void OnInit()
 	{
-
-
 		super.OnInit();
 
 		EnableMissionStart();
@@ -60,7 +61,10 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 		Expansion_RegisterClientRPC("RPC_RequestOpenCityManagerMenu");
 		Expansion_RegisterServerRPC("RPC_RequestBribeMoney");
 		Expansion_RegisterClientRPC("RPC_ConfirmBribeMoney");
-    }
+
+
+	}
+
 
     override void OnMissionStart(Class sender, CF_EventArgs args)
 	{
@@ -105,7 +109,6 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 	{
 		if (!s_CityManagerNPCEntities[id])  //! Can be NULL if object was deleted because it was no longer in network bubble
 			s_CityManagerNPCEntities[id] = CityManagerNPC;
-
 	}
 
     static void AddStaticCityManagerObject(int id, ExpansionCityManagerStaticObject staticQustObject)
@@ -136,9 +139,12 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 			return;
 		}
 
+		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(PayRecurringIncome, 3600000, true); // 3600s = 1hr
+
 		foreach (int id, ExpansionCityManagerNPCData managerNPCData: m_CityManagersNPCs)
 		{
 			vector centerPos = managerNPCData.GetPosition();
+
 			switch (managerNPCData.GetNPCType())
 			{
 				case ExpansionCityManagerNPCType.NORMAL:
@@ -151,11 +157,7 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 					npc.SetCityManagerNPCData(managerNPCData);
 					npc.SetPosition(managerNPCData.GetPosition());
 					npc.SetOrientation(managerNPCData.GetOrientation());
-					// Spawn Police AI in a circle around the City Manager
-					SpawnPolicePatrols(centerPos, managerNPCData);
 
-					//Place Marker
-					PlaceCityMarker(managerNPCData);
 				}
 				break;
 				case ExpansionCityManagerNPCType.OBJECT:
@@ -168,11 +170,6 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 					object.SetCityManagerNPCData(managerNPCData);
 					object.SetPosition(managerNPCData.GetPosition());
 					object.SetOrientation(managerNPCData.GetOrientation());
-					// Spawn Police AI in a circle around the City Manager
-					SpawnPolicePatrols(centerPos, managerNPCData);
-
-					//Place Marker
-					PlaceCityMarker(managerNPCData);
 				}
 				break;
 			#ifdef EXPANSIONMODAI
@@ -185,17 +182,27 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 					npcAI.SetCityManagerNPCID(managerNPCData.GetID());
 					npcAI.SetCityManagerNPCData(managerNPCData);
 					npcAI.Expansion_SetEmote(managerNPCData.GetEmoteID(), !managerNPCData.IsEmoteStatic());
-
-
-					// Spawn Police AI in a circle around the City Manager
-					SpawnPolicePatrols(centerPos, managerNPCData);
-					//Place Marker
-					PlaceCityMarker(managerNPCData);
 				}
 				break;
 			#endif
 			}
+
+			// Spawn Police AI in a circle around the City Manager
+			SpawnPolicePatrols(centerPos, managerNPCData);
+
+			//Place Marker
+			PlaceCityMarker(managerNPCData);
+
+			if (managerNPCData && managerNPCData.GetCityLiberated())
+			{
+				// Add City Income Amout
+				m_LiberatedCitiesIncome += managerNPCData.GetCityIncome();
+				Print("[Expansion CityManagers] Adding City Income Amount: " + managerNPCData.GetCityIncome() + " for liberated city: " + managerNPCData.GetCityName());
+				UpdateLiberatedCityGrids(managerNPCData.Position, managerNPCData.CityRadius);
+			}
+			
 		}
+
 	}
 
 	void SpawnPolicePatrols(vector centerPos, ExpansionCityManagerNPCData managerNPCData)
@@ -630,39 +637,34 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 			data.CityLiberated = true;
 			
 	
-			ExpansionNotification(data.CityName + " Joined the Resistance", "Thanks to your efforts, the city has pledged its allegiance.").Info(ident);
+			ExpansionNotification(data.CityName + " Joined the Resistance", "Thanks to your efforts, the city has pledged its allegiance.").Info();
 
-
+			// Pay the faction bank
+			if (GetExpansionSettings().GetFactionBank().FactionBankEnabled)
+				PayFactionBank(data.CityIncome, data.CityName);
+			
+			m_LiberatedCitiesIncome += data.CityIncome;
+			
 			//Update Marker Color
 			ExpansionMapSettings mapSettings = GetExpansionSettings().GetMap();
 			if (!mapSettings)
 				return;
 
 			string markerID = data.GetID().ToString();
+			Print("Exec_RequestBribeMoney: Removing marker with ID: " + markerID);
+			GetExpansionSettings().GetMap().RemoveServerMarker( markerID );
+			Print("Exec_RequestBribeMoney: Placing marker with ID: " + markerID);
+			PlaceCityMarker(data);
 
-			foreach (ExpansionMarkerData marker : mapSettings.ServerMarkers)
-			{
-				if (marker && marker.GetUID() == markerID)
-				{
-					marker.SetColor(ARGB(255, 60, 220, 60));
-					
-					auto rpc = GetExpansionSettings().CreateRPC("RPC_AddServerMarker");
-					rpc.Write(marker.GetUID());
-					marker.OnSendFull(rpc);
-					rpc.Expansion_Send(true, null);
-					break;
-				}
-			}
-
-
+			// Update liberated city grids and clean up dropped items
+			UpdateLiberatedCityGrids(data.Position, data.CityRadius);
+			CleanupDroppedItemsInLiberatedCity(data.Position, data.CityRadius);
 
 			// TODO: Run liberation logic:
 			// - Disable city manager interaction
 			// - Change traders
 			// - Disable loot spawning in city radius
 			// - Spawn resistance objects
-
-
 		}
 		else
 		{
@@ -677,7 +679,8 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 		Print("Exec_RequestBribeMoney: m_NewPlayerMoney = " + m_NewPlayerMoney);
 		ConfirmBribeMoney(ident, data, currentLoyalty, m_NewPlayerMoney);
 	}
-	
+
+
 		
 	// ------------------------------------------------------------
 	// Expansion ConfirmBribeMoney
@@ -823,7 +826,80 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 	}
 
 		
-	
+	void CleanupDroppedItemsInLiberatedCity(vector pos, float radius)
+	{
+		array<Object> objects = new array<Object>;
+		GetGame().GetObjectsAtPosition(pos, radius, objects, null);
+		
+		foreach (Object obj : objects)
+		{
+			ItemBase item;
+			if (Class.CastTo(item, obj) && item.IsInherited(ItemBase) && !item.GetHierarchyParent())
+			{
+				item.ExpansionCreateLiberatedCityCleanup();
+			}
+		}
+	}
 
-	
+	void UpdateLiberatedCityGrids(vector pos, float radius)
+	{
+		if (!m_LiberatedCityGrids)
+			m_LiberatedCityGrids = new map<string, bool>();
+
+		// Calculate grid bounds based on position and radius
+		int x1 = Math.Floor((pos[0] - radius) / 1000);
+		int x2 = Math.Floor((pos[0] + radius) / 1000);
+		int z1 = Math.Floor((pos[2] - radius) / 1000);
+		int z2 = Math.Floor((pos[2] + radius) / 1000);
+
+		for (int gx = x1; gx <= x2; gx++)
+		{
+			for (int gz = z1; gz <= z2; gz++)
+			{
+				string key = gx.ToString() + "_" + gz.ToString();
+				m_LiberatedCityGrids.Set(key, true);
+			}
+		}
+	}
+
+	bool IsInsideLiberatedCity(vector pos)
+	{
+		if (!m_LiberatedCityGrids)
+			return false;
+
+		int gx = Math.Floor(pos[0] / 1000);
+		int gz = Math.Floor(pos[2] / 1000);
+		string key = gx.ToString() + "_" + gz.ToString();
+
+		return m_LiberatedCityGrids.Contains(key);
+	}
+
+	void PayFactionBank(int amount, string cityName)
+	{
+		if (!GetGame().IsServer() && !GetGame().IsMultiplayer())
+		{
+			Error("PayFactionBank - This function can only be called on the server!");
+			return;
+		}
+
+		auto settings = GetExpansionSettings().GetFactionBank();
+		settings.FactionBankBalance += amount;
+		settings.Save();
+		ExpansionNotification("Resistance Bank", cityName + " paid the Resistance the daily income of $" + amount).Info();
+		return;
+	}
+
+	void PayRecurringIncome()
+	{
+		if (!GetGame().IsServer())
+			return;
+
+		if (m_LiberatedCitiesIncome > 0)
+		{
+			PayFactionBank(m_LiberatedCitiesIncome, "All Liberated Cities");
+		}
+	}
+
+
+
 }

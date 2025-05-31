@@ -28,8 +28,9 @@ class ExpansionFactionBankBase: BuildingSuper
 
 	override void SetActions()
 	{
-		super.SetActions();  // Optional — keep if you want base actions
-		AddAction(ExpansionActionOpenFactionMenu);  // ✅ Only add your custom action
+		super.SetActions();
+		
+		AddAction(ExpansionActionOpenFactionMenu);
 	}
 }
 

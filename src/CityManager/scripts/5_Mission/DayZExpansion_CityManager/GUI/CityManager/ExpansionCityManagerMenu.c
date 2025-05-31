@@ -114,7 +114,7 @@ class ExpansionCityManagerMenu: ExpansionScriptViewMenu
 		m_CityManagerMenuController.DefaultNPCText = m_CityManagerData.DefaultNPCText;
 		m_CityManagerMenuController.NotifyPropertyChanged("DefaultNPCText");
 
-		m_CityManagerMenuController.CityIncome = "$" + m_CityManagerData.CityIncome.ToString() + " per hour";
+		m_CityManagerMenuController.CityIncome = "$" + m_CityManagerData.CityIncome.ToString() + " per Day";
 		m_CityManagerMenuController.NotifyPropertyChanged("CityIncome");
 
 		if (m_CityManagerData.CityTrain)
