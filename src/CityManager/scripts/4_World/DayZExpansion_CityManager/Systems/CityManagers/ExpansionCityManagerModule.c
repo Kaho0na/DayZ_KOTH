@@ -1,3 +1,16 @@
+/**
+ * ExpansionCityManagerModule.c
+ *
+ * DayZ Expansion Mod - City Manager by Kahoona
+ * Credit to the DayZ Expansion Mod Team
+ * www.dayzexpansion.com
+ * © 2022 DayZ Expansion Mod Team
+ *
+ * This work is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
+ * To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-nd/4.0/.
+ *
+*/
+
 [CF_RegisterModule(ExpansionCityManagerModule)]
 class ExpansionCityManagerModule: CF_ModuleWorld
 {
@@ -25,9 +38,7 @@ class ExpansionCityManagerModule: CF_ModuleWorld
     void ExpansionCityManagerModule()
 	{
         s_ModuleInstance = this;
-		m_LiberatedCitiesIncome = 0;
-		if (!m_MarketModule)
-		m_MarketModule = ExpansionMarketModule.Cast(CF_ModuleCoreManager.Get(ExpansionMarketModule));
+
 		
         m_CityManagersNPCs = new map<int, ref ExpansionCityManagerNPCData>; //! Server
 		m_CityManagerMenuInvoker = new ScriptInvoker(); //! Client
@@ -61,14 +72,11 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 		Expansion_RegisterClientRPC("RPC_RequestOpenCityManagerMenu");
 		Expansion_RegisterServerRPC("RPC_RequestBribeMoney");
 		Expansion_RegisterClientRPC("RPC_ConfirmBribeMoney");
-
-
 	}
 
 
     override void OnMissionStart(Class sender, CF_EventArgs args)
 	{
-
 		super.OnMissionStart(sender, args);
 
 		if (GetGame().IsServer() && GetGame().IsMultiplayer())
@@ -197,7 +205,7 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 			{
 				// Add City Income Amout
 				m_LiberatedCitiesIncome += managerNPCData.GetCityIncome();
-				Print("[Expansion CityManagers] Adding City Income Amount: " + managerNPCData.GetCityIncome() + " for liberated city: " + managerNPCData.GetCityName());
+				Print("[Expansion CityManagers] Adding City Income Amount: " + managerNPCData.GetCityIncome() + " for liberated city: " + managerNPCData.GetCityName() + " Total Income: " + m_LiberatedCitiesIncome);
 				UpdateLiberatedCityGrids(managerNPCData.Position, managerNPCData.CityRadius);
 			}
 			
@@ -644,7 +652,7 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 				PayFactionBank(data.CityIncome, data.CityName);
 			
 			m_LiberatedCitiesIncome += data.CityIncome;
-			
+			Print("[Expansion CityManager] Total Liberated Cities Income: " + m_LiberatedCitiesIncome);
 			//Update Marker Color
 			ExpansionMapSettings mapSettings = GetExpansionSettings().GetMap();
 			if (!mapSettings)
@@ -788,6 +796,8 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 	
 		array<int> monies = new array<int>();
 		TStringArray usdcurrency = {"expansionbanknoteusd"};
+		if (!m_MarketModule)
+		 	m_MarketModule = ExpansionMarketModule.Cast(CF_ModuleCoreManager.Get(ExpansionMarketModule));
 		return m_MarketModule.GetPlayerWorth(player, monies, usdcurrency) / 100;
 	}
 	
@@ -898,6 +908,12 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 		{
 			PayFactionBank(m_LiberatedCitiesIncome, "All Liberated Cities");
 		}
+	}
+
+	int GetLiberatedCitiesIncome()
+	{
+		Print("[Expansion CityManagerModule] GetLiberatedCitiesIncome called, returning: " + m_LiberatedCitiesIncome);
+		return m_LiberatedCitiesIncome;
 	}
 
 

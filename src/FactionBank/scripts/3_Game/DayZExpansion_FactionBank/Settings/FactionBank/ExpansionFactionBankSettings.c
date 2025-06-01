@@ -26,6 +26,13 @@ class ExpansionFactionBankSettings: ExpansionFactionBankSettingsBase
 	int BaseSalaryAmount;
 	int MaxSalaryCap;
 	float SalaryMultiplier;
+	vector NPCPosition;
+	vector NPCOrientation;
+	string NPCClassName;
+	string NPCLoadout;
+	string NPCName;
+	string NPCImage;
+	string NPCDefaultText;
 
 
 	[NonSerialized()]
@@ -45,6 +52,13 @@ class ExpansionFactionBankSettings: ExpansionFactionBankSettingsBase
 		ctx.Read(s.BaseSalaryAmount);
 		ctx.Read(s.MaxSalaryCap);
 		ctx.Read(s.SalaryMultiplier);
+		ctx.Read(s.NPCPosition);
+		ctx.Read(s.NPCOrientation);
+		ctx.Read(s.NPCClassName);
+		ctx.Read(s.NPCLoadout);
+		ctx.Read(s.NPCName);
+		ctx.Read(s.NPCImage);
+		ctx.Read(s.NPCDefaultText);
 
 		CopyInternal(s);
 		
@@ -65,6 +79,13 @@ class ExpansionFactionBankSettings: ExpansionFactionBankSettingsBase
 		ctx.Write(BaseSalaryAmount);
 		ctx.Write(MaxSalaryCap);
 		ctx.Write(SalaryMultiplier);
+		ctx.Write(NPCPosition);
+		ctx.Write(NPCOrientation);
+		ctx.Write(NPCClassName);
+		ctx.Write(NPCLoadout);
+		ctx.Write(NPCName);
+		ctx.Write(NPCImage);
+		ctx.Write(NPCDefaultText);
 
 	}
 
@@ -104,6 +125,13 @@ class ExpansionFactionBankSettings: ExpansionFactionBankSettingsBase
 		BaseSalaryAmount = s.BaseSalaryAmount;
 		MaxSalaryCap = s.MaxSalaryCap;
 		SalaryMultiplier = s.SalaryMultiplier;
+		NPCPosition = s.NPCPosition;
+		NPCOrientation = s.NPCOrientation;
+		NPCClassName = s.NPCClassName;
+		NPCLoadout = s.NPCLoadout;
+		NPCName = s.NPCName;
+		NPCImage = s.NPCImage;
+		NPCDefaultText = s.NPCDefaultText;
 
 		ExpansionFactionBankSettings sb = s;
 		CopyInternal( sb );
@@ -200,10 +228,17 @@ class ExpansionFactionBankSettings: ExpansionFactionBankSettingsBase
 		FactionBankEnabled = true;
 		FactionBankEnableReputation = true;
 		FactionBankBalance = 0;
-		SalaryTimerInterval = 60; // 1 minute
+		SalaryTimerInterval = 600; // 10 minute
 		BaseSalaryAmount = 100; // Base salary amount;
 		MaxSalaryCap = 100000; // Maximum salary cap
 		SalaryMultiplier = 1.0; // Multiplier for salary calculation
+		NPCPosition = "14832.977539 72.432228 14581.570313"; // Default NPC position
+		NPCOrientation = "18.0 0.0 0.0"; // Default NPC orientation
+		NPCClassName = "ExpansionFactionBankNPCKeiko"; // Default NPC class name
+		NPCLoadout = "NBCLoadout"; // Default NPC loadout
+		NPCName = "Name Here";
+		NPCImage = "FactionBank/GUI/characters/ResistanceBankManager.paa";
+		NPCDefaultText = "Default text here";
 	}
 
     override string SettingName()

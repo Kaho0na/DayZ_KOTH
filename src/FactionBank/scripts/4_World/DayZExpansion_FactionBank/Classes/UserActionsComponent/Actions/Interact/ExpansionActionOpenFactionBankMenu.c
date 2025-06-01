@@ -1,5 +1,5 @@
 /**
- * ExpansionActionOpenDeadDropMenu.c
+ * ExpansionActionOpenFactionBankMenu.c
  *
  * DayZ Expansion Mod
  * www.dayzexpansion.com
@@ -10,11 +10,11 @@
  *
 */
 
-class ExpansionActionOpenDeadDropMenu: ActionInteractBase
+class ExpansionActionOpenFactionBankMenu: ActionInteractBase
 {
-	protected ExpansionDeadDropModule m_Expansion_DeadDropModule;
-
-	void ExpansionActionOpenDeadDropMenu()
+	protected ExpansionFactionBankModule m_FactionBankModule;
+	
+	void ExpansionActionOpenFactionBankMenu()
 	{
 		m_CommandUID = DayZPlayerConstants.CMD_ACTIONMOD_ATTACHITEM;
 	}
@@ -36,18 +36,17 @@ class ExpansionActionOpenDeadDropMenu: ActionInteractBase
 		if (!Class.CastTo(targetObject, target.GetParentOrObject()))
 			return false;
 
-		auto npcAI = ExpansionDeadDropNPCBase.Cast(targetObject);
-		if (!npcAI)
-			return false;  // Only allow action for DeadDrop NPC
+		auto npc = ExpansionFactionBankNPCBase.Cast(targetObject);
 
+		if (!npc)
+			return false;
+			
 		if (!GetGame().IsDedicatedServer())
 		{
-			string actionText = "Talk to the medic";
-			m_Text = actionText + " " + targetObject.GetDisplayName();
+			m_Text = "Talk to the Resistance Bank Manager";
 		}
 
 		return true;
-
 	}
 
 	override void OnExecuteServer(ActionData action_data)
@@ -57,33 +56,32 @@ class ExpansionActionOpenDeadDropMenu: ActionInteractBase
 		PlayerBase player = action_data.m_Player;
 		if (!player || !player.GetIdentity())
 		{
-			Print("Exiting: Player or Player Identity is null");
+			Print("[FactionBank Error] Exiting: Player or Player Identity is null");
 			return;
 		}
 
-		if (!CF_Modules<ExpansionDeadDropModule>.Get(m_Expansion_DeadDropModule))
+		if (!CF_Modules<ExpansionFactionBankModule>.Get(m_FactionBankModule))
 		{
-			Print("Exiting: Could not get ExpansionDeadDropModule");
+			Print("[FactionBank Error] Exiting: Could not get ExpansionFactionBankModule");
 			return;
 		}
 
 		if (!action_data.m_Target)
 		{
-			Print("Exiting: action_data.m_Target is null");
+			Print("[FactionBank Error] Exiting: action_data.m_Target is null");
 			return;
 		}
 
 		Object targetObject;
 		if (!Class.CastTo(targetObject, action_data.m_Target.GetParentOrObject()))
 		{
-			Print("Failed to cast target object!");
+			Print("[FactionBank Error] Failed to cast target object!");
 			return;
 		}
 
-		Print("Target object: " + targetObject.ToString());
-		Print("Requesting Dead Drop Menu for " + player.GetIdentity().GetName());
+		m_FactionBankModule.RequestFactionBankMenu(player.GetIdentity());
 
-		m_Expansion_DeadDropModule.RequestOpenDeadDropMenu(targetObject, player.GetIdentity());
 	}
+
 
 }

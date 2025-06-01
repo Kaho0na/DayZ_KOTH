@@ -2,7 +2,7 @@
 class ExpansionDeadDropModule: CF_ModuleWorld
 {
     protected static ExpansionDeadDropModule s_ModuleInstance;
-	protected ExpansionDeadDropNPCAIBase m_DeadDropNPC;
+	protected ExpansionDeadDropNPCBase m_DeadDropNPC;
 	protected ref ScriptInvoker m_DeadDropMenuInvoker = new ScriptInvoker();
 	protected ref ExpansionMarketModule m_marketModule;
 
@@ -55,11 +55,11 @@ class ExpansionDeadDropModule: CF_ModuleWorld
 	}
 
 	//Spawn Dead Drop NPC
-	ExpansionDeadDropNPCAIBase SpawnDeadDropNPCAI()
+	ExpansionDeadDropNPCBase SpawnDeadDropNPCAI()
 	{
 		ExpansionDeadDropSettings settings = GetExpansionSettings().GetDeadDrop();
 
-		if (!settings || !settings.Active)
+		if (!settings)
 			return null;
 
 		vector pos = settings.Position;
@@ -73,10 +73,10 @@ class ExpansionDeadDropModule: CF_ModuleWorld
 			return null;
 		}
 
-		ExpansionDeadDropNPCAIBase npc = ExpansionDeadDropNPCAIBase.Cast(obj);
+		ExpansionDeadDropNPCBase npc = ExpansionDeadDropNPCBase.Cast(obj);
 		if (!npc)
 		{
-			Print("[DeadDrop] Failed to cast to ExpansionDeadDropNPCAIBase");
+			Print("[DeadDrop] Failed to cast to ExpansionDeadDropNPCBase");
 			GetGame().ObjectDelete(obj);
 			return null;
 		}
@@ -84,24 +84,8 @@ class ExpansionDeadDropModule: CF_ModuleWorld
 		npc.SetPosition(pos);
 		npc.SetOrientation(ori);
 		npc.Update();
-
-		npc.Expansion_SetEmote(settings.NPCEmoteID, !settings.NPCEmoteIsStatic);
 		ExpansionHumanLoadout.Apply(npc, settings.NPCLoadoutFile, false);
-		npc.Expansion_SetCanBeLooted(false);
-		npc.eAI_SetUnlimitedReload(true);
-		npc.eAI_SetAccuracy(1.0, 1.0);
-		npc.eAI_SetThreatDistanceLimit(800);
 
-		eAIGroup aiGroup = npc.GetGroup();
-		if (settings.NPCFaction != string.Empty)
-		{
-			eAIFaction faction = eAIFaction.Create(settings.NPCFaction);
-			if (faction && aiGroup.GetFaction().Type() != faction.Type())
-				aiGroup.SetFaction(faction);
-		}
-
-		aiGroup.SetFormation(new eAIFormationColumn(aiGroup));
-		aiGroup.SetWaypointBehaviour(eAIWaypointBehavior.ALTERNATE);
 
 		return npc;
 	}
@@ -116,7 +100,7 @@ class ExpansionDeadDropModule: CF_ModuleWorld
 		}
 	}
 
-	ExpansionDeadDropNPCAIBase GetDeadDropNPC()
+	ExpansionDeadDropNPCBase GetDeadDropNPC()
 	{
 		return m_DeadDropNPC;
 	}
@@ -279,7 +263,7 @@ class ExpansionDeadDropModule: CF_ModuleWorld
 		if (!player)
 			return;
 
-		ExpansionDeadDropNPCAIBase npc = GetDeadDropNPC();
+		ExpansionDeadDropNPCBase npc = GetDeadDropNPC();
 		if (!npc)
 		{
 			EXError.Error(this, "[Expansion DeadDrop] Could not find the DeadDrop NPC.");
@@ -301,7 +285,7 @@ class ExpansionDeadDropModule: CF_ModuleWorld
 		if (!target || !identity)
 			return;
 
-		auto npcAI = ExpansionDeadDropNPCAIBase.Cast(target);
+		auto npcAI = ExpansionDeadDropNPCBase.Cast(target);
 		if (!npcAI)
 		{
 			Print("[DeadDrop] Target is not a valid DeadDrop NPC.");
@@ -339,20 +323,6 @@ class ExpansionDeadDropModule: CF_ModuleWorld
 		}
 
 		rpc.Expansion_Send(target, true, identity);
-
-		#ifdef EXPANSIONMODAI
-		if (npcAI)
-		{
-			npcAI.eAI_AddInteractingPlayer(identity.GetPlayer());
-
-			EmoteManager npcEmoteManager = npcAI.GetEmoteManager();
-			if (!npcEmoteManager.IsEmotePlaying())
-			{
-				npcEmoteManager.PlayEmote(GetExpansionSettings().GetDeadDrop().NPCEmoteID);
-				GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(npcEmoteManager.ServerRequestEmoteCancel, 2000);
-			}
-		}
-		#endif
 	}
 
 	protected void RPC_RequestOpenDeadDropMenu(PlayerIdentity sender, Object target, ParamsReadContext ctx)

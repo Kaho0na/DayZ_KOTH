@@ -64,7 +64,7 @@ class ExpansionActionOpenCityManagerMenu: ActionInteractBase
 		#endif
 				actionText = "Talk to the manager";
 			else
-				actionText = "Read from the manager";
+				actionText = "Manage the city";
 
 			m_Text = actionText + " " + targetObject.GetDisplayName();
 		}

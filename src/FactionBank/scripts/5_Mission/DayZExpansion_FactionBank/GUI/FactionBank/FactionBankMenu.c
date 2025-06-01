@@ -14,32 +14,25 @@
 class FactionBankMenu: ExpansionScriptViewMenu
 {
     protected ref FactionBankMenuController  m_FactionBankMenuController;
-    protected ref ExpansionMarketModule m_MarketModule;
 	ref ExpansionMarketATM_Data m_ATMData;
-	private int m_FactionBankBalance;
-
-
-	EditBoxWidget AmountValue;
-	int m_Amount = 0;
-	int m_PlayerMoney;
+	
 	ref SyncPlayer m_SelectedPlayer;
 	ref ExpansionATMMenuTransferDialog m_TransferDialog;
 
+	int m_Amount = 0;
+	int m_PlayerMoney;
+	private int m_FactionBankBalance;
+
     protected ButtonWidget wBtnCancel;
     protected ButtonWidget wBtnTransfer;
-
+	EditBoxWidget AmountValue;
 
 
     void FactionBankMenu()
     {
-		if (!m_FactionBankMenuController)
-		m_FactionBankMenuController = FactionBankMenuController.Cast(GetController());
-		
-		if (!m_MarketModule)
-			m_MarketModule = ExpansionMarketModule.Cast(CF_ModuleCoreManager.Get(ExpansionMarketModule));
-		
-		ExpansionMarketModule.SI_ATMMenuInvoker.Insert(SetPlayerATMData);
-		ExpansionMarketModule.SI_FactionBankMenuCallback.Insert(OnDonateCallback);
+
+		ExpansionFactionBankModule.GetModuleInstance().GetFactionBankMenuSI().Insert(OpenFactionBankMenu);
+		ExpansionFactionBankModule.GetModuleInstance().GetFactionBankCallbackMenuSI().Insert(OnDonateCallback);
 
     }
 
@@ -64,40 +57,60 @@ class FactionBankMenu: ExpansionScriptViewMenu
 		
 	}
 
-	void SetPlayerATMData(ExpansionMarketATM_Data data, int factionBankBalance)
+
+	void OpenFactionBankMenu(ExpansionMarketATM_Data data, int factionBankBalance, int liberatedCitiesIncome)
 	{
-		#ifdef EXPANSIONTRACE
-			auto trace = CF_Trace_0(ExpansionTracing.MARKET, this, "SetPlayerATMData");
-		#endif
-		if (!data)
-			return;
+		if (!m_FactionBankMenuController)
+			m_FactionBankMenuController = FactionBankMenuController.Cast(GetController());
 
 		m_ATMData = data;
-		m_FactionBankBalance = factionBankBalance;
-		SetView();
-	}
-
-	void SetView()
-	{
-		#ifdef EXPANSIONTRACE
-			auto trace = CF_Trace_0(ExpansionTracing.MARKET, this, "SetView");
-		#endif
-		m_FactionBankMenuController.factionBankBalance = FormatNumberWithCommas(m_FactionBankBalance);
+		m_FactionBankMenuController.factionBankBalance = FormatNumberWithCommas(factionBankBalance);
 		m_FactionBankMenuController.NotifyPropertyChanged("factionBankBalance");
 		
-		m_FactionBankMenuController.MoneyDepositValue = FormatNumberWithCommas(m_ATMData.MoneyDeposited);
-		m_FactionBankMenuController.NotifyPropertyChanged("MoneyDepositValue");
+		m_FactionBankMenuController.ATMBalanceValue = FormatNumberWithCommas(m_ATMData.MoneyDeposited);
+		m_FactionBankMenuController.NotifyPropertyChanged("ATMBalanceValue");
+
+		m_FactionBankMenuController.NPCName = GetExpansionSettings().GetFactionBank().NPCName;
+		m_FactionBankMenuController.NotifyPropertyChanged("NPCName");
+
+		m_FactionBankMenuController.NPCImage = GetExpansionSettings().GetFactionBank().NPCImage;
+		m_FactionBankMenuController.NotifyPropertyChanged("NPCImage");
+
+		m_FactionBankMenuController.NPCDefaultText = GetExpansionSettings().GetFactionBank().NPCDefaultText;
+		m_FactionBankMenuController.NotifyPropertyChanged("NPCDefaultText");
+
+		if (GetGame())
+		{
+			PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+			if (player)
+			{
+				int salary = ExpansionFactionBankModule.GetModuleInstance().CalculatePlayerSalary(player);
+				Print("[FactionBank] Player salary: " + salary);
+				m_FactionBankMenuController.SalaryValue = salary.ToString();
+				m_FactionBankMenuController.NotifyPropertyChanged("SalaryValue");
+			}
+
+			m_FactionBankMenuController.IncomeBalance = liberatedCitiesIncome.ToString();
+			m_FactionBankMenuController.NotifyPropertyChanged("IncomeBalance");
+		}
+
 		SetFocus(AmountValue);
     }
 
 	void UpdateView(bool updatePlayerMoney = true)
 	{
+		if (!m_FactionBankMenuController)
+			m_FactionBankMenuController = FactionBankMenuController.Cast(GetController());
+
 		m_FactionBankMenuController.factionBankBalance = FormatNumberWithCommas(m_FactionBankBalance);
 		m_FactionBankMenuController.NotifyPropertyChanged("factionBankBalance");
 		
-		m_FactionBankMenuController.MoneyDepositValue = FormatNumberWithCommas(m_ATMData.MoneyDeposited);
-		m_FactionBankMenuController.NotifyPropertyChanged("MoneyDepositValue");
+		m_FactionBankMenuController.ATMBalanceValue = FormatNumberWithCommas(m_ATMData.MoneyDeposited);
+		m_FactionBankMenuController.NotifyPropertyChanged("ATMBalanceValue");
 
+		PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+		m_FactionBankMenuController.SalaryValue = FormatNumberWithCommas(ExpansionFactionBankModule.GetModuleInstance().CalculatePlayerSalary(player));
+		m_FactionBankMenuController.NotifyPropertyChanged("SalaryValue");
 	}
 
 	string FormatNumberWithCommas(int number)
@@ -147,7 +160,7 @@ class FactionBankMenu: ExpansionScriptViewMenu
 			return;
 		}
 
-		m_MarketModule.RequestDonateMoney(m_Amount);
+		ExpansionFactionBankModule.GetModuleInstance().RequestDonateMoney(m_Amount);
 	}
 
 	void OnDonateCallback(int amount, ExpansionMarketATM_Data data, int factionBankBalance)
@@ -192,6 +205,11 @@ class FactionBankMenu: ExpansionScriptViewMenu
 
 class FactionBankMenuController: ExpansionViewController
 {
-	string MoneyDepositValue;
+	string ATMBalanceValue;
 	string factionBankBalance;
+	string NPCName;
+	string NPCImage;
+	string NPCDefaultText;
+	string SalaryValue;
+	string IncomeBalance;
 };
