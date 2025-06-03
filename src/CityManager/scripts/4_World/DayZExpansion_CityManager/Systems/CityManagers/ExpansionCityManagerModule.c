@@ -198,6 +198,10 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 			// Spawn Police AI in a circle around the City Manager
 			SpawnPolicePatrols(centerPos, managerNPCData);
 
+			//Spawn Traders
+			int cityTraders = managerNPCData.GetCityTraders();
+			SpawnCityTraders(centerPos, managerNPCData, cityTraders);
+
 			//Place Marker
 			PlaceCityMarker(managerNPCData);
 
@@ -237,7 +241,7 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 		ref ExpansionAIPatrol config = new ExpansionAIPatrol();
 		config.Faction = "West";
 		config.Loadout = "ChernPolice";
-		config.NumberOfAI = -radius/100;
+		config.NumberOfAI = 2;
 		config.Speed = "WALK";
 		config.UnderThreatSpeed = "SPRINT";
 		config.CanBeLooted = true;
@@ -255,14 +259,196 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 		config.DespawnTime = -1;
 		config.RespawnTime = -1;
 		config.Behaviour = "ALTERNATE";
-
+		config.LoadBalancingCategory = "Global";
 		config.Waypoints = new TVectorArray();
-		config.Waypoints.Insert(startPos);
+
+		int numWaypoints = Math.RandomIntInclusive(2, 3); // 2 or 3 waypoints
+		config.Waypoints.Insert(startPos); // Always include the starting position
+
+		for (int i = 0; i < numWaypoints; i++)
+		{
+			float angle = Math.RandomFloat(0, 360);
+			float distance = Math.RandomFloat(radius * 0.3, radius); // Keep within city radius
+
+			float offsetX = distance * Math.Cos(angle);
+			float offsetZ = distance * Math.Sin(angle);
+
+			vector point = startPos + Vector(offsetX, 0, offsetZ);
+			point[1] = GetGame().SurfaceY(point[0], point[2]); // Adjust for terrain height
+ 
+			config.Waypoints.Insert(point);
+		}
+
 
 		auto spawnResult = eAIDynamicPatrol.CreateEx(config, startPos, true);
 		Print(string.Format("[CityManager] Guard spawn result: %1", spawnResult != null));
 		Print("[Expansion CityManagers] Spawned AIPatrol at " + managerNPCData.GetCityName());
 	}
+
+	void SpawnCityTraders(vector centerPos, ExpansionCityManagerNPCData managerNPCData, int cityTraders)
+	{
+		array<Object> nearby = new array<Object>;
+		array<CargoBase> proxy = new array<CargoBase>;
+		GetGame().GetObjectsAtPosition(centerPos, 100, nearby, proxy); // Increase range if needed
+
+		ref map<string, ref TraderSpawnInfo> buildingCategoryMap = new map<string, ref TraderSpawnInfo>;
+		// Civilian Traders
+		buildingCategoryMap.Insert("Land_House_1B01_Pub", new TraderSpawnInfo({"Civilian1", "Civilian2", "Civilian3", "Civilian4", "Civilian5"}, "2.34167 -2.77925 -3.52143", "-95.5222 0 0"));
+		buildingCategoryMap.Insert("Land_House_1W01", new TraderSpawnInfo({"Civilian1", "Civilian2", "Civilian3", "Civilian4", "Civilian5"}, "2.64694 -2.80881 1.75133", "-57.5492 0 0"));
+		buildingCategoryMap.Insert("Land_House_1W03", new TraderSpawnInfo({"Civilian1", "Civilian2", "Civilian3", "Civilian4", "Civilian5"}, "-0.930491 -2.35122 2.83416", "232.583 0 0"));
+		buildingCategoryMap.Insert("Land_House_1W09_Yellow", new TraderSpawnInfo({"Civilian1", "Civilian2", "Civilian3", "Civilian4", "Civilian5"}, "-4.81777 -1.9185 1.06665", "89.4416 0 0"));
+		buildingCategoryMap.Insert("Land_House_1W10_Brown", new TraderSpawnInfo({"Civilian1", "Civilian2", "Civilian3", "Civilian4", "Civilian5"}, "-1.4755 -1.26735 -3.05731", "2.42112 0 0"));
+		buildingCategoryMap.Insert("Land_House_1W11", new TraderSpawnInfo({"Civilian1", "Civilian2", "Civilian3", "Civilian4", "Civilian5"}, "-2.9483 -2.63168 -2.15116", "113.107 0 0"));
+		buildingCategoryMap.Insert("Land_House_2B03", new TraderSpawnInfo({"Civilian1", "Civilian2", "Civilian3", "Civilian4", "Civilian5"}, "0.185622 -5.47631 4.96352", "-159.588 -0 0"));
+		// Religious Traders
+		buildingCategoryMap.Insert("Land_Church1_Yellow", new TraderSpawnInfo({"Religious1", "Religious2", "Religious3", "Religious4", "Religious5"}, "4.59123 -6.0513 0.0885372", "-110.886 0 0"));
+		buildingCategoryMap.Insert("Land_Church2_1", new TraderSpawnInfo({"Religious1", "Religious2", "Religious3", "Religious4", "Religious5"}, "0.951901 -11.0625 1.0617", "91.0491 0 0"));
+		buildingCategoryMap.Insert("Land_Church2_2", new TraderSpawnInfo({"Religious1", "Religious2", "Religious3", "Religious4", "Religious5"}, "2.95745 -11.5173 1.30115", "-88.9625 0 0"));
+		buildingCategoryMap.Insert("Land_Church3", new TraderSpawnInfo({"Religious1", "Religious2", "Religious3", "Religious4", "Religious5"}, "4.76748 -14.2829 -0.127451", "-91.347 0 0"));
+		buildingCategoryMap.Insert("Land_Chapel", new TraderSpawnInfo({"Religious1", "Religious2", "Religious3", "Religious4", "Religious5"}, "-2.2051 -4.00077 -0.0106746", "67.8312 0 0"));
+		// Security Traders
+		buildingCategoryMap.Insert("Land_Mil_Guardhouse1", new TraderSpawnInfo({"Security1", "Security2", "Security3", "Security4", "Security5"}, "3.59266 -1.86618 -1.96487", "251.205 0 0"));
+		buildingCategoryMap.Insert("Land_Guardhouse", new TraderSpawnInfo({"Security1", "Security2", "Security3", "Security4", "Security5"}, "1.73803 -0.74469 -0.110972", "-45.3002 0 0"));
+		// Stall Traders
+		buildingCategoryMap.Insert("Land_City_Stand_FastFood", new TraderSpawnInfo({"Stall1", "Stall2", "Stall3", "Stall4", "Stall5"}, "0.581398 -1.64164 -2.48368", "-183.045 0.0174412 -0.00933447"));
+		buildingCategoryMap.Insert("Land_City_Stand_Grocery", new TraderSpawnInfo({"Stall1", "Stall2", "Stall3", "Stall4", "Stall5"}, "0.180242 -1.64162 -2.31755", "181.611 0 0"));
+		buildingCategoryMap.Insert("Land_City_Stand_News1", new TraderSpawnInfo({"Stall1", "Stall2", "Stall3", "Stall4", "Stall5"}, "0.690176 -1.64163 -2.41673", "179.85 -0.0152578 -0.0125907"));
+		buildingCategoryMap.Insert("Land_City_Stand_News2", new TraderSpawnInfo({"Stall1", "Stall2", "Stall3", "Stall4", "Stall5"}, "-0.070903 -1.27524 -2.15292", "174.019 0 0"));
+		// Medical Traders
+		buildingCategoryMap.Insert("Land_Village_HealthCare", new TraderSpawnInfo({"Medical1", "Medical2", "Medical3", "Medical4", "Medical5"}, "-0.225904 -2.92607 -4.85171", "-21.7046 0 0"));
+		buildingCategoryMap.Insert("Land_City_Hospital", new TraderSpawnInfo({"Medical1", "Medical2", "Medical3", "Medical4", "Medical5"}, "3.16111 -7.31112 -1.01191", "-116.784 0 0"));
+		// School Traders
+		buildingCategoryMap.Insert("Land_Office1", new TraderSpawnInfo({"School1", "School2", "School3", "School4", "School5"}, "-0.367967 -4.63401 1.22722", "-199.624 0 0"));
+		// FireStation Traders
+		buildingCategoryMap.Insert("Land_City_FireStation", new TraderSpawnInfo({"FireStation1", "FireStation2", "FireStation3", "FireStation4", "FireStation5"}, "-1.53522 0.0772831 2.75326", "178.589 0 0"));
+		// Store Traders
+		buildingCategoryMap.Insert("Land_City_Store", new TraderSpawnInfo({"Store1", "Store2", "Store3", "Store4", "Store5"}, "-3.55501 -1.17147 -1.34356", "30.0516 0 0"));
+		buildingCategoryMap.Insert("Land_Village_store", new TraderSpawnInfo({"Store1", "Store2", "Store3", "Store4", "Store5"}, "1.76496 -2.20532 1.94198", "-188.546 0.0332612 0.00822874"));		
+		// City Traders
+		buildingCategoryMap.Insert("Land_HouseBlock_1F1", new TraderSpawnInfo({"City1", "City2", "City3", "City4", "City5"}, "3.01204 -4.16531 2.88393", "237.672 0 0"));
+		buildingCategoryMap.Insert("Land_HouseBlock_1F_Corner", new TraderSpawnInfo({"City1", "City2", "City3", "City4", "City5"}, "2.58017 -5.71783 -1.63714", "140.131 -0.0236269 0.0248151"));
+		buildingCategoryMap.Insert("Land_HouseBlock_2F1", new TraderSpawnInfo({"City1", "City2", "City3", "City4", "City5"}, "3.82719 -6.19455 2.56561", "-120.684 0 0"));
+		buildingCategoryMap.Insert("Land_HouseBlock_2F2", new TraderSpawnInfo({"City1", "City2", "City3", "City4", "City5"}, "4.71459 -6.47765 -0.503273", "194.96 0 0"));
+		buildingCategoryMap.Insert("Land_HouseBlock_2F5", new TraderSpawnInfo({"City1", "City2", "City3", "City4", "City5"}, "2.79294 -6.4505 3.54867", "177.164 0 0"));
+		buildingCategoryMap.Insert("Land_HouseBlock_2F7", new TraderSpawnInfo({"City1", "City2", "City3", "City4", "City5"}, "4.89065 -6.7426 -0.472871", "-142.617 0.0110619 0.0164001"));
+		buildingCategoryMap.Insert("Land_HouseBlock_2F_Corner", new TraderSpawnInfo({"City1", "City2", "City3", "City4", "City5"}, "-3.26735 -6.76466 2.86444", "-240.132 -0 0"));
+		// Farming Traders
+		buildingCategoryMap.Insert("Land_Misc_Greenhouse", new TraderSpawnInfo({"Farmers1", "Farmers2", "Farmers3", "Farmers4", "Farmers5"}, "0.0423172 -1.18584 -0.0504445", "-78.2693 0 0"));
+		// Power Traders
+		buildingCategoryMap.Insert("Land_Power_Station", new TraderSpawnInfo({"Power1", "Power2", "Power3", "Power4", "Power5"}, "-2.81489 -2.02424 -2.23917", "73.4016 -0.000981407 0.0197458"));
+		// Mechanic Traders
+		buildingCategoryMap.Insert("Land_Repair_Center", new TraderSpawnInfo({"Mechanic1", "Mechanic2", "Mechanic3", "Mechanic4", "Mechanic5"}, "0.831973 -2.38045 0.918157", "189.581 -0.0157339 0.0304379"));
+		// Factory Traders
+		buildingCategoryMap.Insert("Land_Shed_Closed", new TraderSpawnInfo({"Factory1", "Factory2", "Factory3", "Factory4", "Factory5"}, "-2.31394 -4.60081 -2.1958", "64.3298 -0.00184021 0.0342145"));
+		// Workshop Traders
+		buildingCategoryMap.Insert("Land_Workshop3", new TraderSpawnInfo({"Workshop1", "Workshop2", "Workshop3", "Workshop4", "Workshop5"}, "-0.174282 -1.20459 -4.83973", "43.9714 0 0"));
+		buildingCategoryMap.Insert("Land_Rail_Warehouse_Small", new TraderSpawnInfo({"Workshop1", "Workshop2", "Workshop3", "Workshop4", "Workshop5"}, "4.33153 -1.49387 -0.0632473", "-85.0627 -0.0185081 -0.00698397"));
+		buildingCategoryMap.Insert("Land_Garage_Row_Big", new TraderSpawnInfo({"Workshop1", "Workshop2", "Workshop3", "Workshop4", "Workshop5"}, "-2.05076 -3.18141 4.4766", "-148.565 -0.000124817 -0.0279757"));
+		// Building Material Traders
+		buildingCategoryMap.Insert("Land_Construction_Building", new TraderSpawnInfo({"Building1", "Building2", "Building3", "Building4", "Building5"}, "-3.0187 -6.40411 0.372549", "-151.891 0 0"));
+
+		array<Object> validBuildings = new array<Object>;
+		array<string> buildingTypes = new array<string>;
+
+		// Filter valid buildings
+		foreach (Object obj : nearby)
+		{
+			if (obj && obj.IsInherited(Building))
+			{
+				string typeName = obj.GetType();
+				if (buildingCategoryMap.Contains(typeName))
+				{
+					validBuildings.Insert(obj);
+					buildingTypes.Insert(typeName);
+				}
+			}
+		}
+
+		if (validBuildings.Count() == 0)
+		{
+			Print("[CityTraderSpawn] No valid buildings found in town: " + managerNPCData.GetCityName());
+			return;
+		}
+
+		// Randomly pick cityTraders number of buildings
+		array<int> indices = new array<int>;
+		for (int i = 0; i < validBuildings.Count(); i++) indices.Insert(i);
+		for (int k = 0; k < indices.Count(); k++)
+		{
+			int randIndex = Math.RandomInt(k, indices.Count());
+			int temp = indices[k];
+			indices[k] = indices[randIndex];
+			indices[randIndex] = temp;
+		}
+
+
+		for (int j = 0; j < Math.Min(cityTraders, indices.Count()); j++)
+		{
+			int idx = indices[j];
+			Object building = validBuildings[idx];
+			string buildingType = buildingTypes[idx];
+			TraderSpawnInfo info = buildingCategoryMap.Get(buildingType);
+			
+			string traderCategory = info.GetRandomCategory();
+			vector spawnPos = building.ModelToWorld(info.Offset);
+
+			string traderClass;
+			string loadout;
+			GetRandomTraderClassAndLoadout(traderClass, loadout);
+
+			Object npcObj = ExpansionGame.CreateObjectSafe(traderClass, spawnPos, false, GetGame().IsKindOf(traderClass, "DZ_LightAI"), true);
+			if (!npcObj)
+				continue;
+			vector finalOri = building.GetOrientation() + info.Orientation;
+			npcObj.SetOrientation(finalOri);
+			npcObj.Update();
+
+			if (npcObj.CanAffectPathgraph())
+				GetGame().GetWorld().MarkObjectForPathgraphUpdate(npcObj);
+
+			ExpansionTraderNPCBase traderNPC;
+			if (Class.CastTo(traderNPC, npcObj))
+			{
+				traderNPC.LoadTrader(traderCategory);
+				ExpansionHumanLoadout.Apply(traderNPC, loadout, true);
+				Print("[CityTraderSpawn] Spawned " + traderClass + " in " + managerNPCData.GetCityName() + " (" + traderCategory + ")");
+			}
+		}
+	}
+
+	void GetRandomTraderClassAndLoadout(out string traderClass, out string loadoutName)
+	{
+		ref array<string> maleClasses = {
+			"ExpansionTraderMirek", "ExpansionTraderDenis", "ExpansionTraderBoris", "ExpansionTraderCyril",
+			"ExpansionTraderElias", "ExpansionTraderFrancis", "ExpansionTraderGuo", "ExpansionTraderHassan",
+			"ExpansionTraderIndar", "ExpansionTraderJose", "ExpansionTraderKaito", "ExpansionTraderLewis",
+			"ExpansionTraderManua", "ExpansionTraderNiki", "ExpansionTraderOliver", "ExpansionTraderPeter",
+			"ExpansionTraderQuinn", "ExpansionTraderRolf", "ExpansionTraderSeth", "ExpansionTraderTaiki"
+		};
+
+		ref array<string> femaleClasses = {
+			"ExpansionTraderLinda", "ExpansionTraderMaria", "ExpansionTraderFrida", "ExpansionTraderGabi",
+			"ExpansionTraderHelga", "ExpansionTraderIrena", "ExpansionTraderJudy", "ExpansionTraderKeiko",
+			"ExpansionTraderEva", "ExpansionTraderNaomi", "ExpansionTraderBaty"
+		};
+
+		bool isMale = Math.RandomInt(0, 2) == 0;
+
+		if (isMale)
+		{
+			traderClass = maleClasses.GetRandomElement();
+			loadoutName = "CivilianMaleLoadout";
+		}
+		else
+		{
+			traderClass = femaleClasses.GetRandomElement();
+			loadoutName = "CivilianFemaleLoadout";
+		}
+	}
+
+
+
+
 
 	void PlaceCityMarker(ExpansionCityManagerNPCData managerNPCData)
 	{
@@ -915,7 +1101,23 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 		Print("[Expansion CityManagerModule] GetLiberatedCitiesIncome called, returning: " + m_LiberatedCitiesIncome);
 		return m_LiberatedCitiesIncome;
 	}
-
-
-
 }
+class TraderSpawnInfo
+{
+    ref array<string> Categories;
+    vector Offset;
+    vector Orientation;
+
+    void TraderSpawnInfo(array<string> categories, vector offset, vector ori)
+    {
+        Categories = categories;
+        Offset = offset;
+        Orientation = ori;
+    }
+
+    string GetRandomCategory()
+    {
+        return Categories.GetRandomElement();
+    }
+}
+
