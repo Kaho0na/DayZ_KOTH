@@ -315,12 +315,12 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 		buildingCategoryMap.Insert("Land_City_Stand_News1", new TraderSpawnInfo({"Stall1", "Stall2", "Stall3", "Stall4", "Stall5"}, "0.690176 -1.64163 -2.41673", "179.85 -0.0152578 -0.0125907"));
 		buildingCategoryMap.Insert("Land_City_Stand_News2", new TraderSpawnInfo({"Stall1", "Stall2", "Stall3", "Stall4", "Stall5"}, "-0.070903 -1.27524 -2.15292", "174.019 0 0"));
 		// Medical Traders
-		buildingCategoryMap.Insert("Land_Village_HealthCare", new TraderSpawnInfo({"Medical1", "Medical2", "Medical3", "Medical4", "Medical5"}, "-0.225904 -2.92607 -4.85171", "-21.7046 0 0"));
-		buildingCategoryMap.Insert("Land_City_Hospital", new TraderSpawnInfo({"Medical1", "Medical2", "Medical3", "Medical4", "Medical5"}, "3.16111 -7.31112 -1.01191", "-116.784 0 0"));
+		buildingCategoryMap.Insert("Land_Village_HealthCare", new TraderSpawnInfo({"Medical1"}, "-0.225904 -2.92607 -4.85171", "-21.7046 0 0"));
+		buildingCategoryMap.Insert("Land_City_Hospital", new TraderSpawnInfo({"Medical1"}, "3.16111 -7.31112 -1.01191", "-116.784 0 0"));
 		// School Traders
-		buildingCategoryMap.Insert("Land_Office1", new TraderSpawnInfo({"School1", "School2", "School3", "School4", "School5"}, "-0.367967 -4.63401 1.22722", "-199.624 0 0"));
+		buildingCategoryMap.Insert("Land_Office1", new TraderSpawnInfo({"School1"}, "-0.367967 -4.63401 1.22722", "-199.624 0 0"));
 		// FireStation Traders
-		buildingCategoryMap.Insert("Land_City_FireStation", new TraderSpawnInfo({"FireStation1", "FireStation2", "FireStation3", "FireStation4", "FireStation5"}, "-1.53522 0.0772831 2.75326", "178.589 0 0"));
+		buildingCategoryMap.Insert("Land_City_FireStation", new TraderSpawnInfo({"FireStation1"}, "-1.53522 0.0772831 2.75326", "178.589 0 0"));
 		// Store Traders
 		buildingCategoryMap.Insert("Land_City_Store", new TraderSpawnInfo({"Store1", "Store2", "Store3", "Store4", "Store5"}, "-3.55501 -1.17147 -1.34356", "30.0516 0 0"));
 		buildingCategoryMap.Insert("Land_Village_store", new TraderSpawnInfo({"Store1", "Store2", "Store3", "Store4", "Store5"}, "1.76496 -2.20532 1.94198", "-188.546 0.0332612 0.00822874"));		
@@ -333,19 +333,18 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 		buildingCategoryMap.Insert("Land_HouseBlock_2F7", new TraderSpawnInfo({"City1", "City2", "City3", "City4", "City5"}, "4.89065 -6.7426 -0.472871", "-142.617 0.0110619 0.0164001"));
 		buildingCategoryMap.Insert("Land_HouseBlock_2F_Corner", new TraderSpawnInfo({"City1", "City2", "City3", "City4", "City5"}, "-3.26735 -6.76466 2.86444", "-240.132 -0 0"));
 		// Farming Traders
-		buildingCategoryMap.Insert("Land_Misc_Greenhouse", new TraderSpawnInfo({"Farmers1", "Farmers2", "Farmers3", "Farmers4", "Farmers5"}, "0.0423172 -1.18584 -0.0504445", "-78.2693 0 0"));
+		buildingCategoryMap.Insert("Land_Misc_Greenhouse", new TraderSpawnInfo({"Farmers1"}, "0.0423172 -1.18584 -0.0504445", "-78.2693 0 0"));
 		// Power Traders
-		buildingCategoryMap.Insert("Land_Power_Station", new TraderSpawnInfo({"Power1", "Power2", "Power3", "Power4", "Power5"}, "-2.81489 -2.02424 -2.23917", "73.4016 -0.000981407 0.0197458"));
-		// Mechanic Traders
-		buildingCategoryMap.Insert("Land_Repair_Center", new TraderSpawnInfo({"Mechanic1", "Mechanic2", "Mechanic3", "Mechanic4", "Mechanic5"}, "0.831973 -2.38045 0.918157", "189.581 -0.0157339 0.0304379"));
-		// Factory Traders
-		buildingCategoryMap.Insert("Land_Shed_Closed", new TraderSpawnInfo({"Factory1", "Factory2", "Factory3", "Factory4", "Factory5"}, "-2.31394 -4.60081 -2.1958", "64.3298 -0.00184021 0.0342145"));
+		buildingCategoryMap.Insert("Land_Power_Station", new TraderSpawnInfo({"Power1"}, "-2.81489 -2.02424 -2.23917", "73.4016 -0.000981407 0.0197458"));
+		// Mechanic Traders 
+		buildingCategoryMap.Insert("Land_Repair_Center", new TraderSpawnInfo({"Mechanic1"}, "0.831973 -2.38045 0.918157", "189.581 -0.0157339 0.0304379"));
 		// Workshop Traders
-		buildingCategoryMap.Insert("Land_Workshop3", new TraderSpawnInfo({"Workshop1", "Workshop2", "Workshop3", "Workshop4", "Workshop5"}, "-0.174282 -1.20459 -4.83973", "43.9714 0 0"));
-		buildingCategoryMap.Insert("Land_Rail_Warehouse_Small", new TraderSpawnInfo({"Workshop1", "Workshop2", "Workshop3", "Workshop4", "Workshop5"}, "4.33153 -1.49387 -0.0632473", "-85.0627 -0.0185081 -0.00698397"));
-		buildingCategoryMap.Insert("Land_Garage_Row_Big", new TraderSpawnInfo({"Workshop1", "Workshop2", "Workshop3", "Workshop4", "Workshop5"}, "-2.05076 -3.18141 4.4766", "-148.565 -0.000124817 -0.0279757"));
+		buildingCategoryMap.Insert("Land_Shed_Closed", new TraderSpawnInfo({"Workshop1"}, "-2.31394 -4.60081 -2.1958", "64.3298 -0.00184021 0.0342145"));
+		buildingCategoryMap.Insert("Land_Workshop3", new TraderSpawnInfo({"Workshop1"}, "-0.174282 -1.20459 -4.83973", "43.9714 0 0"));
+		buildingCategoryMap.Insert("Land_Rail_Warehouse_Small", new TraderSpawnInfo({"Workshop1"}, "4.33153 -1.49387 -0.0632473", "-85.0627 -0.0185081 -0.00698397"));
+		buildingCategoryMap.Insert("Land_Garage_Row_Big", new TraderSpawnInfo({"Workshop1"}, "-2.05076 -3.18141 4.4766", "-148.565 -0.000124817 -0.0279757"));
 		// Building Material Traders
-		buildingCategoryMap.Insert("Land_Construction_Building", new TraderSpawnInfo({"Building1", "Building2", "Building3", "Building4", "Building5"}, "-3.0187 -6.40411 0.372549", "-151.891 0 0"));
+		buildingCategoryMap.Insert("Land_Construction_Building", new TraderSpawnInfo({"Building1"}, "-3.0187 -6.40411 0.372549", "-151.891 0 0"));
 
 		array<Object> validBuildings = new array<Object>;
 		array<string> buildingTypes = new array<string>;
@@ -390,6 +389,7 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 			TraderSpawnInfo info = buildingCategoryMap.Get(buildingType);
 			
 			string traderCategory = info.GetRandomCategory();
+			Print("[CityTraderSpawn] Spawning trader in " + buildingType + " for category: " + traderCategory);
 			vector spawnPos = building.ModelToWorld(info.Offset);
 
 			string traderClass;
