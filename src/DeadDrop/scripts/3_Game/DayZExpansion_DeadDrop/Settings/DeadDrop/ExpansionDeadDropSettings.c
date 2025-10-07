@@ -195,9 +195,9 @@ class ExpansionDeadDropSettings: ExpansionSettingBase
 			JsonFileLoader<ExpansionDeadDropSettings>.JsonLoadFile(EXPANSION_DEADDROP_SETTINGS, this);
 			if (m_Version < VERSION)
 			{
-				EXPrint("[ExpansionGarageSetting] Load - Converting v" + m_Version + " \"" + EXPANSION_GARAGE_SETTINGS + "\" to v" + VERSION);
+				EXPrint("[ExpansionDeadDropSetting] Load - Converting v" + m_Version + " \"" + EXPANSION_DEADDROP_SETTINGS + "\" to v" + VERSION);
 
-				ExpansionGarageSettings defaultSettings = new ExpansionGarageSettings;
+				ExpansionDeadDropSettings defaultSettings = new ExpansionDeadDropSettings;
 				defaultSettings.Defaults();
 				
 				m_Version = VERSION;

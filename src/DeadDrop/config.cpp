@@ -1,6 +1,6 @@
 class CfgPatches
 {
-	class DeadDrop_Script
+	class DeadDrop_Scripts
 	{
 		units[]={};
 		weapons[]={};

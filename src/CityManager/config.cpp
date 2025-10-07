@@ -1,6 +1,6 @@
 class CfgPatches
 {
-	class CityManager_Script
+	class CityManager_Scripts
 	{
 		units[]={};
 		weapons[]={};

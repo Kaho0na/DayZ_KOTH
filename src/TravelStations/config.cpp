@@ -1,6 +1,6 @@
 class CfgPatches
 {
-	class TravelStations_Script
+	class TravelStations_Scripts
 	{
 		units[]={};
 		weapons[]={};

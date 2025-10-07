@@ -14,7 +14,7 @@
 [CF_RegisterModule(ExpansionFactionBankModule)]
 class ExpansionFactionBankModule: CF_ModuleWorld
 {
-    private ref ExpansionMarketModule m_MarketModule;
+    protected ref ExpansionMarketModule m_MarketModule;
     protected static ExpansionFactionBankModule s_FactioBankInstance;
   
     protected ref ScriptInvoker m_FactionBankMenuInvoker; //! Client

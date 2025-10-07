@@ -572,7 +572,7 @@ class ExpansionTravelStationsModule: CF_ModuleWorld
 
 	bool OpenTravelStationsMenu()
     {
-		Print("[Travel Stations] Creating Menu ExpansionTravelStationsMenu")
+		Print("[Travel Stations] Creating Menu ExpansionTravelStationsMenu");
         GetDayZGame().GetExpansionGame().GetExpansionUIManager().CreateSVMenu("ExpansionTravelStationsMenu");
 
         return true;
@@ -580,7 +580,7 @@ class ExpansionTravelStationsModule: CF_ModuleWorld
 
 	ScriptInvoker GetTravelStationMenuSI()
 	{
-		Print("[Travel Stations] GetTravelStationMenuSI Invoker is being fired")
+		Print("[Travel Stations] GetTravelStationMenuSI Invoker is being fired");
 		return m_TravelStationMenuInvoker;
 	}
 
@@ -650,10 +650,11 @@ class ExpansionTravelStationsModule: CF_ModuleWorld
 	bool checkIfLiberated(int cityID)
 	{
 		ExpansionCityManagerNPCData data = m_cityManagerModule.GetCityManagerNPCDataByID(cityID);
-		if (!data)
-			return false;
+		ExpansionCityManagerNPCData newData = ExpansionCityManagerNPCData.Load(data.CityName);
+		if (!newData)
+    		return false;
 		Print("[TravelStations] Checking CityID: " + cityID + " → Liberated: " + data.CityLiberated);
-		return data.CityLiberated; 
+		return newData.CityLiberated; 
 	}
 
 

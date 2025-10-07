@@ -42,7 +42,7 @@ class ExpansionCityManagerNPCData
 	#ifdef EXPANSIONMODAI
 	string NPCFaction = "InvincibleObservers";
 	#endif
-	int NPCType = ExpansionQuestNPCType.NORMAL;
+	int NPCType = ExpansionCityManagerNPCType.NORMAL;
 
     [NonSerialized()]
 	static string FILENAME = "NONE";
@@ -197,12 +197,12 @@ class ExpansionCityManagerNPCData
 		return ClassName;
 	}
 
-	void SetNPCType(ExpansionQuestNPCType type)
+	void SetNPCType(ExpansionCityManagerNPCType type)
 	{
 		NPCType = type;
 	}
 
-	ExpansionQuestNPCType GetNPCType()
+	ExpansionCityManagerNPCType GetNPCType()
 	{
 		return NPCType;
 	}
@@ -381,9 +381,9 @@ class ExpansionCityManagerNPCData
 	#ifdef EXPANSIONMODAI
 	ExpansionCityManagerNPCAIBase SpawnNPCAI()
 	{
-		Print("SpawnNPCAI in Data has been called!")
+		Print("SpawnNPCAI in Data has been called!");
 		Position = ExpansionAIPatrol.GetPlacementPosition(Position);
-		Print("City Manager NPC Position = " + Position)
+		Print("City Manager NPC Position = " + Position);
 		Object obj = ExpansionGame.CreateObjectSafe(ClassName, Position);
 		if (!obj){
 			Print("IS NOT AN OBJECT");
@@ -457,7 +457,6 @@ class ExpansionCityManagerNPCData
     static ExpansionCityManagerNPCData Load(string fileName)
 	{
 		fileName.Replace(" ", "");
-		fileName.ToLower();
 		if (!ExpansionString.EndsWithIgnoreCase(fileName, ".json"))
 			fileName += ".json";
 		Print("[ExpansionCityManagerNPCData] Load existing configuration file:" + fileName);

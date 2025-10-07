@@ -53,7 +53,7 @@ class ExpansionCityManagerModule: CF_ModuleWorld
 		//! Spawn NPCs late so mapping already loaded
 		if (GetGame().IsServer())
         {
-            SpawnCityManagerNPCs()
+            SpawnCityManagerNPCs();
         }
 	}
 

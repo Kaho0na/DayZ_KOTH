@@ -1,6 +1,6 @@
 class CfgPatches
 {
-	class FactionBank_Script
+	class FactionBank_Scripts
 	{
 		units[]={};
 		weapons[]={};

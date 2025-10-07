@@ -1,6 +1,6 @@
 class CfgPatches
 {
-	class DayZExpansion_Quests_Dta_Core
+	class DayZExpansion_CityManager_Dta_Core
 	{
 		units[]={};
 		weapons[]={};

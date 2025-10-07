@@ -36,7 +36,7 @@ class ExpansionTravelStationsNPCData
 	#ifdef EXPANSIONMODAI
 	string NPCFaction = "InvincibleObservers";
 	#endif
-	int NPCType = ExpansionQuestNPCType.NORMAL;
+	int NPCType = ExpansionTravelStationsNPCType.NORMAL;
 
     [NonSerialized()]
 	static string FILENAME = "NONE";
@@ -125,12 +125,12 @@ class ExpansionTravelStationsNPCData
 		return ClassName;
 	}
 
-	void SetNPCType(ExpansionQuestNPCType type)
+	void SetNPCType(ExpansionTravelStationsNPCType type)
 	{
 		NPCType = type;
 	}
 
-	ExpansionQuestNPCType GetNPCType()
+	ExpansionTravelStationsNPCType GetNPCType()
 	{
 		return NPCType;
 	}
