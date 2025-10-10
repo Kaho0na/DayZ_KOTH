@@ -44,7 +44,7 @@ static ref array<ref KOTHSpawnPiece> KOTH_SPAWN_COMPOUND = {
 	new KOTHSpawnPiece("bldr_Wall_Wood4_4",           2.09717,  -5.25562,  3.95457,  -53.9998),
 	new KOTHSpawnPiece("bldr_Wall_Wood4_Pole",       -3.90039,  -3.04419,  3.97192, -144.0000),
 
-	new KOTHSpawnPiece("bldr_WhiteBoard",             3.72705,  -1.30811,  4.35944,  126.0000),
+	new KOTHSpawnPiece("StaticObj_WhiteBoard",             3.72705,  -1.30811,  4.35944,  126.0000),
 	new KOTHSpawnPiece("bldr_Misc_Range_Roof",       -2.93896,  -2.21753,  4.34960,   36.0000),
 
 	new KOTHSpawnPiece("SurvivorM_Boris",            -3.75195,  -1.15649,  3.38896,   36.0000),

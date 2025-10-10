@@ -23,11 +23,13 @@ class Dayz_KOTH_Zones : Dayz_KOTH_ZonesBase
 {
 	static const int VERSION = 1;
 	string ZoneName;
-	autoptr TStringArray EastSpawnBuilding;
-	autoptr TStringArray WestSpawnBuilding;
+
+	autoptr TFloatArray EastSpawnBuilding;
+	autoptr TFloatArray WestSpawnBuilding;
+	autoptr TFloatArray AOZoneCenter;
+
 	int EastSafeZoneRadius;
 	int WestSafeZoneRadius;
-	autoptr TStringArray AOZoneCenter;
 	int AOZoneRadius;
 	int PriorityAORadius;
 
@@ -35,9 +37,9 @@ class Dayz_KOTH_Zones : Dayz_KOTH_ZonesBase
 	void Dayz_KOTH_Zones()
 	{
 		m_Version = VERSION;
-		EastSpawnBuilding = new TStringArray;
-		WestSpawnBuilding = new TStringArray;
-		AOZoneCenter = new TStringArray;
+		EastSpawnBuilding = new TFloatArray;
+		WestSpawnBuilding = new TFloatArray;
+		AOZoneCenter = new TFloatArray;
 	}
 
 	// Load from file
@@ -61,11 +63,13 @@ class Dayz_KOTH_Zones : Dayz_KOTH_ZonesBase
 	{
 		ZoneID = 1;
 		ZoneName = "Chernogorsk";
-		EastSpawnBuilding = {"6594.66", "0", "2426.82"};  // TStringArray needs strings
-		WestSpawnBuilding = {"6204.66", "0", "2426.82"};
+		EastSpawnBuilding = {4890.6758, 9.5129, 2600.3997};
+		WestSpawnBuilding = {8129.4468, 5.5988, 3299.1377};
+		AOZoneCenter = {6585.0332, 6.0, 2439.6404};
+
 		EastSafeZoneRadius = 50;
 		WestSafeZoneRadius = 50;
-		AOZoneCenter = {"6400", "0", "2426.82"};
+
 		AOZoneRadius = 400;
 		PriorityAORadius = 200;
 	}

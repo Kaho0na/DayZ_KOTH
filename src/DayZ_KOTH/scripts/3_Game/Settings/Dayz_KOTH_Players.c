@@ -16,7 +16,7 @@ class DayZ_KOTH_PlayersBase
 	int m_Version;
 	[NonSerialized()]
 	string m_FileName;
-	int PlayerID;
+	string PlayerID;
 }
 
 class DayZ_KOTH_Players : DayZ_KOTH_PlayersBase
@@ -31,6 +31,7 @@ class DayZ_KOTH_Players : DayZ_KOTH_PlayersBase
 	int LongestHeadshot;
 	int HighestKillstreak;
 	int TotalEnemiesKilled;
+	string LastTeamSelection;
 
 	// Constructor
 	void DayZ_KOTH_Players()
@@ -57,7 +58,7 @@ class DayZ_KOTH_Players : DayZ_KOTH_PlayersBase
 	// Defaults if file not found
 	void Defaults()
 	{
-		PlayerID = 0;
+		PlayerID = "";
 		PlayerName = "New Player";
 		TotalMoneyinBank = 0;
 		TotalExperienceEarned = 0;
@@ -67,6 +68,7 @@ class DayZ_KOTH_Players : DayZ_KOTH_PlayersBase
 		LongestHeadshot = 0;
 		HighestKillstreak = 0;
 		TotalEnemiesKilled = 0;
+		LastTeamSelection = "None";
 	}
 
 }
