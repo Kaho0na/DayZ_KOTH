@@ -1,0 +1,15 @@
+ButtonWidgetClass ChangeTeamButton {
+    size 0.35 0.045
+    halign center_ref
+    valign center_ref
+    style DayZDefaultButton
+    {
+        TextWidgetClass ChangeTeamText {
+            text "CHANGE TEAM"
+            halign center_ref
+            valign center_ref
+            font "gui/fonts/etelkatextpro"
+            color 0.9 0.9 0.9 1
+        }
+    }
+}

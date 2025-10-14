@@ -35,6 +35,8 @@ class KOTH_TeamSelectionModule: CF_ModuleWorld
         Expansion_RegisterClientRPC("RPC_SelectTeamMenu");
 		Expansion_RegisterServerRPC("RPC_SelectTeam");
 		Expansion_RegisterClientRPC("RPC_CloseTeamMenu");
+        Expansion_RegisterServerRPC("RPC_RequestTeamChange");
+
     }
 
     void StartTeamSelection(PlayerBase player, PlayerIdentity identity)
@@ -221,6 +223,24 @@ class KOTH_TeamSelectionModule: CF_ModuleWorld
             Print("[DayZ_KOTH] WARNING: Could not load player data for UID " + uid);
         }
     }
+
+    // ───────────────────────────────────────────────
+    // Client calls this to ask the server to open team menu
+    // ───────────────────────────────────────────────
+    private void RPC_RequestTeamChange(PlayerIdentity sender, Object target, ParamsReadContext ctx)
+    {
+        Print("[DayZ_KOTH] RPC_RequestTeamChange received on server!");
+
+        if (!sender)
+            return;
+
+        PlayerBase player = PlayerBase.GetPlayerByUID(sender.GetId());
+        if (!player)
+            return;
+
+        StartTeamSelection(player, sender);
+    }
+
 
     void CloseTeamMenu()
     {
