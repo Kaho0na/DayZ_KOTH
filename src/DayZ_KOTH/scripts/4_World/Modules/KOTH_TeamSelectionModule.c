@@ -235,10 +235,14 @@ class KOTH_TeamSelectionModule: CF_ModuleWorld
             return;
 
         PlayerBase player = PlayerBase.GetPlayerByUID(sender.GetId());
+        KOTH_PlayerData playerData = KOTH_PlayerData.Load(sender.GetId());
+
         if (!player)
             return;
+        playerData.SetLastTeamSelection("None");
+        playerData.Save(sender.GetId());
 
-        StartTeamSelection(player, sender);
+        player.SetHealth(0);
     }
 
 
