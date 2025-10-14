@@ -1,5 +1,5 @@
 /**
- * Dayz_KOTH_Zones.c
+ * KOTH_Zones.c
  *
  * King of the Hill by Kahoona
  * Credit to the DayZ Expansion Mod Team
@@ -11,7 +11,7 @@
  *
 */
 
-class Dayz_KOTH_ZonesBase
+class KOTH_ZonesBase
 {
 	int m_Version;
 	[NonSerialized()]
@@ -19,7 +19,7 @@ class Dayz_KOTH_ZonesBase
 	int ZoneID;
 }
 
-class Dayz_KOTH_Zones : Dayz_KOTH_ZonesBase
+class KOTH_Zones : KOTH_ZonesBase
 {
 	static const int VERSION = 1;
 	string ZoneName;
@@ -34,7 +34,7 @@ class Dayz_KOTH_Zones : Dayz_KOTH_ZonesBase
 	int PriorityAORadius;
 
 	// Constructor
-	void Dayz_KOTH_Zones()
+	void KOTH_Zones()
 	{
 		m_Version = VERSION;
 		EastSpawnBuilding = new TFloatArray;
@@ -43,11 +43,11 @@ class Dayz_KOTH_Zones : Dayz_KOTH_ZonesBase
 	}
 
 	// Load from file
-	static Dayz_KOTH_Zones Load(string name)
+	static KOTH_Zones Load(string name)
 	{
-		Dayz_KOTH_Zones settings = new Dayz_KOTH_Zones;
+		KOTH_Zones settings = new KOTH_Zones;
 		settings.Defaults();
-		ExpansionJsonFileParser<Dayz_KOTH_Zones>.Load(EXPANSION_DAYZ_KOTH_ZONES + name + ".json", settings);
+		ExpansionJsonFileParser<KOTH_Zones>.Load(EXPANSION_KOTH_Zones + name + ".json", settings);
 		settings.m_FileName = name; // Save the file name so Save() works correctly later
 		return settings;
 	}
@@ -55,7 +55,7 @@ class Dayz_KOTH_Zones : Dayz_KOTH_ZonesBase
 	// Save to file
 	void Save()
 	{
-		JsonFileLoader<Dayz_KOTH_Zones>.JsonSaveFile(EXPANSION_DAYZ_KOTH_ZONES + m_FileName + ".json", this);
+		JsonFileLoader<KOTH_Zones>.JsonSaveFile(EXPANSION_KOTH_Zones + m_FileName + ".json", this);
 	}
 
 	// Defaults if file not found

@@ -1,5 +1,5 @@
 /**
- * DayZ_KOTH_Players.c
+ * KOTH_Players.c
  *
  * King of the Hill by Kahoona
  * Credit to the DayZ Expansion Mod Team
@@ -11,7 +11,7 @@
  *
 */
 
-class DayZ_KOTH_PlayersBase
+class KOTH_PlayersBase
 {
 	int m_Version;
 	[NonSerialized()]
@@ -19,7 +19,7 @@ class DayZ_KOTH_PlayersBase
 	string PlayerID;
 }
 
-class DayZ_KOTH_Players : DayZ_KOTH_PlayersBase
+class KOTH_Players : KOTH_PlayersBase
 {
 	static const int VERSION = 1;
 	string PlayerName;
@@ -34,17 +34,17 @@ class DayZ_KOTH_Players : DayZ_KOTH_PlayersBase
 	string LastTeamSelection;
 
 	// Constructor
-	void DayZ_KOTH_Players()
+	void KOTH_Players()
 	{
 		m_Version = VERSION;
 	}
 
 	// Load from file
-	static DayZ_KOTH_Players Load(string name)
+	static KOTH_Players Load(string name)
 	{
-		DayZ_KOTH_Players settings = new DayZ_KOTH_Players;
+		KOTH_Players settings = new KOTH_Players;
 		settings.Defaults();
-		ExpansionJsonFileParser<DayZ_KOTH_Players>.Load(EXPANSION_DAYZ_KOTH_PLAYERS + name + ".json", settings);
+		ExpansionJsonFileParser<KOTH_Players>.Load(EXPANSION_KOTH_Players + name + ".json", settings);
 		settings.m_FileName = name; // Save the file name so Save() works correctly later
 		return settings;
 	}
@@ -52,7 +52,7 @@ class DayZ_KOTH_Players : DayZ_KOTH_PlayersBase
 	// Save to file
 	void Save()
 	{
-		JsonFileLoader<DayZ_KOTH_Players>.JsonSaveFile(EXPANSION_DAYZ_KOTH_PLAYERS + m_FileName + ".json", this);
+		JsonFileLoader<KOTH_Players>.JsonSaveFile(EXPANSION_KOTH_Players + m_FileName + ".json", this);
 	}
 
 	// Defaults if file not found

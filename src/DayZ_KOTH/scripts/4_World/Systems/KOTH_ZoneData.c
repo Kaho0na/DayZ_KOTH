@@ -1,5 +1,5 @@
 /**
- * DayZ_KOTH_ZoneData.c
+ * KOTH_ZoneData.c
  *
  * King of the Hill by Kahoona
  * Credit to the DayZ Expansion Mod Team
@@ -11,10 +11,10 @@
  *
 */
 
-class DayZ_KOTH_ZoneData
+class KOTH_ZoneData
 {
-    static ref DayZ_KOTH_ZoneData s_Instance;
-    protected ref map<int, ref DayZ_KOTH_ZoneData> m_ZoneData = new map<int, ref DayZ_KOTH_ZoneData>();
+    static ref KOTH_ZoneData s_Instance;
+    protected ref map<int, ref KOTH_ZoneData> m_ZoneData = new map<int, ref KOTH_ZoneData>();
 
 
     int ZoneID;
@@ -30,16 +30,16 @@ class DayZ_KOTH_ZoneData
     [NonSerialized()]
 	static string FILENAME = "NONE";
     
-    void DayZ_KOTH_ZoneData()
+    void KOTH_ZoneData()
     {
         s_Instance = this;
-        m_ZoneData = new map<int, ref DayZ_KOTH_ZoneData>();
+        m_ZoneData = new map<int, ref KOTH_ZoneData>();
     }
 
-	static DayZ_KOTH_ZoneData GetInstance()
+	static KOTH_ZoneData GetInstance()
 	{
 		if (!s_Instance)
-			s_Instance = new DayZ_KOTH_ZoneData();
+			s_Instance = new KOTH_ZoneData();
 		return s_Instance;
 	}
 
@@ -133,15 +133,15 @@ class DayZ_KOTH_ZoneData
         return PriorityAORadius;
     }
 
-    static DayZ_KOTH_ZoneData Load(string fileName)
+    static KOTH_ZoneData Load(string fileName)
     {
         fileName.Replace(" ", "");
         if (!ExpansionString.EndsWithIgnoreCase(fileName, ".json"))
             fileName += ".json";
-        Print("[DayZ_KOTH_ZoneData] Load existing configuration file:" + fileName);
-        DayZ_KOTH_ZoneData zoneConfig;
-        ExpansionJsonFileParser<DayZ_KOTH_ZoneData>.Load(EXPANSION_DAYZ_KOTH_ZONES + fileName, zoneConfig);
-        Print("[DayZ_KOTH_ZoneData] DayZ_KOTH_ZoneData:" + zoneConfig);
+        Print("[KOTH_ZoneData] Load existing configuration file:" + fileName);
+        KOTH_ZoneData zoneConfig;
+        ExpansionJsonFileParser<KOTH_ZoneData>.Load(EXPANSION_KOTH_Zones + fileName, zoneConfig);
+        Print("[KOTH_ZoneData] KOTH_ZoneData:" + zoneConfig);
         return zoneConfig;
     }
 
@@ -152,10 +152,10 @@ class DayZ_KOTH_ZoneData
         if (!ExpansionString.EndsWithIgnoreCase(fileName, ".json"))
             fileName += ".json";
 
-        ExpansionJsonFileParser<DayZ_KOTH_ZoneData>.Save(EXPANSION_DAYZ_KOTH_ZONES + fileName, this);
+        ExpansionJsonFileParser<KOTH_ZoneData>.Save(EXPANSION_KOTH_Zones + fileName, this);
     }
 
-    void CopyConfig(DayZ_KOTH_ZoneData zoneDataBase)
+    void CopyConfig(KOTH_ZoneData zoneDataBase)
     {
         ZoneID = zoneDataBase.ZoneID;
         ZoneName = zoneDataBase.ZoneName;

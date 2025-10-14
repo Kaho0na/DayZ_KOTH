@@ -1,6 +1,6 @@
 class CfgPatches
 {
-	class DayZ_KOTH_Scripts
+	class KOTH_Scripts
 	{
 		units[]={};
 		weapons[]={};

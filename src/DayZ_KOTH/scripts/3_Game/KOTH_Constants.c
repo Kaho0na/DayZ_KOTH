@@ -12,8 +12,8 @@
 */
 
 
-static const string EXPANSION_DAYZ_KOTH_SETTINGS = EXPANSION_SETTINGS_FOLDER + "DayZ_KOTH_Settings.json";
+static const string EXPANSION_KOTH_Settings = EXPANSION_SETTINGS_FOLDER + "KOTH_Settings.json";
 
 //! Server
-static const string EXPANSION_DAYZ_KOTH_ZONES = EXPANSION_FOLDER + "DayZ_KOTH_Zones\\";
-static const string EXPANSION_DAYZ_KOTH_PLAYERS = EXPANSION_FOLDER + "DayZ_KOTH_Players\\";
+static const string EXPANSION_KOTH_Zones = EXPANSION_FOLDER + "KOTH_Zones\\";
+static const string EXPANSION_KOTH_Players = EXPANSION_FOLDER + "KOTH_Players\\";

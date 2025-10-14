@@ -1,5 +1,5 @@
 /**
- * DayZ_KOTH_Settings.c
+ * KOTH_Settings.c
  *
  * King of the Hill by Kahoona
  * Credit to the DayZ Expansion Mod Team
@@ -11,7 +11,7 @@
  *
 */
 
-class DayZ_KOTH_SettingsBase: ExpansionSettingBase
+class KOTH_SettingsBase: ExpansionSettingBase
 {
     // ────────────── META ──────────────
     string ModeName = "King of the Hill";
@@ -58,7 +58,7 @@ class DayZ_KOTH_SettingsBase: ExpansionSettingBase
     int MaxTeamImbalance = 3;
 }
 
-class DayZ_KOTH_Settings: DayZ_KOTH_SettingsBase
+class KOTH_Settings: KOTH_SettingsBase
 {
 
 	[NonSerialized()]
@@ -67,7 +67,7 @@ class DayZ_KOTH_Settings: DayZ_KOTH_SettingsBase
     override bool OnRecieve(ParamsReadContext ctx)
 	{
 		
-		DayZ_KOTH_Settings s = new DayZ_KOTH_Settings;
+		KOTH_Settings s = new KOTH_Settings;
 
 		ctx.Read(s.ModeName);
         ctx.Read(s.ScoreLimit);
@@ -160,7 +160,7 @@ class DayZ_KOTH_Settings: DayZ_KOTH_SettingsBase
 
     override bool Copy(ExpansionSettingBase setting)
 	{
-		DayZ_KOTH_Settings s;
+		KOTH_Settings s;
 		if (!Class.CastTo(s, setting))
 			return false;
 
@@ -168,18 +168,18 @@ class DayZ_KOTH_Settings: DayZ_KOTH_SettingsBase
 		return true;
 	}
 
-    protected void CopyInternal( DayZ_KOTH_Settings s )
+    protected void CopyInternal( KOTH_Settings s )
 	{
 	#ifdef EXPANSIONTRACE
 		auto trace = CF_Trace_1(ExpansionTracing.SETTINGS, this, "CopyInternal").Add(s);
 	#endif
 
 
-		DayZ_KOTH_Settings sb = s;
+		KOTH_Settings sb = s;
 		CopyInternal( sb );
 	}
 
-    private void CopyInternal( DayZ_KOTH_SettingsBase s)
+    private void CopyInternal( KOTH_SettingsBase s)
 	{
 #ifdef EXPANSIONTRACE
 		auto trace = CF_Trace_1(ExpansionTracing.SETTINGS, this, "CopyInternal").Add(s);
@@ -237,24 +237,24 @@ class DayZ_KOTH_Settings: DayZ_KOTH_SettingsBase
 
 		bool save;
 
-		bool DayZ_KOTH_SettingsExist = FileExist(EXPANSION_DAYZ_KOTH_SETTINGS);
+		bool KOTH_SettingsExist = FileExist(EXPANSION_KOTH_Settings);
 
-		if (DayZ_KOTH_SettingsExist)
+		if (KOTH_SettingsExist)
 		{
-			CF_Log.Info("[DayZ_KOTH_Settings] Load existing setting file:" + EXPANSION_DAYZ_KOTH_SETTINGS);
+			CF_Log.Info("[KOTH_Settings] Load existing setting file:" + EXPANSION_KOTH_Settings);
 
-			DayZ_KOTH_Settings settingsDefault = new DayZ_KOTH_Settings;
+			KOTH_Settings settingsDefault = new KOTH_Settings;
 			settingsDefault.Defaults();
 
-			DayZ_KOTH_SettingsBase settingsBase;
+			KOTH_SettingsBase settingsBase;
 
-			JsonFileLoader<DayZ_KOTH_SettingsBase>.JsonLoadFile(EXPANSION_DAYZ_KOTH_SETTINGS, settingsBase);
-			JsonFileLoader<DayZ_KOTH_Settings>.JsonLoadFile(EXPANSION_DAYZ_KOTH_SETTINGS, this);
+			JsonFileLoader<KOTH_SettingsBase>.JsonLoadFile(EXPANSION_KOTH_Settings, settingsBase);
+			JsonFileLoader<KOTH_Settings>.JsonLoadFile(EXPANSION_KOTH_Settings, this);
 			
 		}
 		else
 		{
-			CF_Log.Info("[DayZ_KOTH_Settings] No existing setting file:" + EXPANSION_DAYZ_KOTH_SETTINGS + ". Creating defaults!");
+			CF_Log.Info("[KOTH_Settings] No existing setting file:" + EXPANSION_KOTH_Settings + ". Creating defaults!");
 
 			Defaults();
 			save = true;
@@ -265,7 +265,7 @@ class DayZ_KOTH_Settings: DayZ_KOTH_SettingsBase
 			Save();
 		}
 
-		return DayZ_KOTH_SettingsExist;
+		return KOTH_SettingsExist;
 	}
 
 	override bool OnSave()
@@ -274,7 +274,7 @@ class DayZ_KOTH_Settings: DayZ_KOTH_SettingsBase
 		auto trace = CF_Trace_0(ExpansionTracing.SETTINGS, this, "OnSave");
 	#endif
 
-		JsonFileLoader<DayZ_KOTH_Settings>.JsonSaveFile( EXPANSION_DAYZ_KOTH_SETTINGS, this );
+		JsonFileLoader<KOTH_Settings>.JsonSaveFile( EXPANSION_KOTH_Settings, this );
 
 		return true;
 	}

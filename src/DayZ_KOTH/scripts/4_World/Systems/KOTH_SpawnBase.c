@@ -1,3 +1,5 @@
+
+
 // KOTH_SpawnBase.c — spawns East/West spawn compounds from in-code definition (no XML)
 
 // Simple piece definition: class name (or p3d path), relative offsets, and yaw (deg)
@@ -117,7 +119,7 @@ class KOTH_SpawnBase
 
 
 // Convenience wrapper for your zone object (uses your getters)
-static void KOTH_SpawnBasesForZone(DayZ_KOTH_ZoneData zone)
+static void KOTH_SpawnBasesForZone(KOTH_ZoneData zone)
 {
 	if (!GetGame().IsServer()) return;
 

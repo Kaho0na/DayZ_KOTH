@@ -13,8 +13,8 @@ modded class MissionServer
 	// Runs once on mission start
 	void SpawnKOTHBasesOnce()
 	{
-		// Example: loads from $profile/Expansion/DayZ_KOTH_Zones/Chernogorsk.json
-		DayZ_KOTH_ZoneData zone = DayZ_KOTH_ZoneData.Load("Chernogorsk.json");
+		// Example: loads from $profile/Expansion/KOTH_Zones/Chernogorsk.json
+		KOTH_ZoneData zone = KOTH_ZoneData.Load("Chernogorsk.json");
 		if (!zone)
 		{
 			Print("[KOTH] ERROR: Could not load zone 'Chernogorsk.json'. No bases spawned.");
