@@ -39,7 +39,7 @@ modded class MissionServer
 			playerData.LongestHeadshot = 0;
 			playerData.HighestKillstreak = 0;
 			playerData.TotalEnemiesKilled = 0;
-			playerData.LastTeamSelection = "East";
+			playerData.LastTeamSelection = "None"; // Changed from "East" to force team selection
 
 			playerData.Save();
 
@@ -48,33 +48,45 @@ modded class MissionServer
 
 		
 		//! ────────────────────────────────────────────────
-		//!  KOTH TEAM SPAWNING LOGIC
+		//!  KOTH TEAM SPAWNING LOGIC (using Zone Manager)
 		//! ────────────────────────────────────────────────
 
-		// Load KOTH zone (currently hardcoded for testing)
-		KOTH_Zones zone = KOTH_Zones.Load("Chernogorsk");
+		// Get active zone from Zone Manager
+		KOTH_ZoneManager zoneManager;
+		CF_Modules<KOTH_ZoneManager>.Get(zoneManager);
+
+		if (!zoneManager)
+		{
+			Error("[KOTH] ERROR: Could not get KOTH_ZoneManager instance!");
+			return;
+		}
+
+		if (!zoneManager.IsZoneActive())
+		{
+			Error("[KOTH] ERROR: No active zone loaded!");
+			return;
+		}
 
 		vector spawnPos;
 
 		if (playerData.LastTeamSelection == "East")
 		{
-			spawnPos = Vector(zone.EastSpawnBuilding[0], zone.EastSpawnBuilding[1], zone.EastSpawnBuilding[2]);
+			spawnPos = zoneManager.GetEastSpawnPosition();
 			Print("[KOTH] " + playerData.PlayerName + " spawning at EAST base: " + spawnPos);
 			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(KOTH_SpawnUtils.SpawnPlayerAtPosition, 500, false, player, spawnPos);
-
 		}
 		else if (playerData.LastTeamSelection == "West")
 		{
-			spawnPos = Vector(zone.WestSpawnBuilding[0], zone.WestSpawnBuilding[1], zone.WestSpawnBuilding[2]);
+			spawnPos = zoneManager.GetWestSpawnPosition();
 			Print("[KOTH] " + playerData.PlayerName + " spawning at WEST base: " + spawnPos);
 			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(KOTH_SpawnUtils.SpawnPlayerAtPosition, 500, false, player, spawnPos);
-
 		}
 		else
 		{
 			Print("[KOTH] " + playerData.PlayerName + " has no team — opening selection menu, skipping spawn.");
 			player.SetPosition("0 10000 0"); // move temporarily in the sky
 			player.SetAllowDamage(false);    // prevent falling damage
+			
 			KOTH_TeamSelectionModule teamModule;
 			CF_Modules<KOTH_TeamSelectionModule>.Get(teamModule);
 			Print("[DayZ_KOTH] Retrieved team module: " + teamModule);
@@ -91,8 +103,5 @@ modded class MissionServer
 
 			return;
 		}
-
-
 	}
-
 }

@@ -92,7 +92,7 @@ class KOTH_TeamSelectionModule: CF_ModuleWorld
         if (GetGame().GetUIManager().GetMenu())
             return;
 
-        if (GetDayZGame().GetExpansionGame().GetExpansionUIManager().GetMenu()) // ✅ Correct call
+        if (GetDayZGame().GetExpansionGame().GetExpansionUIManager().GetMenu())
             return;
 
         if (GetDayZGame().GetMissionState() != DayZGame.MISSION_STATE_GAME)
@@ -175,10 +175,21 @@ class KOTH_TeamSelectionModule: CF_ModuleWorld
             return;
         }
 
-        KOTH_ZoneData zone = KOTH_ZoneData.Load("Chernogorsk");  // TODO: Later make this dynamic per active zone
-        if (!zone)
+        // ────────────────────────────────────────────────────────────
+        // Get active zone from Zone Manager (NO MORE HARDCODED ZONE!)
+        // ────────────────────────────────────────────────────────────
+        KOTH_ZoneManager zoneManager;
+        CF_Modules<KOTH_ZoneManager>.Get(zoneManager);
+
+        if (!zoneManager)
         {
-            Error(ToString() + "::Exec_SelectTeam - ERROR: Failed to load zone data!");
+            Error(ToString() + "::Exec_SelectTeam - ERROR: Could not get KOTH_ZoneManager!");
+            return;
+        }
+
+        if (!zoneManager.IsZoneActive())
+        {
+            Error(ToString() + "::Exec_SelectTeam - ERROR: No active zone loaded!");
             return;
         }
 
@@ -189,11 +200,11 @@ class KOTH_TeamSelectionModule: CF_ModuleWorld
 
         if (teamName == "East")
         {
-            spawnPos = zone.GetEastSpawnBuilding();
+            spawnPos = zoneManager.GetEastSpawnPosition();
         }
         else if (teamName == "West")
         {
-            spawnPos = zone.GetWestSpawnBuilding();
+            spawnPos = zoneManager.GetWestSpawnPosition();
         }
         else
         {
@@ -239,6 +250,7 @@ class KOTH_TeamSelectionModule: CF_ModuleWorld
 
         if (!player)
             return;
+        
         playerData.SetLastTeamSelection("None");
         playerData.Save(sender.GetId());
 

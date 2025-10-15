@@ -13,17 +13,43 @@ modded class MissionServer
 	// Runs once on mission start
 	void SpawnKOTHBasesOnce()
 	{
-		// Example: loads from $profile/Expansion/KOTH_Zones/Chernogorsk.json
-		KOTH_ZoneData zone = KOTH_ZoneData.Load("Chernogorsk.json");
-		if (!zone)
+		// ────────────────────────────────────────────────────────────
+		// Get the Zone Manager and load first available zone
+		// ────────────────────────────────────────────────────────────
+		KOTH_ZoneManager zoneManager;
+		CF_Modules<KOTH_ZoneManager>.Get(zoneManager);
+
+		if (!zoneManager)
 		{
-			Print("[KOTH] ERROR: Could not load zone 'Chernogorsk.json'. No bases spawned.");
+			Error("[KOTH] ERROR: Could not get KOTH_ZoneManager instance!");
 			return;
 		}
 
-		// Spawn ONLY the East & West spawn buildings (fixed facing, no players, no safezones)
-		KOTH_SpawnBasesForZone(zone);
+		if (!zoneManager.LoadFirstAvailableZone())
+		{
+			Error("[KOTH] ERROR: Failed to load initial zone. No bases spawned.");
+			return;
+		}
 
-		Print("[KOTH] Spawned East/West bases for zone: " + zone.GetZoneName());
+		KOTH_Zones activeZone = zoneManager.GetActiveZone();
+		if (!activeZone)
+		{
+			Error("[KOTH] ERROR: Active zone is NULL after loading!");
+			return;
+		}
+
+		// ────────────────────────────────────────────────────────────
+		// Spawn ONLY the East & West spawn buildings
+		// ────────────────────────────────────────────────────────────
+		vector eastSpawn = Vector(activeZone.EastSpawnBuilding[0], activeZone.EastSpawnBuilding[1], activeZone.EastSpawnBuilding[2]);
+		vector westSpawn = Vector(activeZone.WestSpawnBuilding[0], activeZone.WestSpawnBuilding[1], activeZone.WestSpawnBuilding[2]);
+
+		KOTH_SpawnBase.SpawnBases(eastSpawn, westSpawn);
+
+		Print("[KOTH] ═══════════════════════════════════════════════════");
+		Print("[KOTH] Active Zone: " + zoneManager.GetActiveZoneName());
+		Print("[KOTH] Zone Display Name: " + activeZone.ZoneName);
+		Print("[KOTH] East/West bases spawned successfully");
+		Print("[KOTH] ═══════════════════════════════════════════════════");
 	}
 }
