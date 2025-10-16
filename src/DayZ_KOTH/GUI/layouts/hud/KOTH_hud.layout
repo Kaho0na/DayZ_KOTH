@@ -1,0 +1,260 @@
+FrameWidgetClass KOTHHudFrameWidget {
+ ignorepointer 1
+ position 0 0
+ size 1 1
+ halign center_ref
+ valign center_ref
+ hexactpos 0
+ vexactpos 0
+ hexactsize 0
+ vexactsize 0
+ scriptclass "KOTH_HUDController"
+ {
+  // ═══════════════════════════════════════════════════════════════
+  // TOP PANEL - Team Scores and Player Counts
+  // ═══════════════════════════════════════════════════════════════
+  FrameWidgetClass TopPanel {
+   visible 1
+   ignorepointer 1
+   color 0 0 0 0.7
+   position 0 20
+   size 400 80
+   halign center_ref
+   valign top_ref
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   {
+    // East (Red) Score
+    TextWidgetClass eastScore {
+     ignorepointer 1
+     color 1 0.4 0.4 1
+     position 50 10
+     size 80 50
+     halign left_ref
+     valign top_ref
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text "45"
+     font "gui/fonts/etelkatextpro"
+     "text halign" center
+     "text valign" center
+     "exact text" 0
+     "size to text h" 0
+     "size to text v" 0
+    }
+    
+    // East Players Count
+    TextWidgetClass eastPlayers {
+     ignorepointer 1
+     color 0.9 0.9 0.9 1
+     position 50 55
+     size 80 20
+     halign left_ref
+     valign top_ref
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text "12 players"
+     font "gui/fonts/etelkatextpro"
+     "text halign" center
+     "text valign" center
+     "exact text" 0
+    }
+    
+    // Progress Bar (Team dominance)
+    ProgressBarWidgetClass TeamBar {
+     ignorepointer 1
+     position 0 35
+     size 300 6
+     halign center_ref
+     valign center_ref
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     current 50
+     vertical 0
+     flipped 0
+    }
+    
+    // West (Blue) Score
+    TextWidgetClass westScore {
+     ignorepointer 1
+     color 0.4 0.75 0.95 1
+     position 270 10
+     size 80 50
+     halign left_ref
+     valign top_ref
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text "38"
+     font "gui/fonts/etelkatextpro"
+     "text halign" center
+     "text valign" center
+     "exact text" 0
+     "size to text h" 0
+     "size to text v" 0
+    }
+    
+    // West Players Count
+    TextWidgetClass westPlayers {
+     ignorepointer 1
+     color 0.9 0.9 0.9 1
+     position 270 55
+     size 80 20
+     halign left_ref
+     valign top_ref
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text "10 players"
+     font "gui/fonts/etelkatextpro"
+     "text halign" center
+     "text valign" center
+     "exact text" 0
+    }
+   }
+  }
+  
+  // ═══════════════════════════════════════════════════════════════
+  // BOTTOM RIGHT PANEL - Player Stats
+  // ═══════════════════════════════════════════════════════════════
+  FrameWidgetClass LevelPanel {
+   visible 1
+   ignorepointer 1
+   color 0 0 0 0.7
+   position 20 140
+   size 220 150
+   halign right_ref
+   valign bottom_ref
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   {
+    // Level Number
+    TextWidgetClass currentLevel {
+     ignorepointer 1
+     color 1 0.85 0.3 1
+     position 15 15
+     size 60 40
+     halign left_ref
+     valign top_ref
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text "27"
+     font "gui/fonts/etelkatextpro"
+     "text halign" center
+     "text valign" center
+     "exact text" 0
+     "size to text h" 0
+     "size to text v" 0
+    }
+    
+    // Level Label
+    TextWidgetClass levelLabel {
+     ignorepointer 1
+     color 0.8 0.8 0.8 1
+     position 80 25
+     size 100 20
+     halign left_ref
+     valign top_ref
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text "LEVEL"
+     font "gui/fonts/etelkatextpro"
+     "text halign" left
+     "text valign" center
+     "exact text" 0
+    }
+    
+    // XP Bar
+    ProgressBarWidgetClass XPBar {
+     ignorepointer 1
+     position 15 65
+     size 190 8
+     halign left_ref
+     valign top_ref
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     current 65
+     vertical 0
+     flipped 0
+    }
+    
+    // XP Text
+    TextWidgetClass currentXP {
+     ignorepointer 1
+     color 0.9 0.9 0.9 1
+     position 15 78
+     size 190 18
+     halign left_ref
+     valign top_ref
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text "8,500 / 12,000 XP"
+     font "gui/fonts/etelkatextpro"
+     "text halign" center
+     "text valign" center
+     "exact text" 0
+    }
+    
+    // Money Label
+    TextWidgetClass moneyLabel {
+     ignorepointer 1
+     color 0.8 0.8 0.8 1
+     position 15 105
+     size 100 18
+     halign left_ref
+     valign top_ref
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text "MONEY"
+     font "gui/fonts/etelkatextpro"
+     "text halign" left
+     "text valign" center
+     "exact text" 0
+    }
+    
+    // Money Amount
+    TextWidgetClass currentMoney {
+     ignorepointer 1
+     color 0.3 1 0.3 1
+     position 15 118
+     size 190 25
+     halign left_ref
+     valign top_ref
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text "$45,750"
+     font "gui/fonts/etelkatextpro"
+     "text halign" center
+     "text valign" center
+     "exact text" 0
+     "size to text h" 0
+     "size to text v" 0
+    }
+   }
+  }
+ }
+}
