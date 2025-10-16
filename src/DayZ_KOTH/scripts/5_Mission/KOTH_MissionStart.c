@@ -1,8 +1,8 @@
 /**
- * KOTH_MissionStart.c
+ * KOTH_MissionStart.c (UPDATED)
  *
  * King of the Hill by Kahoona
- * Mission startup with unified zone system
+ * Mission startup with unified zone system and dynamic priority zone
  */
 
 modded class MissionServer
@@ -14,17 +14,13 @@ modded class MissionServer
         if (!GetGame().IsServer()) 
             return;
 
-        // Give the world a moment to finish loading terrain/CE before we place objects
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(InitializeKOTHZoneSystem, 1500, false);
-		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(KOTH_ZoneLoader.CreateKOTHZones, 5000, false);
-
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(KOTH_ZoneLoader.CreateKOTHZones, 5000, false);
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(ConfigurePriorityZone, 6000, false);
     }
 
     void InitializeKOTHZoneSystem()
     {
-        // ────────────────────────────────────────────────────────────
-        // Get the Zone Manager
-        // ────────────────────────────────────────────────────────────
         KOTH_ZoneManager zoneManager;
         CF_Modules<KOTH_ZoneManager>.Get(zoneManager);
 
@@ -34,18 +30,12 @@ modded class MissionServer
             return;
         }
 
-        // ────────────────────────────────────────────────────────────
-        // Load first zone
-        // ────────────────────────────────────────────────────────────
         if (!zoneManager.LoadFirstAvailableZone())
         {
             Error("[KOTH] ERROR: Failed to load initial zone. No bases spawned.");
             return;
         }
 
-        // ────────────────────────────────────────────────────────────
-        // Get settings and configure auto-rotation if enabled
-        // ────────────────────────────────────────────────────────────
         KOTH_Settings settings = GetExpansionSettings().GetDayZ_KOTH();
         
         if (settings && settings.EnableZoneRotation)
@@ -60,9 +50,6 @@ modded class MissionServer
             zoneManager.EnableAutoRotation(settings.ZoneRotationInterval, mode);
         }
 
-        // ────────────────────────────────────────────────────────────
-        // Log startup information
-        // ────────────────────────────────────────────────────────────
         KOTH_ZoneData activeZone = zoneManager.GetActiveZone();
         
         Print("[KOTH] ═══════════════════════════════════════════════════");
@@ -86,6 +73,57 @@ modded class MissionServer
         }
         
         Print("[KOTH] East/West bases spawned successfully");
+        Print("[KOTH] ═══════════════════════════════════════════════════");
+    }
+    
+    void ConfigurePriorityZone()
+    {
+        if (!GetGame().IsServer())
+            return;
+        
+        KOTH_Settings settings = GetExpansionSettings().GetDayZ_KOTH();
+        
+        if (!settings)
+        {
+            Print("[KOTH] WARNING: Could not get KOTH settings, using default priority zone config");
+            return;
+        }
+        
+        // Check if priority zone movement is enabled
+        if (!settings.EnablePriorityZoneMovement)
+        {
+            Print("[KOTH] Priority zone movement is DISABLED in settings");
+            return;
+        }
+        
+        // Check if priority zone manager is active
+        if (!KOTH_PriorityZoneManager.IsActive())
+        {
+            Print("[KOTH] WARNING: Priority zone manager not active, skipping configuration");
+            return;
+        }
+        
+        // Configure priority zone based on settings
+        Print("[KOTH] ═══════════════════════════════════════════════════");
+        Print("[KOTH] Configuring Dynamic Priority Zone");
+        Print("[KOTH] - Movement Enabled: " + settings.EnablePriorityZoneMovement);
+        Print("[KOTH] - Movement Interval: " + settings.PriorityZoneMovementInterval + " seconds");
+        Print("[KOTH] - Angle Increment: " + settings.PriorityZoneAngleIncrement + "°");
+        
+        string direction;
+        if (settings.PriorityZoneClockwise)
+            direction = "Clockwise";
+        else
+            direction = "Counter-clockwise";
+        Print("[KOTH] - Direction: " + direction);
+        
+        Print("[KOTH] - Bonus Multiplier: " + settings.PriorityZoneBonusMultiplier + "x");
+        
+        KOTH_PriorityZoneManager.SetMovementInterval(settings.PriorityZoneMovementInterval);
+        KOTH_PriorityZoneManager.SetAngleIncrement(settings.PriorityZoneAngleIncrement);
+        KOTH_PriorityZoneManager.SetDirection(settings.PriorityZoneClockwise);
+        
+        Print("[KOTH] Priority zone configuration complete");
         Print("[KOTH] ═══════════════════════════════════════════════════");
     }
 }

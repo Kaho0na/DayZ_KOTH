@@ -1,13 +1,12 @@
 /**
- * KOTH_Settings.c
+ * KOTH_Settings.c (UPDATED)
  *
  * King of the Hill by Kahoona
- * Updated with zone rotation settings
+ * Updated with priority zone movement settings
  *
  * This work is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
  * To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-nd/4.0/.
- *
-*/
+ */
 
 class KOTH_SettingsBase: ExpansionSettingBase
 {
@@ -20,6 +19,13 @@ class KOTH_SettingsBase: ExpansionSettingBase
     int MinPlayersToInfluence = 1;
     float PointsPerTickPerPlayer = 0.25;
     float NeutralizeSpeedMultiplier = 1.0;
+
+    // ────────────── PRIORITY ZONE SETTINGS ──────────────
+    bool EnablePriorityZoneMovement = true;
+    float PriorityZoneMovementInterval = 30.0; // Seconds between moves
+    float PriorityZoneAngleIncrement = 15.0; // Degrees per move
+    bool PriorityZoneClockwise = true; // Movement direction
+    float PriorityZoneBonusMultiplier = 2.0; // Points multiplier in priority zone
 
     // ────────────── EXPERIENCE SYSTEM ──────────────
     int XPPerKill = 100;
@@ -56,10 +62,10 @@ class KOTH_SettingsBase: ExpansionSettingBase
     
     // ────────────── ZONE ROTATION SETTINGS ──────────────
     bool EnableZoneRotation = false;
-    float ZoneRotationInterval = 1800.0; // 30 minutes in seconds
-    int ZoneSelectionMode = 0; // 0=Sequential, 1=Random, 2=Vote
+    float ZoneRotationInterval = 1800.0;
+    int ZoneSelectionMode = 0;
     bool NotifyPlayersOnZoneChange = true;
-    int ZoneChangeWarningTime = 60; // Warn players 60 seconds before change
+    int ZoneChangeWarningTime = 60;
     bool AllowAdminZoneChange = true;
 }
 
@@ -72,13 +78,20 @@ class KOTH_Settings: KOTH_SettingsBase
     {
         KOTH_Settings s = new KOTH_Settings;
 
-        // Existing settings
         ctx.Read(s.ModeName);
         ctx.Read(s.ScoreLimit);
         ctx.Read(s.CaptureTickSeconds);
         ctx.Read(s.MinPlayersToInfluence);
         ctx.Read(s.PointsPerTickPerPlayer);
         ctx.Read(s.NeutralizeSpeedMultiplier);
+        
+        // Priority zone settings
+        ctx.Read(s.EnablePriorityZoneMovement);
+        ctx.Read(s.PriorityZoneMovementInterval);
+        ctx.Read(s.PriorityZoneAngleIncrement);
+        ctx.Read(s.PriorityZoneClockwise);
+        ctx.Read(s.PriorityZoneBonusMultiplier);
+        
         ctx.Read(s.XPPerKill);
         ctx.Read(s.XPPerRevive);
         ctx.Read(s.XPPerAssist);
@@ -102,8 +115,6 @@ class KOTH_Settings: KOTH_SettingsBase
         ctx.Read(s.KillStreakBonusMoney);
         ctx.Read(s.GlobalMoneyMultiplier);
         ctx.Read(s.MaxTeamImbalance);
-        
-        // New zone settings
         ctx.Read(s.EnableZoneRotation);
         ctx.Read(s.ZoneRotationInterval);
         ctx.Read(s.ZoneSelectionMode);
@@ -112,9 +123,7 @@ class KOTH_Settings: KOTH_SettingsBase
         ctx.Read(s.AllowAdminZoneChange);
 
         CopyInternal(s);
-        
         m_IsLoaded = true;
-        
         ExpansionSettings.SI_DayZ_KOTH.Invoke();
 
         return true;
@@ -122,13 +131,20 @@ class KOTH_Settings: KOTH_SettingsBase
 
     override void OnSend(ParamsWriteContext ctx)
     {
-        // Existing settings
         ctx.Write(ModeName);
         ctx.Write(ScoreLimit);
         ctx.Write(CaptureTickSeconds);
         ctx.Write(MinPlayersToInfluence);
         ctx.Write(PointsPerTickPerPlayer);
         ctx.Write(NeutralizeSpeedMultiplier);
+        
+        // Priority zone settings
+        ctx.Write(EnablePriorityZoneMovement);
+        ctx.Write(PriorityZoneMovementInterval);
+        ctx.Write(PriorityZoneAngleIncrement);
+        ctx.Write(PriorityZoneClockwise);
+        ctx.Write(PriorityZoneBonusMultiplier);
+        
         ctx.Write(XPPerKill);
         ctx.Write(XPPerRevive);
         ctx.Write(XPPerAssist);
@@ -152,8 +168,6 @@ class KOTH_Settings: KOTH_SettingsBase
         ctx.Write(KillStreakBonusMoney);
         ctx.Write(GlobalMoneyMultiplier);
         ctx.Write(MaxTeamImbalance);
-        
-        // New zone settings
         ctx.Write(EnableZoneRotation);
         ctx.Write(ZoneRotationInterval);
         ctx.Write(ZoneSelectionMode);
@@ -194,13 +208,19 @@ class KOTH_Settings: KOTH_SettingsBase
 
     private void CopyInternal(KOTH_SettingsBase s)
     {
-        // Existing settings
         ModeName = s.ModeName;
         ScoreLimit = s.ScoreLimit;
         CaptureTickSeconds = s.CaptureTickSeconds;
         MinPlayersToInfluence = s.MinPlayersToInfluence;
         PointsPerTickPerPlayer = s.PointsPerTickPerPlayer;
         NeutralizeSpeedMultiplier = s.NeutralizeSpeedMultiplier;
+        
+        EnablePriorityZoneMovement = s.EnablePriorityZoneMovement;
+        PriorityZoneMovementInterval = s.PriorityZoneMovementInterval;
+        PriorityZoneAngleIncrement = s.PriorityZoneAngleIncrement;
+        PriorityZoneClockwise = s.PriorityZoneClockwise;
+        PriorityZoneBonusMultiplier = s.PriorityZoneBonusMultiplier;
+        
         XPPerKill = s.XPPerKill;
         XPPerRevive = s.XPPerRevive;
         XPPerAssist = s.XPPerAssist;
@@ -224,8 +244,6 @@ class KOTH_Settings: KOTH_SettingsBase
         KillStreakBonusMoney = s.KillStreakBonusMoney;
         GlobalMoneyMultiplier = s.GlobalMoneyMultiplier;
         MaxTeamImbalance = s.MaxTeamImbalance;
-        
-        // New zone settings
         EnableZoneRotation = s.EnableZoneRotation;
         ZoneRotationInterval = s.ZoneRotationInterval;
         ZoneSelectionMode = s.ZoneSelectionMode;
@@ -247,7 +265,6 @@ class KOTH_Settings: KOTH_SettingsBase
     override bool OnLoad()
     {
         m_IsLoaded = true;
-
         bool save;
 
         bool KOTH_SettingsExist = FileExist(EXPANSION_KOTH_Settings);
@@ -294,13 +311,19 @@ class KOTH_Settings: KOTH_SettingsBase
     
     override void Defaults()
     {
-        // Existing defaults
         ModeName = "King of the Hill";
         ScoreLimit = 100;
         CaptureTickSeconds = 1;
         MinPlayersToInfluence = 1;
         PointsPerTickPerPlayer = 0.25;
         NeutralizeSpeedMultiplier = 1.0;
+        
+        EnablePriorityZoneMovement = true;
+        PriorityZoneMovementInterval = 30.0;
+        PriorityZoneAngleIncrement = 15.0;
+        PriorityZoneClockwise = true;
+        PriorityZoneBonusMultiplier = 2.0;
+        
         XPPerKill = 100;
         XPPerRevive = 50;
         XPPerAssist = 25;
@@ -324,11 +347,9 @@ class KOTH_Settings: KOTH_SettingsBase
         KillStreakBonusMoney = { 100, 200, 300 };
         GlobalMoneyMultiplier = 1.0;
         MaxTeamImbalance = 3;
-        
-        // Zone rotation defaults
         EnableZoneRotation = false;
-        ZoneRotationInterval = 1800.0; // 30 minutes
-        ZoneSelectionMode = 0; // Sequential
+        ZoneRotationInterval = 1800.0;
+        ZoneSelectionMode = 0;
         NotifyPlayersOnZoneChange = true;
         ZoneChangeWarningTime = 60;
         AllowAdminZoneChange = true;

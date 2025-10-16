@@ -64,6 +64,10 @@ class KOTH_ZoneManager: CF_ModuleWorld
         return s_Instance;
     }
     
+    //! ═══════════════════════════════════════════════════════════════
+    //! ZONE DISCOVERY & LOADING
+    //! ═══════════════════════════════════════════════════════════════
+    
     void DiscoverAvailableZones()
     {
         m_AvailableZones.Clear();
@@ -112,6 +116,9 @@ class KOTH_ZoneManager: CF_ModuleWorld
         {
             KOTH_SpawnBase.DespawnAll();
             Print("[KOTH_ZoneManager] Despawned previous zone bases");
+            
+            // Cleanup priority zone from previous zone
+            KOTH_PriorityZoneManager.Cleanup();
         }
         
         m_ActiveZone = KOTH_ZoneData.Load(zoneName);
@@ -142,6 +149,10 @@ class KOTH_ZoneManager: CF_ModuleWorld
         
         return true;
     }
+    
+    //! ═══════════════════════════════════════════════════════════════
+    //! ZONE SELECTION METHODS
+    //! ═══════════════════════════════════════════════════════════════
     
     bool LoadFirstAvailableZone()
     {
@@ -226,6 +237,10 @@ class KOTH_ZoneManager: CF_ModuleWorld
         return LoadZone(randomZone);
     }
     
+    //! ═══════════════════════════════════════════════════════════════
+    //! AUTO ROTATION
+    //! ═══════════════════════════════════════════════════════════════
+    
     void EnableAutoRotation(float intervalSeconds, KOTHZoneSelectionMode mode)
     {
         if (!GetGame().IsServer())
@@ -255,6 +270,10 @@ class KOTH_ZoneManager: CF_ModuleWorld
         Print("[KOTH_ZoneManager] Auto-rotating to next zone");
         LoadNextZone();
     }
+    
+    //! ═══════════════════════════════════════════════════════════════
+    //! NETWORK SYNCHRONIZATION
+    //! ═══════════════════════════════════════════════════════════════
     
     void SyncActiveZoneToAllClients()
     {
@@ -311,6 +330,10 @@ class KOTH_ZoneManager: CF_ModuleWorld
         LoadSpecificZone(zoneName);
     }
     
+    //! ═══════════════════════════════════════════════════════════════
+    //! NOTIFICATIONS
+    //! ═══════════════════════════════════════════════════════════════
+    
     void NotifyPlayersZoneChange()
     {
         if (!GetGame().IsServer())
@@ -330,6 +353,10 @@ class KOTH_ZoneManager: CF_ModuleWorld
             }
         }
     }
+    
+    //! ═══════════════════════════════════════════════════════════════
+    //! GETTERS
+    //! ═══════════════════════════════════════════════════════════════
     
     KOTH_ZoneData GetActiveZone() { return m_ActiveZone; }
     string GetActiveZoneName() { return m_ActiveZoneName; }

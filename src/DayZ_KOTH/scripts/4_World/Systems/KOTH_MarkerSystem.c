@@ -200,4 +200,30 @@ class KOTH_MarkerSystem
         Print("[KOTH_MarkerSystem] Updating markers for new zone: " + zoneData.GetZoneName());
         PlaceZoneMarkers(zoneData);
     }
+    
+    //! ═══════════════════════════════════════════════════════════════
+    //! UPDATE PRIORITY MARKER (for moving priority zone)
+    //! ═══════════════════════════════════════════════════════════════
+    
+    static void UpdatePriorityMarker(vector position, int radius)
+    {
+        if (!GetGame().IsServer())
+            return;
+        
+        // Remove old priority marker
+        RemoveMarker(MARKER_ID_PRIORITY_ZONE);
+        
+        // Create new marker at new position
+        ExpansionMarkerData markerData = ExpansionMarkerData.Create(ExpansionMapMarkerType.SERVER, MARKER_ID_PRIORITY_ZONE);
+        markerData.ApplyVisibility(4);
+        markerData.Set3D(0);
+        markerData.SetName("PRIORITY ZONE - BONUS POINTS");
+        markerData.SetIcon("Skull 1");
+        markerData.SetColor(ARGB(255, 220, 200, 60)); // Yellow
+        markerData.SetPosition(position);
+        
+        GetExpansionSettings().GetMap().AddServerMarker(markerData);
+        
+        Print("[KOTH_MarkerSystem] Updated priority zone marker to: " + position);
+    }
 }
