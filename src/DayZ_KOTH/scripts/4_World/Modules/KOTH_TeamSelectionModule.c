@@ -176,7 +176,7 @@ class KOTH_TeamSelectionModule: CF_ModuleWorld
         }
 
         // ────────────────────────────────────────────────────────────
-        // Get active zone from Zone Manager (NO MORE HARDCODED ZONE!)
+        // Get active zone from Zone Manager
         // ────────────────────────────────────────────────────────────
         KOTH_ZoneManager zoneManager;
         CF_Modules<KOTH_ZoneManager>.Get(zoneManager);
@@ -212,6 +212,11 @@ class KOTH_TeamSelectionModule: CF_ModuleWorld
             return;
         }
 
+        // ───────────────────────────────────────────────
+        //  Apply team loadout BEFORE teleporting
+        // ───────────────────────────────────────────────
+        KOTH_PlayerLoadout.SetPlayerLoadout(player, teamName);
+        
         // ───────────────────────────────────────────────
         //  Teleport player safely
         // ───────────────────────────────────────────────
