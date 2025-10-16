@@ -16,6 +16,8 @@ modded class MissionServer
 
         // Give the world a moment to finish loading terrain/CE before we place objects
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(InitializeKOTHZoneSystem, 1500, false);
+		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(KOTH_ZoneLoader.CreateKOTHZones, 5000, false);
+
     }
 
     void InitializeKOTHZoneSystem()
