@@ -10,6 +10,32 @@ class KOTH_Area : EffectArea
     KOTH_AreaTrigger m_KOTH_Trigger;
     protected int m_UpdateRate = 1000;
     
+    // Static reference for easy access from HUD
+    static KOTH_Area s_Instance;
+    
+    void KOTH_Area()
+    {
+        s_Instance = this;
+    }
+    
+    void ~KOTH_Area()
+    {
+        if (s_Instance == this)
+            s_Instance = null;
+    }
+    
+    static KOTH_Area GetInstance()
+    {
+        return s_Instance;
+    }
+    
+    static KOTH_AreaTrigger GetMainTrigger()
+    {
+        if (s_Instance)
+            return s_Instance.m_KOTH_Trigger;
+        return null;
+    }
+    
     void KOTH_Init(vector position, float radius)
     {
         m_Radius = radius;
@@ -21,7 +47,6 @@ class KOTH_Area : EffectArea
         
         CreateTrigger(m_Position, m_Radius);
         
-        // Start update loop
         if (GetGame().IsServer())
         {
             GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(UpdateZone, m_UpdateRate, true);
@@ -50,19 +75,16 @@ class KOTH_Area : EffectArea
         super.EEDelete(parent);
     }
     
-    // Unused - we initialize manually
     override void SetupZoneData(EffectAreaParams params) 
     {
     }
     
     override void OnPlayerEnterServer(PlayerBase player, EffectTrigger trigger)
     {
-        // Not used - handled in trigger
     }
     
     override void OnPlayerExitServer(PlayerBase player, EffectTrigger trigger)
     {
-        // Not used - handled in trigger
     }
     
     void UpdateZone()
@@ -93,7 +115,6 @@ class KOTH_AreaTrigger : CylinderTrigger
     
     override protected bool CanAddObjectAsInsider(Object object)
     {
-        // Only track players
         if (PlayerBase.Cast(object))
             return true;
         
@@ -120,8 +141,10 @@ class KOTH_AreaTrigger : CylinderTrigger
                     string team = player.GetKOTHTeam();
                     Print("[KOTH_AreaTrigger] Player entered: " + player.GetIdentity().GetName() + " (Team: " + team + ")");
                     
-                    // Send notification to player
                     NotifyPlayerEntered(player);
+                    
+                    // Notify sync module of count change
+                    NotifyHUDSync();
                 }
             }
         }
@@ -142,10 +165,25 @@ class KOTH_AreaTrigger : CylinderTrigger
                     m_PlayersInside.Remove(idx);
                     Print("[KOTH_AreaTrigger] Player left: " + player.GetIdentity().GetName());
                     
-                    // Send notification to player
                     NotifyPlayerExited(player);
+                    
+                    // Notify sync module of count change
+                    NotifyHUDSync();
                 }
             }
+        }
+    }
+    
+    void NotifyHUDSync()
+    {
+        KOTH_HUDDataSync syncModule;
+        CF_Modules<KOTH_HUDDataSync>.Get(syncModule);
+        
+        if (syncModule)
+        {
+            int eastCount = GetTeamPlayerCount("East");
+            int westCount = GetTeamPlayerCount("West");
+            syncModule.OnPlayerCountsChanged(eastCount, westCount);
         }
     }
     
@@ -154,7 +192,6 @@ class KOTH_AreaTrigger : CylinderTrigger
         if (!player || !player.GetIdentity())
             return;
             
-        // Send notification directly to player
         player.MessageStatus("[KOTH] You entered the capture zone!");
     }
     
@@ -179,5 +216,20 @@ class KOTH_AreaTrigger : CylinderTrigger
     array<PlayerBase> GetPlayersInside()
     {
         return m_PlayersInside;
+    }
+    
+    // NEW: Count players by team
+    int GetTeamPlayerCount(string teamName)
+    {
+        int count = 0;
+        for (int i = 0; i < m_PlayersInside.Count(); i++)
+        {
+            PlayerBase player = m_PlayersInside.Get(i);
+            if (player && player.GetKOTHTeam() == teamName)
+            {
+                count++;
+            }
+        }
+        return count;
     }
 }

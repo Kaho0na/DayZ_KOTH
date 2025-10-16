@@ -8,7 +8,6 @@ FrameWidgetClass KOTHHudFrameWidget {
  vexactpos 0
  hexactsize 0
  vexactsize 0
- scriptclass "KOTH_HUDController"
  {
   // ═══════════════════════════════════════════════════════════════
   // TOP PANEL - Team Scores and Player Counts
@@ -38,7 +37,7 @@ FrameWidgetClass KOTHHudFrameWidget {
      vexactpos 1
      hexactsize 1
      vexactsize 1
-     text "45"
+     text "0"
      font "gui/fonts/etelkatextpro"
      "text halign" center
      "text valign" center
@@ -59,7 +58,7 @@ FrameWidgetClass KOTHHudFrameWidget {
      vexactpos 1
      hexactsize 1
      vexactsize 1
-     text "12 players"
+     text "0 players"
      font "gui/fonts/etelkatextpro"
      "text halign" center
      "text valign" center
@@ -94,7 +93,7 @@ FrameWidgetClass KOTHHudFrameWidget {
      vexactpos 1
      hexactsize 1
      vexactsize 1
-     text "38"
+     text "0"
      font "gui/fonts/etelkatextpro"
      "text halign" center
      "text valign" center
@@ -115,7 +114,7 @@ FrameWidgetClass KOTHHudFrameWidget {
      vexactpos 1
      hexactsize 1
      vexactsize 1
-     text "10 players"
+     text "0 players"
      font "gui/fonts/etelkatextpro"
      "text halign" center
      "text valign" center
@@ -152,7 +151,7 @@ FrameWidgetClass KOTHHudFrameWidget {
      vexactpos 1
      hexactsize 1
      vexactsize 1
-     text "27"
+     text "1"
      font "gui/fonts/etelkatextpro"
      "text halign" center
      "text valign" center
@@ -191,7 +190,7 @@ FrameWidgetClass KOTHHudFrameWidget {
      vexactpos 1
      hexactsize 1
      vexactsize 1
-     current 65
+     current 0
      vertical 0
      flipped 0
     }
@@ -208,7 +207,7 @@ FrameWidgetClass KOTHHudFrameWidget {
      vexactpos 1
      hexactsize 1
      vexactsize 1
-     text "8,500 / 12,000 XP"
+     text "0 / 1,000 XP"
      font "gui/fonts/etelkatextpro"
      "text halign" center
      "text valign" center
@@ -246,7 +245,7 @@ FrameWidgetClass KOTHHudFrameWidget {
      vexactpos 1
      hexactsize 1
      vexactsize 1
-     text "$45,750"
+     text "$0"
      font "gui/fonts/etelkatextpro"
      "text halign" center
      "text valign" center
