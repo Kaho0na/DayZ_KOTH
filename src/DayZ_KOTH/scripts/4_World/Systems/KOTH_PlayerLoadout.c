@@ -89,11 +89,35 @@ class KOTH_PlayerLoadout
     //! ═══════════════════════════════════════════════════════════════
     //! CLEAR INVENTORY
     //! ═══════════════════════════════════════════════════════════════
-    
+
     static void ClearPlayerInventory(PlayerBase player)
     {
-        // Remove all items except what player is wearing
-        player.RemoveAllItems();
+        // Clear items properly by destroying them individually
+        array<EntityAI> itemsToDelete = new array<EntityAI>();
+        
+        // Get all items attached to the player
+        int attCount = player.GetInventory().AttachmentCount();
+        for (int att = 0; att < attCount; att++)
+        {
+            EntityAI attachment = player.GetInventory().GetAttachmentFromIndex(att);
+            if (attachment)
+            {
+                itemsToDelete.Insert(attachment);
+            }
+        }
+        
+        // Get items in hands
+        EntityAI handsItem = player.GetHumanInventory().GetEntityInHands();
+        if (handsItem)
+        {
+            itemsToDelete.Insert(handsItem);
+        }
+        
+        // Delete all collected items
+        foreach (EntityAI item : itemsToDelete)
+        {
+            player.GetInventory().LocalDestroyEntity(item);
+        }
     }
     
     //! ═══════════════════════════════════════════════════════════════
