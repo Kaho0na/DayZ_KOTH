@@ -2,9 +2,7 @@
  * KOTH_Settings.c
  *
  * King of the Hill by Kahoona
- * Credit to the DayZ Expansion Mod Team
- * www.dayzexpansion.com
- * © 2022 DayZ Expansion Mod Team
+ * Updated with zone rotation settings
  *
  * This work is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
  * To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-nd/4.0/.
@@ -15,7 +13,6 @@ class KOTH_SettingsBase: ExpansionSettingBase
 {
     // ────────────── META ──────────────
     string ModeName = "King of the Hill";
-
 
     // ────────────── CORE GAMEPLAY ──────────────
     int ScoreLimit = 100;
@@ -56,20 +53,27 @@ class KOTH_SettingsBase: ExpansionSettingBase
 
     // ────────────── BALANCE / FAIRNESS ──────────────
     int MaxTeamImbalance = 3;
+    
+    // ────────────── ZONE ROTATION SETTINGS ──────────────
+    bool EnableZoneRotation = false;
+    float ZoneRotationInterval = 1800.0; // 30 minutes in seconds
+    int ZoneSelectionMode = 0; // 0=Sequential, 1=Random, 2=Vote
+    bool NotifyPlayersOnZoneChange = true;
+    int ZoneChangeWarningTime = 60; // Warn players 60 seconds before change
+    bool AllowAdminZoneChange = true;
 }
 
 class KOTH_Settings: KOTH_SettingsBase
 {
-
-	[NonSerialized()]
-	private bool m_IsLoaded;
+    [NonSerialized()]
+    private bool m_IsLoaded;
 
     override bool OnRecieve(ParamsReadContext ctx)
-	{
-		
-		KOTH_Settings s = new KOTH_Settings;
+    {
+        KOTH_Settings s = new KOTH_Settings;
 
-		ctx.Read(s.ModeName);
+        // Existing settings
+        ctx.Read(s.ModeName);
         ctx.Read(s.ScoreLimit);
         ctx.Read(s.CaptureTickSeconds);
         ctx.Read(s.MinPlayersToInfluence);
@@ -98,19 +102,28 @@ class KOTH_Settings: KOTH_SettingsBase
         ctx.Read(s.KillStreakBonusMoney);
         ctx.Read(s.GlobalMoneyMultiplier);
         ctx.Read(s.MaxTeamImbalance);
-	
-		CopyInternal(s);
-		
-		m_IsLoaded = true;
-		
-		ExpansionSettings.SI_DayZ_KOTH.Invoke();
+        
+        // New zone settings
+        ctx.Read(s.EnableZoneRotation);
+        ctx.Read(s.ZoneRotationInterval);
+        ctx.Read(s.ZoneSelectionMode);
+        ctx.Read(s.NotifyPlayersOnZoneChange);
+        ctx.Read(s.ZoneChangeWarningTime);
+        ctx.Read(s.AllowAdminZoneChange);
 
-		return true;
-	}
+        CopyInternal(s);
+        
+        m_IsLoaded = true;
+        
+        ExpansionSettings.SI_DayZ_KOTH.Invoke();
+
+        return true;
+    }
 
     override void OnSend(ParamsWriteContext ctx)
-	{
-		ctx.Write(ModeName);
+    {
+        // Existing settings
+        ctx.Write(ModeName);
         ctx.Write(ScoreLimit);
         ctx.Write(CaptureTickSeconds);
         ctx.Write(MinPlayersToInfluence);
@@ -139,52 +152,49 @@ class KOTH_Settings: KOTH_SettingsBase
         ctx.Write(KillStreakBonusMoney);
         ctx.Write(GlobalMoneyMultiplier);
         ctx.Write(MaxTeamImbalance);
+        
+        // New zone settings
+        ctx.Write(EnableZoneRotation);
+        ctx.Write(ZoneRotationInterval);
+        ctx.Write(ZoneSelectionMode);
+        ctx.Write(NotifyPlayersOnZoneChange);
+        ctx.Write(ZoneChangeWarningTime);
+        ctx.Write(AllowAdminZoneChange);
+    }
 
-	}
-
-    	// ------------------------------------------------------------
-	override int Send(PlayerIdentity identity)
-	{
-		
-		if (!IsMissionHost())
-		{
-			return 0;
-		}
-		
-		auto rpc = CreateRPC();
-		OnSend(rpc);
-		rpc.Expansion_Send(true, identity);
-		
-		return 0;
-	}
+    override int Send(PlayerIdentity identity)
+    {
+        if (!IsMissionHost())
+        {
+            return 0;
+        }
+        
+        auto rpc = CreateRPC();
+        OnSend(rpc);
+        rpc.Expansion_Send(true, identity);
+        
+        return 0;
+    }
 
     override bool Copy(ExpansionSettingBase setting)
-	{
-		KOTH_Settings s;
-		if (!Class.CastTo(s, setting))
-			return false;
+    {
+        KOTH_Settings s;
+        if (!Class.CastTo(s, setting))
+            return false;
 
-		CopyInternal(s);
-		return true;
-	}
+        CopyInternal(s);
+        return true;
+    }
 
-    protected void CopyInternal( KOTH_Settings s )
-	{
-	#ifdef EXPANSIONTRACE
-		auto trace = CF_Trace_1(ExpansionTracing.SETTINGS, this, "CopyInternal").Add(s);
-	#endif
+    protected void CopyInternal(KOTH_Settings s)
+    {
+        KOTH_SettingsBase sb = s;
+        CopyInternal(sb);
+    }
 
-
-		KOTH_Settings sb = s;
-		CopyInternal( sb );
-	}
-
-    private void CopyInternal( KOTH_SettingsBase s)
-	{
-#ifdef EXPANSIONTRACE
-		auto trace = CF_Trace_1(ExpansionTracing.SETTINGS, this, "CopyInternal").Add(s);
-#endif
-
+    private void CopyInternal(KOTH_SettingsBase s)
+    {
+        // Existing settings
         ModeName = s.ModeName;
         ScoreLimit = s.ScoreLimit;
         CaptureTickSeconds = s.CaptureTickSeconds;
@@ -215,83 +225,76 @@ class KOTH_Settings: KOTH_SettingsBase
         GlobalMoneyMultiplier = s.GlobalMoneyMultiplier;
         MaxTeamImbalance = s.MaxTeamImbalance;
         
-	}
+        // New zone settings
+        EnableZoneRotation = s.EnableZoneRotation;
+        ZoneRotationInterval = s.ZoneRotationInterval;
+        ZoneSelectionMode = s.ZoneSelectionMode;
+        NotifyPlayersOnZoneChange = s.NotifyPlayersOnZoneChange;
+        ZoneChangeWarningTime = s.ZoneChangeWarningTime;
+        AllowAdminZoneChange = s.AllowAdminZoneChange;
+    }
 
-	override bool IsLoaded()
-	{
-		return m_IsLoaded;
-	}
-	
-	override void Unload()
-	{
-		m_IsLoaded = false;
-	}
+    override bool IsLoaded()
+    {
+        return m_IsLoaded;
+    }
+    
+    override void Unload()
+    {
+        m_IsLoaded = false;
+    }
 
-	override bool OnLoad()
-	{
-	#ifdef EXPANSIONTRACE
-		auto trace = CF_Trace_0(ExpansionTracing.SETTINGS, this, "OnLoad");
-	#endif
+    override bool OnLoad()
+    {
+        m_IsLoaded = true;
 
-		m_IsLoaded = true;
+        bool save;
 
-		bool save;
+        bool KOTH_SettingsExist = FileExist(EXPANSION_KOTH_Settings);
 
-		bool KOTH_SettingsExist = FileExist(EXPANSION_KOTH_Settings);
+        if (KOTH_SettingsExist)
+        {
+            CF_Log.Info("[KOTH_Settings] Load existing setting file:" + EXPANSION_KOTH_Settings);
 
-		if (KOTH_SettingsExist)
-		{
-			CF_Log.Info("[KOTH_Settings] Load existing setting file:" + EXPANSION_KOTH_Settings);
+            KOTH_Settings settingsDefault = new KOTH_Settings;
+            settingsDefault.Defaults();
 
-			KOTH_Settings settingsDefault = new KOTH_Settings;
-			settingsDefault.Defaults();
+            KOTH_SettingsBase settingsBase;
 
-			KOTH_SettingsBase settingsBase;
+            JsonFileLoader<KOTH_SettingsBase>.JsonLoadFile(EXPANSION_KOTH_Settings, settingsBase);
+            JsonFileLoader<KOTH_Settings>.JsonLoadFile(EXPANSION_KOTH_Settings, this);
+        }
+        else
+        {
+            CF_Log.Info("[KOTH_Settings] No existing setting file:" + EXPANSION_KOTH_Settings + ". Creating defaults!");
 
-			JsonFileLoader<KOTH_SettingsBase>.JsonLoadFile(EXPANSION_KOTH_Settings, settingsBase);
-			JsonFileLoader<KOTH_Settings>.JsonLoadFile(EXPANSION_KOTH_Settings, this);
-			
-		}
-		else
-		{
-			CF_Log.Info("[KOTH_Settings] No existing setting file:" + EXPANSION_KOTH_Settings + ". Creating defaults!");
+            Defaults();
+            save = true;
+        }
 
-			Defaults();
-			save = true;
-		}
+        if (save)
+        {
+            Save();
+        }
 
-		if (save)
-		{
-			Save();
-		}
+        return KOTH_SettingsExist;
+    }
 
-		return KOTH_SettingsExist;
-	}
+    override bool OnSave()
+    {
+        JsonFileLoader<KOTH_Settings>.JsonSaveFile(EXPANSION_KOTH_Settings, this);
+        return true;
+    }
 
-	override bool OnSave()
-	{
-	#ifdef EXPANSIONTRACE
-		auto trace = CF_Trace_0(ExpansionTracing.SETTINGS, this, "OnSave");
-	#endif
-
-		JsonFileLoader<KOTH_Settings>.JsonSaveFile( EXPANSION_KOTH_Settings, this );
-
-		return true;
-	}
-
-	override void Update( ExpansionSettingBase setting )
-	{
-	#ifdef EXPANSIONTRACE
-		auto trace = CF_Trace_1(ExpansionTracing.SETTINGS, this, "Update").Add(setting);
-	#endif
-
-		super.Update( setting );
-
-		ExpansionSettings.SI_DayZ_KOTH.Invoke();
-	}
-	
+    override void Update(ExpansionSettingBase setting)
+    {
+        super.Update(setting);
+        ExpansionSettings.SI_DayZ_KOTH.Invoke();
+    }
+    
     override void Defaults()
-	{
+    {
+        // Existing defaults
         ModeName = "King of the Hill";
         ScoreLimit = 100;
         CaptureTickSeconds = 1;
@@ -321,10 +324,18 @@ class KOTH_Settings: KOTH_SettingsBase
         KillStreakBonusMoney = { 100, 200, 300 };
         GlobalMoneyMultiplier = 1.0;
         MaxTeamImbalance = 3;
-	}
+        
+        // Zone rotation defaults
+        EnableZoneRotation = false;
+        ZoneRotationInterval = 1800.0; // 30 minutes
+        ZoneSelectionMode = 0; // Sequential
+        NotifyPlayersOnZoneChange = true;
+        ZoneChangeWarningTime = 60;
+        AllowAdminZoneChange = true;
+    }
 
     override string SettingName()
-	{
-		return "DayZ King Of The Hill Settings";
-	}
+    {
+        return "DayZ King Of The Hill Settings";
+    }
 }
