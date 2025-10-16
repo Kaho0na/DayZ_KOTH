@@ -2,6 +2,9 @@ modded class InGameMenu
 {
 	private ButtonWidget m_ChangeTeamButton;
 	private TextWidget m_ChangeTeamLabel;
+	
+	// Dialog ID for team change confirmation
+	const int IDC_TEAM_CHANGE = 999;
 
 	override Widget Init()
 	{
@@ -33,17 +36,45 @@ modded class InGameMenu
 		if (w == m_ChangeTeamButton)
 		{
 			Print("[KOTH] Change Team button clicked!");
-			Close();
-			KOTH_TeamSelectionModule teamModule;
-			CF_Modules<KOTH_TeamSelectionModule>.Get(teamModule);
-            if (teamModule)
-            {
-                auto rpc = teamModule.Expansion_CreateRPC("RPC_RequestTeamChange");
-                rpc.Expansion_Send(true);
-            }
+			
+			// Show confirmation dialog
+			GetGame().GetUIManager().ShowDialog("Change Team", "Are you sure you want to change your team?\nThis will kill your current character.", IDC_TEAM_CHANGE, DBT_YESNO, DBB_NO, DMT_QUESTION, this);
+			
 			return true;
 		}
 
 		return super.OnClick(w, x, y, button);
+	}
+	
+	// Handle dialog result
+	override bool OnModalResult(Widget w, int x, int y, int code, int result)
+	{
+		if (code == IDC_TEAM_CHANGE)
+		{
+			if (result == DBB_YES)
+			{
+				Print("[KOTH] Player confirmed team change!");
+				
+				// Close the menu first
+				Close();
+				
+				// Send the team change request to server
+				KOTH_TeamSelectionModule teamModule;
+				CF_Modules<KOTH_TeamSelectionModule>.Get(teamModule);
+				if (teamModule)
+				{
+					auto rpc = teamModule.Expansion_CreateRPC("RPC_RequestTeamChange");
+					rpc.Expansion_Send(true);
+				}
+			}
+			else
+			{
+				Print("[KOTH] Player cancelled team change.");
+			}
+			
+			return true;
+		}
+		
+		return super.OnModalResult(w, x, y, code, result);
 	}
 }
