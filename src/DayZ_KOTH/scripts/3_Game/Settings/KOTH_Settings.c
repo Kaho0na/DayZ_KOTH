@@ -1,11 +1,9 @@
 /**
- * KOTH_Settings.c
+ * KOTH_Settings.c (SIMPLIFIED PRIORITY SETTINGS)
  *
  * King of the Hill by Kahoona
- * Complete settings system for KOTH game mode
- *
- * This work is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
- * To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-nd/4.0/.
+ * Removed clockwise and angle increment settings
+ * Place in: 3_Game/Settings/KOTH_Settings.c
  */
 
 class KOTH_SettingsBase: ExpansionSettingBase
@@ -20,8 +18,6 @@ class KOTH_SettingsBase: ExpansionSettingBase
 
     bool EnablePriorityZoneMovement = true;
     float PriorityZoneMovementInterval = 30.0;
-    float PriorityZoneAngleIncrement = 15.0;
-    bool PriorityZoneClockwise = true;
     float PriorityZoneBonusMultiplier = 2.0;
 
     int XPPerKill = 100;
@@ -82,8 +78,6 @@ class KOTH_Settings: KOTH_SettingsBase
         
         if (!ctx.Read(s.EnablePriorityZoneMovement)) return false;
         if (!ctx.Read(s.PriorityZoneMovementInterval)) return false;
-        if (!ctx.Read(s.PriorityZoneAngleIncrement)) return false;
-        if (!ctx.Read(s.PriorityZoneClockwise)) return false;
         if (!ctx.Read(s.PriorityZoneBonusMultiplier)) return false;
         
         if (!ctx.Read(s.XPPerKill)) return false;
@@ -134,8 +128,6 @@ class KOTH_Settings: KOTH_SettingsBase
         
         ctx.Write(EnablePriorityZoneMovement);
         ctx.Write(PriorityZoneMovementInterval);
-        ctx.Write(PriorityZoneAngleIncrement);
-        ctx.Write(PriorityZoneClockwise);
         ctx.Write(PriorityZoneBonusMultiplier);
         
         ctx.Write(XPPerKill);
@@ -208,8 +200,6 @@ class KOTH_Settings: KOTH_SettingsBase
         
         EnablePriorityZoneMovement = s.EnablePriorityZoneMovement;
         PriorityZoneMovementInterval = s.PriorityZoneMovementInterval;
-        PriorityZoneAngleIncrement = s.PriorityZoneAngleIncrement;
-        PriorityZoneClockwise = s.PriorityZoneClockwise;
         PriorityZoneBonusMultiplier = s.PriorityZoneBonusMultiplier;
         
         XPPerKill = s.XPPerKill;
@@ -314,8 +304,6 @@ class KOTH_Settings: KOTH_SettingsBase
         
         EnablePriorityZoneMovement = true;
         PriorityZoneMovementInterval = 30.0;
-        PriorityZoneAngleIncrement = 15.0;
-        PriorityZoneClockwise = true;
         PriorityZoneBonusMultiplier = 2.0;
         
         XPPerKill = 100;

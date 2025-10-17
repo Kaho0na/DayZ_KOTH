@@ -1,8 +1,8 @@
 /**
- * KOTH_MapMenu.c (DYNAMIC PRIORITY ZONE MARKER)
+ * KOTH_MapMenu.c (WITH PRIORITY ZONE REDRAW)
  *
  * King of the Hill by Kahoona
- * Client-side map circle drawing with dynamic priority zone updates
+ * Client-side map with priority zone updates
  * Place in: 5_Mission/GUI/KOTH_MapMenu.c
  */
 
@@ -14,8 +14,7 @@ modded class ExpansionMapMenu extends UIScriptedMenu
     ref array<int> koth_ZoneColors = new array<int>();
     ref array<bool> koth_ZoneDrawCircles = new array<bool>();
 
-    bool koth_ZonesDrawn = false;
-    bool koth_UpdateTimerActive = false;
+    bool koth_StaticZonesDrawn = false;
 
     override Widget Init() 
     {
@@ -35,14 +34,7 @@ modded class ExpansionMapMenu extends UIScriptedMenu
 
         InitKOTHRPC();
         RequestKOTHZones();
-        StartUpdateTimer();
-        
         return layoutRoot;
-    }
-
-    void ~ExpansionMapMenu()
-    {
-        StopUpdateTimer();
     }
 
     void InitKOTHRPC()
@@ -77,22 +69,53 @@ modded class ExpansionMapMenu extends UIScriptedMenu
 
         Print("[KOTH_MapMenu] Received configuration data - " + koth_ZoneNames.Count() + " zones");
 
-        DrawKOTHZones();
+        RedrawAllZones();
     }
 
-    void DrawKOTHZones()
+    void RedrawAllZones()
     {
+        if (!m_MapWidget)
+        {
+            Print("[KOTH_MapMenu] MapWidget is null, cannot redraw");
+            return;
+        }
+
+        Print("[KOTH_MapMenu] Clearing all map markers for redraw");
+        m_MapWidget.ClearUserMarks();
+        
+        koth_StaticZonesDrawn = false;
+        
+        DrawStaticZones();
+        
+        if (koth_ZoneNames.Count() > 3)
+        {
+            DrawPriorityZone();
+        }
+        
+        Print("[KOTH_MapMenu] All zones redrawn");
+    }
+
+    void DrawStaticZones()
+    {
+        if (koth_StaticZonesDrawn)
+        {
+            Print("[KOTH_MapMenu] Static zones already drawn");
+            return;
+        }
+
         if (!m_MapWidget)
         {
             Print("[KOTH_MapMenu] MapWidget is null");
             return;
         }
 
-        m_MapWidget.ClearUserMarks();
-
         autoptr array<vector> zoneCirclePoints = new array<vector>();
 
-        for (int i = 0; i < koth_ZonePositions.Count(); i++)
+        int staticZoneCount = 3;
+        if (koth_ZoneNames.Count() > 3)
+            staticZoneCount = 3;
+
+        for (int i = 0; i < staticZoneCount; i++)
         {
             if (koth_ZoneDrawCircles.Get(i))
             {
@@ -110,8 +133,42 @@ modded class ExpansionMapMenu extends UIScriptedMenu
             }
         }
 
-        koth_ZonesDrawn = true;
-        Print("[KOTH_MapMenu] All KOTH zones drawn successfully");
+        koth_StaticZonesDrawn = true;
+        Print("[KOTH_MapMenu] Static zones drawn successfully");
+    }
+
+    void DrawPriorityZone()
+    {
+        if (!m_MapWidget)
+        {
+            Print("[KOTH_MapMenu] MapWidget is null");
+            return;
+        }
+
+        if (koth_ZoneNames.Count() <= 3)
+        {
+            Print("[KOTH_MapMenu] No priority zone data available");
+            return;
+        }
+
+        int priorityIndex = 3;
+        
+        if (koth_ZoneDrawCircles.Get(priorityIndex))
+        {
+            vector zonePos = koth_ZonePositions.Get(priorityIndex);
+            float radius = koth_ZoneRadii.Get(priorityIndex);
+            int color = koth_ZoneColors.Get(priorityIndex);
+            
+            autoptr array<vector> zoneCirclePoints = new array<vector>();
+            GetKOTHCirclePoints(radius, zonePos, zoneCirclePoints);
+            
+            for (int k = 0; k < zoneCirclePoints.Count(); k++)
+            {
+                m_MapWidget.AddUserMark(zoneCirclePoints.Get(k), "", color, "\\dz\\gear\\navigation\\data\\map_bush_ca.paa");
+            }
+            
+            Print("[KOTH_MapMenu] Drew Priority Zone at " + zonePos + " with radius " + radius + "m (" + zoneCirclePoints.Count() + " points)");
+        }
     }
 
     void GetKOTHCirclePoints(float radius, vector center, out array<vector> result)
@@ -133,33 +190,5 @@ modded class ExpansionMapMenu extends UIScriptedMenu
             vector p = Vector(newX, 0, newZ);
             result.Insert(p);
         }
-    }
-
-    void StartUpdateTimer()
-    {
-        if (koth_UpdateTimerActive)
-            return;
-        
-        koth_UpdateTimerActive = true;
-        GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(UpdatePriorityZoneMarker, 5000, true);
-        Print("[KOTH_MapMenu] Started priority zone marker update timer (5s interval)");
-    }
-
-    void StopUpdateTimer()
-    {
-        if (!koth_UpdateTimerActive)
-            return;
-        
-        koth_UpdateTimerActive = false;
-        GetGame().GetCallQueue(CALL_CATEGORY_GUI).Remove(UpdatePriorityZoneMarker);
-        Print("[KOTH_MapMenu] Stopped priority zone marker update timer");
-    }
-
-    void UpdatePriorityZoneMarker()
-    {
-        if (!koth_ZonesDrawn)
-            return;
-        
-        RequestKOTHZones();
     }
 }

@@ -82,7 +82,6 @@ modded class MissionServer
             if (settings.EnablePriorityZoneMovement)
             {
                 Print("[KOTH] - Interval: " + settings.PriorityZoneMovementInterval + "s");
-                Print("[KOTH] - Angle: " + settings.PriorityZoneAngleIncrement + "°");
                 Print("[KOTH] - Bonus: " + settings.PriorityZoneBonusMultiplier + "x");
             }
         }

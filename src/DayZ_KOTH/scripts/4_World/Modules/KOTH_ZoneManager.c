@@ -1,8 +1,8 @@
 /**
- * KOTH_ZoneManager.c (DYNAMIC PRIORITY ZONE DATA)
+ * KOTH_ZoneManager.c (WITH PRIORITY ZONE SYNC)
  *
  * King of the Hill by Kahoona
- * Updates priority zone position data on every client request
+ * Added RPC for priority zone position updates
  * Place in: 4_World/Modules/KOTH_ZoneManager.c
  */
 
@@ -34,6 +34,9 @@ class KOTH_ZoneManager: CF_ModuleWorld
     ref array<int> zoneColors;
     ref array<bool> zoneDrawCircles;
     
+    private vector m_PriorityZonePosition;
+    private float m_PriorityZoneRadius;
+    
     void KOTH_ZoneManager()
     {
         s_Instance = this;
@@ -43,6 +46,8 @@ class KOTH_ZoneManager: CF_ModuleWorld
         zoneRadii = new array<float>();
         zoneColors = new array<int>();
         zoneDrawCircles = new array<bool>();
+        m_PriorityZonePosition = "0 0 0";
+        m_PriorityZoneRadius = 0;
     }
     
     override void OnInit()
@@ -57,6 +62,7 @@ class KOTH_ZoneManager: CF_ModuleWorld
         Expansion_RegisterClientRPC("RPC_SyncActiveZone");
         Expansion_RegisterServerRPC("RPC_RequestZoneInfo");
         Expansion_RegisterServerRPC("RPC_AdminChangeZone");
+        Expansion_RegisterClientRPC("RPC_SyncPriorityZone");
     }
     
     override void OnMissionStart(Class sender, CF_EventArgs args)
@@ -88,9 +94,7 @@ class KOTH_ZoneManager: CF_ModuleWorld
         if (sender == null)
             return;
 
-        Print("[KOTH_ZoneManager] Client " + sender.GetName() + " requested zone data - updating priority position");
-
-        PrepareMapCircleData();
+        Print("[KOTH_ZoneManager] Client " + sender.GetName() + " requested zone data");
 
         GetRPCManager().SendRPC("KOTH_MapMenu", "ReceiveKOTHZones", new Param5<array<string>, array<vector>, array<float>, array<int>, array<bool>>(zoneNames, zonePositions, zoneRadii, zoneColors, zoneDrawCircles), true, sender);
     }
@@ -159,7 +163,7 @@ class KOTH_ZoneManager: CF_ModuleWorld
         Print("[KOTH_ZoneManager] Total zones discovered: " + m_AvailableZones.Count());
     }
     
-    bool LoadZone(string zoneName, bool despawnOldZone = true)
+    bool LoadZone(string zoneName, bool despawnOldZone)
     {
         if (!GetGame().IsServer())
             return false;
@@ -238,6 +242,8 @@ class KOTH_ZoneManager: CF_ModuleWorld
         {
             Print("[KOTH_ZoneManager] Initializing priority zone...");
             KOTH_PriorityZoneManager.Initialize(aoCenter, aoRadius, priRadius);
+            m_PriorityZonePosition = KOTH_PriorityZoneManager.GetCurrentPosition();
+            m_PriorityZoneRadius = KOTH_PriorityZoneManager.GetCurrentRadius();
             Print("[KOTH_ZoneManager] Priority zone initialized");
         }
     }
@@ -273,15 +279,11 @@ class KOTH_ZoneManager: CF_ModuleWorld
         
         if (m_ActiveZone.GetPriorityAORadius() > 0)
         {
-            vector priorityPos = KOTH_PriorityZoneManager.GetCurrentPosition();
-            
             zoneNames.Insert("Priority Zone");
-            zonePositions.Insert(priorityPos);
-            zoneRadii.Insert(m_ActiveZone.GetPriorityAORadius());
+            zonePositions.Insert(m_PriorityZonePosition);
+            zoneRadii.Insert(m_PriorityZoneRadius);
             zoneColors.Insert(ARGB(255, 220, 200, 60));
             zoneDrawCircles.Insert(true);
-            
-            Print("[KOTH_ZoneManager] Priority zone marker position updated to: " + priorityPos);
         }
         
         Print("[KOTH_ZoneManager] Map circle data prepared - " + zoneNames.Count() + " circles");
@@ -327,34 +329,32 @@ class KOTH_ZoneManager: CF_ModuleWorld
         
         string nextZone;
         
-        switch (m_SelectionMode)
+        if (m_SelectionMode == KOTHZoneSelectionMode.SEQUENTIAL)
         {
-            case KOTHZoneSelectionMode.SEQUENTIAL:
-                m_CurrentZoneIndex = (m_CurrentZoneIndex + 1) % m_AvailableZones.Count();
-                nextZone = m_AvailableZones.Get(m_CurrentZoneIndex);
-                Print("[KOTH_ZoneManager] Rotating to next zone in sequence: " + nextZone);
-                break;
-                
-            case KOTHZoneSelectionMode.RANDOM:
-                int randomIndex = Math.RandomInt(0, m_AvailableZones.Count());
-                
-                if (m_AvailableZones.Count() > 1)
+            m_CurrentZoneIndex = (m_CurrentZoneIndex + 1) % m_AvailableZones.Count();
+            nextZone = m_AvailableZones.Get(m_CurrentZoneIndex);
+            Print("[KOTH_ZoneManager] Rotating to next zone in sequence: " + nextZone);
+        }
+        else if (m_SelectionMode == KOTHZoneSelectionMode.RANDOM)
+        {
+            int randomIndex = Math.RandomInt(0, m_AvailableZones.Count());
+            
+            if (m_AvailableZones.Count() > 1)
+            {
+                while (randomIndex == m_CurrentZoneIndex)
                 {
-                    while (randomIndex == m_CurrentZoneIndex)
-                    {
-                        randomIndex = Math.RandomInt(0, m_AvailableZones.Count());
-                    }
+                    randomIndex = Math.RandomInt(0, m_AvailableZones.Count());
                 }
-                
-                nextZone = m_AvailableZones.Get(randomIndex);
-                Print("[KOTH_ZoneManager] Randomly selected zone: " + nextZone);
-                break;
-                
-            case KOTHZoneSelectionMode.VOTE:
-                Print("[KOTH_ZoneManager] Vote mode not yet implemented, using sequential");
-                m_CurrentZoneIndex = (m_CurrentZoneIndex + 1) % m_AvailableZones.Count();
-                nextZone = m_AvailableZones.Get(m_CurrentZoneIndex);
-                break;
+            }
+            
+            nextZone = m_AvailableZones.Get(randomIndex);
+            Print("[KOTH_ZoneManager] Randomly selected zone: " + nextZone);
+        }
+        else if (m_SelectionMode == KOTHZoneSelectionMode.VOTE)
+        {
+            Print("[KOTH_ZoneManager] Vote mode not yet implemented, using sequential");
+            m_CurrentZoneIndex = (m_CurrentZoneIndex + 1) % m_AvailableZones.Count();
+            nextZone = m_AvailableZones.Get(m_CurrentZoneIndex);
         }
         
         return LoadZone(nextZone, true);
@@ -429,6 +429,24 @@ class KOTH_ZoneManager: CF_ModuleWorld
         Print("[KOTH_ZoneManager] Synced zone to all clients: " + m_ActiveZoneName);
     }
     
+    void SyncPriorityZoneToAllClients(vector position, float radius)
+    {
+        if (!GetGame().IsServer())
+            return;
+        
+        m_PriorityZonePosition = position;
+        m_PriorityZoneRadius = radius;
+        
+        PrepareMapCircleData();
+        
+        auto rpc = Expansion_CreateRPC("RPC_SyncPriorityZone");
+        rpc.Write(position);
+        rpc.Write(radius);
+        rpc.Expansion_Send(true, null);
+        
+        Print("[KOTH_ZoneManager] Synced priority zone to all clients - Position: " + position + " | Radius: " + radius);
+    }
+    
     void RPC_SyncActiveZone(PlayerIdentity sender, Object target, ParamsReadContext ctx)
     {
         if (GetGame().IsServer())
@@ -445,6 +463,29 @@ class KOTH_ZoneManager: CF_ModuleWorld
         {
             Print("[KOTH_ZoneManager] Client received zone: " + m_ActiveZone.GetZoneName());
         }
+    }
+    
+    void RPC_SyncPriorityZone(PlayerIdentity sender, Object target, ParamsReadContext ctx)
+    {
+        if (GetGame().IsServer())
+            return;
+        
+        vector position;
+        if (!ctx.Read(position))
+            return;
+        
+        float radius;
+        if (!ctx.Read(radius))
+            return;
+        
+        m_PriorityZonePosition = position;
+        m_PriorityZoneRadius = radius;
+        
+        Print("[KOTH_ZoneManager] Client received priority zone update - Position: " + position + " | Radius: " + radius);
+        
+        PrepareMapCircleData();
+        
+        GetRPCManager().SendRPC("KOTH_MapMenu", "ReceiveKOTHZones", new Param5<array<string>, array<vector>, array<float>, array<int>, array<bool>>(zoneNames, zonePositions, zoneRadii, zoneColors, zoneDrawCircles), true, null);
     }
     
     void RPC_RequestZoneInfo(PlayerIdentity sender, Object target, ParamsReadContext ctx)
