@@ -1,8 +1,8 @@
 /**
- * KOTH_GameMode.c (WITH CAPTURE TIMER)
+ * KOTH_GameMode.c (WITH PLAYERPOINT SCORING)
  *
  * King of the Hill by Kahoona
- * Main game mode logic with capture progress tracking
+ * Scoring based on playerpoint differential (AO + Priority bonus)
  *
  * Place in: 4_World/Modules/KOTH_GameMode.c
  */
@@ -27,6 +27,9 @@ class KOTH_GameMode: CF_ModuleWorld
     private int m_ScoreLimit = 100;
     private float m_TickInterval = 2.0;
     private int m_PointsPerTick = 1;
+    private float m_PriorityBonusMultiplier = 2.0;
+    private int m_MinPlayersToInfluence = 1;
+    private float m_PointsPerTickPerPlayer = 1.0;
     
     // References
     private ref KOTH_HUDDataSync m_HUDSync;
@@ -70,8 +73,14 @@ class KOTH_GameMode: CF_ModuleWorld
         {
             m_ScoreLimit = settings.ScoreLimit;
             m_TickInterval = settings.CaptureTickSeconds;
+            m_PriorityBonusMultiplier = settings.PriorityZoneBonusMultiplier;
+            m_MinPlayersToInfluence = settings.MinPlayersToInfluence;
+            m_PointsPerTickPerPlayer = settings.PointsPerTickPerPlayer;
             Print("[KOTH_GameMode] Score limit: " + m_ScoreLimit);
             Print("[KOTH_GameMode] Capture tick: " + m_TickInterval + " seconds");
+            Print("[KOTH_GameMode] Priority bonus: " + m_PriorityBonusMultiplier + "x");
+            Print("[KOTH_GameMode] Min playerpoint advantage: " + m_MinPlayersToInfluence);
+            Print("[KOTH_GameMode] Points per player: " + m_PointsPerTickPerPlayer);
         }
         
         StartRound();
@@ -130,7 +139,7 @@ class KOTH_GameMode: CF_ModuleWorld
     }
     
     // ═══════════════════════════════════════════════════════════════
-    // CAPTURE LOGIC WITH TIMER
+    // PLAYERPOINT SCORING SYSTEM
     // ═══════════════════════════════════════════════════════════════
     
     void UpdateCapture()
@@ -138,20 +147,56 @@ class KOTH_GameMode: CF_ModuleWorld
         if (!GetGame().IsServer() || !m_RoundActive || !m_HUDSync)
             return;
         
-        int eastPlayers = m_HUDSync.GetEastPlayersInAO();
-        int westPlayers = m_HUDSync.GetWestPlayersInAO();
+        // Get main AO counts
+        int eastAO = m_HUDSync.GetEastPlayersInAO();
+        int westAO = m_HUDSync.GetWestPlayersInAO();
         
+        // Get priority zone counts
+        int eastPriority = 0;
+        int westPriority = 0;
+        
+        KOTH_PriorityZoneManager priManager;
+        KOTH_PriArea priZone = KOTH_PriorityZoneManager.GetActivePriorityZone();
+        
+        if (priZone)
+        {
+            KOTH_PriAreaTrigger priTrigger = priZone.GetTrigger();
+            if (priTrigger)
+            {
+                eastPriority = priTrigger.GetTeamPlayerCount("East");
+                westPriority = priTrigger.GetTeamPlayerCount("West");
+            }
+        }
+        
+        // Calculate outer AO (not in priority)
+        int eastOuter = eastAO - eastPriority;
+        int westOuter = westAO - westPriority;
+        
+        if (eastOuter < 0) eastOuter = 0;
+        if (westOuter < 0) westOuter = 0;
+        
+        // Calculate playerpoints
+        float eastPlayerPoints = (eastOuter * m_PointsPerTickPerPlayer) + (eastPriority * m_PointsPerTickPerPlayer * m_PriorityBonusMultiplier);
+        float westPlayerPoints = (westOuter * m_PointsPerTickPerPlayer) + (westPriority * m_PointsPerTickPerPlayer * m_PriorityBonusMultiplier);
+        
+        // Determine controlling team (needs at least MinPlayersToInfluence playerpoint advantage)
+        float playerPointDiff = eastPlayerPoints - westPlayerPoints;
         string controllingTeam = "None";
         
-        if (eastPlayers > westPlayers && eastPlayers > 0)
+        if (playerPointDiff >= m_MinPlayersToInfluence)
         {
             controllingTeam = "East";
         }
-        else if (westPlayers > eastPlayers && westPlayers > 0)
+        else if (playerPointDiff <= -m_MinPlayersToInfluence)
         {
             controllingTeam = "West";
         }
         
+        // Debug output
+        Print("[KOTH_GameMode] AO: East " + eastAO + " vs West " + westAO + " | Priority: East " + eastPriority + " vs West " + westPriority);
+        Print("[KOTH_GameMode] PlayerPoints: East " + eastPlayerPoints + " vs West " + westPlayerPoints + " | Diff: " + playerPointDiff + " | Leader: " + controllingTeam);
+        
+        // Reset capture if no team is controlling
         if (controllingTeam == "None")
         {
             m_CaptureProgress = 0.0;
@@ -165,13 +210,15 @@ class KOTH_GameMode: CF_ModuleWorld
             return;
         }
         
+        // Reset capture if team changed
         if (m_CapturingTeam != controllingTeam)
         {
             m_CaptureProgress = 0.0;
             m_CapturingTeam = controllingTeam;
-            Print("[KOTH_GameMode] " + controllingTeam + " team started capturing");
+            Print("[KOTH_GameMode] " + controllingTeam + " team started capturing (advantage: " + Math.AbsFloat(playerPointDiff) + " playerpoints)");
         }
         
+        // Progress capture timer
         m_CaptureProgress = m_CaptureProgress + 0.1;
         
         float progressPercent = (m_CaptureProgress / m_TickInterval) * 100.0;
@@ -183,6 +230,7 @@ class KOTH_GameMode: CF_ModuleWorld
             m_HUDSync.SetCaptureProgress(progressPercent, m_CapturingTeam);
         }
         
+        // Award point when timer completes
         if (m_CaptureProgress >= m_TickInterval)
         {
             AwardPoint(controllingTeam);
