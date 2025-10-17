@@ -1,12 +1,9 @@
 /**
- * KOTH_MapMenu.c
+ * KOTH_MapMenu.c (DYNAMIC PRIORITY ZONE MARKER)
  *
  * King of the Hill by Kahoona
- * Client-side map circle drawing - following NBZ pattern exactly
+ * Client-side map circle drawing with dynamic priority zone updates
  * Place in: 5_Mission/GUI/KOTH_MapMenu.c
- *
- * This work is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
- * To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-nd/4.0/.
  */
 
 modded class ExpansionMapMenu extends UIScriptedMenu 
@@ -18,6 +15,7 @@ modded class ExpansionMapMenu extends UIScriptedMenu
     ref array<bool> koth_ZoneDrawCircles = new array<bool>();
 
     bool koth_ZonesDrawn = false;
+    bool koth_UpdateTimerActive = false;
 
     override Widget Init() 
     {
@@ -37,7 +35,14 @@ modded class ExpansionMapMenu extends UIScriptedMenu
 
         InitKOTHRPC();
         RequestKOTHZones();
+        StartUpdateTimer();
+        
         return layoutRoot;
+    }
+
+    void ~ExpansionMapMenu()
+    {
+        StopUpdateTimer();
     }
 
     void InitKOTHRPC()
@@ -77,17 +82,13 @@ modded class ExpansionMapMenu extends UIScriptedMenu
 
     void DrawKOTHZones()
     {
-        if (koth_ZonesDrawn)
-        {
-            Print("[KOTH_MapMenu] Zones have already been drawn. Skipping redraw");
-            return;
-        }
-
         if (!m_MapWidget)
         {
             Print("[KOTH_MapMenu] MapWidget is null");
             return;
         }
+
+        m_MapWidget.ClearUserMarks();
 
         autoptr array<vector> zoneCirclePoints = new array<vector>();
 
@@ -132,5 +133,33 @@ modded class ExpansionMapMenu extends UIScriptedMenu
             vector p = Vector(newX, 0, newZ);
             result.Insert(p);
         }
+    }
+
+    void StartUpdateTimer()
+    {
+        if (koth_UpdateTimerActive)
+            return;
+        
+        koth_UpdateTimerActive = true;
+        GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(UpdatePriorityZoneMarker, 5000, true);
+        Print("[KOTH_MapMenu] Started priority zone marker update timer (5s interval)");
+    }
+
+    void StopUpdateTimer()
+    {
+        if (!koth_UpdateTimerActive)
+            return;
+        
+        koth_UpdateTimerActive = false;
+        GetGame().GetCallQueue(CALL_CATEGORY_GUI).Remove(UpdatePriorityZoneMarker);
+        Print("[KOTH_MapMenu] Stopped priority zone marker update timer");
+    }
+
+    void UpdatePriorityZoneMarker()
+    {
+        if (!koth_ZonesDrawn)
+            return;
+        
+        RequestKOTHZones();
     }
 }

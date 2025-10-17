@@ -1,8 +1,8 @@
 /**
- * KOTH_ZoneManager.c (NBZ RPC PATTERN - CLEANED)
+ * KOTH_ZoneManager.c (DYNAMIC PRIORITY ZONE DATA)
  *
  * King of the Hill by Kahoona
- * Following NBZ mod's RPC pattern - no separate marker system needed
+ * Updates priority zone position data on every client request
  * Place in: 4_World/Modules/KOTH_ZoneManager.c
  */
 
@@ -88,7 +88,9 @@ class KOTH_ZoneManager: CF_ModuleWorld
         if (sender == null)
             return;
 
-        Print("[KOTH_ZoneManager] Client " + sender.GetName() + " requested zone data");
+        Print("[KOTH_ZoneManager] Client " + sender.GetName() + " requested zone data - updating priority position");
+
+        PrepareMapCircleData();
 
         GetRPCManager().SendRPC("KOTH_MapMenu", "ReceiveKOTHZones", new Param5<array<string>, array<vector>, array<float>, array<int>, array<bool>>(zoneNames, zonePositions, zoneRadii, zoneColors, zoneDrawCircles), true, sender);
     }
@@ -271,11 +273,15 @@ class KOTH_ZoneManager: CF_ModuleWorld
         
         if (m_ActiveZone.GetPriorityAORadius() > 0)
         {
+            vector priorityPos = KOTH_PriorityZoneManager.GetCurrentPosition();
+            
             zoneNames.Insert("Priority Zone");
-            zonePositions.Insert(m_ActiveZone.GetAOZoneCenter());
+            zonePositions.Insert(priorityPos);
             zoneRadii.Insert(m_ActiveZone.GetPriorityAORadius());
             zoneColors.Insert(ARGB(255, 220, 200, 60));
             zoneDrawCircles.Insert(true);
+            
+            Print("[KOTH_ZoneManager] Priority zone marker position updated to: " + priorityPos);
         }
         
         Print("[KOTH_ZoneManager] Map circle data prepared - " + zoneNames.Count() + " circles");
