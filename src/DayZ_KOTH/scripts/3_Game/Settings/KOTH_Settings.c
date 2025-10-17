@@ -1,8 +1,8 @@
 /**
- * KOTH_Settings.c (UPDATED)
+ * KOTH_Settings.c
  *
  * King of the Hill by Kahoona
- * Updated with priority zone movement settings
+ * Complete settings system for KOTH game mode
  *
  * This work is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
  * To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-nd/4.0/.
@@ -10,24 +10,20 @@
 
 class KOTH_SettingsBase: ExpansionSettingBase
 {
-    // ────────────── META ──────────────
     string ModeName = "King of the Hill";
 
-    // ────────────── CORE GAMEPLAY ──────────────
     int ScoreLimit = 100;
     int CaptureTickSeconds = 1;
     int MinPlayersToInfluence = 1;
     float PointsPerTickPerPlayer = 0.25;
     float NeutralizeSpeedMultiplier = 1.0;
 
-    // ────────────── PRIORITY ZONE SETTINGS ──────────────
     bool EnablePriorityZoneMovement = true;
-    float PriorityZoneMovementInterval = 30.0; // Seconds between moves
-    float PriorityZoneAngleIncrement = 15.0; // Degrees per move
-    bool PriorityZoneClockwise = true; // Movement direction
-    float PriorityZoneBonusMultiplier = 2.0; // Points multiplier in priority zone
+    float PriorityZoneMovementInterval = 30.0;
+    float PriorityZoneAngleIncrement = 15.0;
+    bool PriorityZoneClockwise = true;
+    float PriorityZoneBonusMultiplier = 2.0;
 
-    // ────────────── EXPERIENCE SYSTEM ──────────────
     int XPPerKill = 100;
     int XPPerRevive = 50;
     int XPPerAssist = 25;
@@ -42,7 +38,6 @@ class KOTH_SettingsBase: ExpansionSettingBase
 
     float GlobalXPMultiplier = 1.0;
 
-    // ────────────── MONEY SYSTEM ──────────────
     int MoneyPerKill = 100;
     int MoneyPerRevive = 50;
     int MoneyPerAssist = 25;
@@ -57,10 +52,8 @@ class KOTH_SettingsBase: ExpansionSettingBase
 
     float GlobalMoneyMultiplier = 1.0;
 
-    // ────────────── BALANCE / FAIRNESS ──────────────
     int MaxTeamImbalance = 3;
     
-    // ────────────── ZONE ROTATION SETTINGS ──────────────
     bool EnableZoneRotation = false;
     float ZoneRotationInterval = 1800.0;
     int ZoneSelectionMode = 0;
@@ -71,6 +64,8 @@ class KOTH_SettingsBase: ExpansionSettingBase
 
 class KOTH_Settings: KOTH_SettingsBase
 {
+    static const int VERSION = 1;
+    
     [NonSerialized()]
     private bool m_IsLoaded;
 
@@ -78,49 +73,48 @@ class KOTH_Settings: KOTH_SettingsBase
     {
         KOTH_Settings s = new KOTH_Settings;
 
-        ctx.Read(s.ModeName);
-        ctx.Read(s.ScoreLimit);
-        ctx.Read(s.CaptureTickSeconds);
-        ctx.Read(s.MinPlayersToInfluence);
-        ctx.Read(s.PointsPerTickPerPlayer);
-        ctx.Read(s.NeutralizeSpeedMultiplier);
+        if (!ctx.Read(s.ModeName)) return false;
+        if (!ctx.Read(s.ScoreLimit)) return false;
+        if (!ctx.Read(s.CaptureTickSeconds)) return false;
+        if (!ctx.Read(s.MinPlayersToInfluence)) return false;
+        if (!ctx.Read(s.PointsPerTickPerPlayer)) return false;
+        if (!ctx.Read(s.NeutralizeSpeedMultiplier)) return false;
         
-        // Priority zone settings
-        ctx.Read(s.EnablePriorityZoneMovement);
-        ctx.Read(s.PriorityZoneMovementInterval);
-        ctx.Read(s.PriorityZoneAngleIncrement);
-        ctx.Read(s.PriorityZoneClockwise);
-        ctx.Read(s.PriorityZoneBonusMultiplier);
+        if (!ctx.Read(s.EnablePriorityZoneMovement)) return false;
+        if (!ctx.Read(s.PriorityZoneMovementInterval)) return false;
+        if (!ctx.Read(s.PriorityZoneAngleIncrement)) return false;
+        if (!ctx.Read(s.PriorityZoneClockwise)) return false;
+        if (!ctx.Read(s.PriorityZoneBonusMultiplier)) return false;
         
-        ctx.Read(s.XPPerKill);
-        ctx.Read(s.XPPerRevive);
-        ctx.Read(s.XPPerAssist);
-        ctx.Read(s.XPPerCapture);
-        ctx.Read(s.FriendlyFirePenaltyXP);
-        ctx.Read(s.SuicidePenaltyXP);
-        ctx.Read(s.HeadShotBonusXP);
-        ctx.Read(s.KillStreakBonusXPEnabled);
-        ctx.Read(s.KillStreakThresholds);
-        ctx.Read(s.KillStreakBonusXP);
-        ctx.Read(s.GlobalXPMultiplier);
-        ctx.Read(s.MoneyPerKill);
-        ctx.Read(s.MoneyPerRevive);
-        ctx.Read(s.MoneyPerAssist);
-        ctx.Read(s.MoneyPerCapture);
-        ctx.Read(s.TeamKillMoneyPenalty);
-        ctx.Read(s.SuicideMoneyPenalty);
-        ctx.Read(s.HeadShotMoneyBonus);
-        ctx.Read(s.KillStreakMoneyBonusEnabled);
-        ctx.Read(s.KillStreakMoneyThresholds);
-        ctx.Read(s.KillStreakBonusMoney);
-        ctx.Read(s.GlobalMoneyMultiplier);
-        ctx.Read(s.MaxTeamImbalance);
-        ctx.Read(s.EnableZoneRotation);
-        ctx.Read(s.ZoneRotationInterval);
-        ctx.Read(s.ZoneSelectionMode);
-        ctx.Read(s.NotifyPlayersOnZoneChange);
-        ctx.Read(s.ZoneChangeWarningTime);
-        ctx.Read(s.AllowAdminZoneChange);
+        if (!ctx.Read(s.XPPerKill)) return false;
+        if (!ctx.Read(s.XPPerRevive)) return false;
+        if (!ctx.Read(s.XPPerAssist)) return false;
+        if (!ctx.Read(s.XPPerCapture)) return false;
+        if (!ctx.Read(s.FriendlyFirePenaltyXP)) return false;
+        if (!ctx.Read(s.SuicidePenaltyXP)) return false;
+        if (!ctx.Read(s.HeadShotBonusXP)) return false;
+        if (!ctx.Read(s.KillStreakBonusXPEnabled)) return false;
+        if (!ctx.Read(s.KillStreakThresholds)) return false;
+        if (!ctx.Read(s.KillStreakBonusXP)) return false;
+        if (!ctx.Read(s.GlobalXPMultiplier)) return false;
+        if (!ctx.Read(s.MoneyPerKill)) return false;
+        if (!ctx.Read(s.MoneyPerRevive)) return false;
+        if (!ctx.Read(s.MoneyPerAssist)) return false;
+        if (!ctx.Read(s.MoneyPerCapture)) return false;
+        if (!ctx.Read(s.TeamKillMoneyPenalty)) return false;
+        if (!ctx.Read(s.SuicideMoneyPenalty)) return false;
+        if (!ctx.Read(s.HeadShotMoneyBonus)) return false;
+        if (!ctx.Read(s.KillStreakMoneyBonusEnabled)) return false;
+        if (!ctx.Read(s.KillStreakMoneyThresholds)) return false;
+        if (!ctx.Read(s.KillStreakBonusMoney)) return false;
+        if (!ctx.Read(s.GlobalMoneyMultiplier)) return false;
+        if (!ctx.Read(s.MaxTeamImbalance)) return false;
+        if (!ctx.Read(s.EnableZoneRotation)) return false;
+        if (!ctx.Read(s.ZoneRotationInterval)) return false;
+        if (!ctx.Read(s.ZoneSelectionMode)) return false;
+        if (!ctx.Read(s.NotifyPlayersOnZoneChange)) return false;
+        if (!ctx.Read(s.ZoneChangeWarningTime)) return false;
+        if (!ctx.Read(s.AllowAdminZoneChange)) return false;
 
         CopyInternal(s);
         m_IsLoaded = true;
@@ -138,7 +132,6 @@ class KOTH_Settings: KOTH_SettingsBase
         ctx.Write(PointsPerTickPerPlayer);
         ctx.Write(NeutralizeSpeedMultiplier);
         
-        // Priority zone settings
         ctx.Write(EnablePriorityZoneMovement);
         ctx.Write(PriorityZoneMovementInterval);
         ctx.Write(PriorityZoneAngleIncrement);
@@ -179,9 +172,7 @@ class KOTH_Settings: KOTH_SettingsBase
     override int Send(PlayerIdentity identity)
     {
         if (!IsMissionHost())
-        {
             return 0;
-        }
         
         auto rpc = CreateRPC();
         OnSend(rpc);
@@ -299,6 +290,7 @@ class KOTH_Settings: KOTH_SettingsBase
 
     override bool OnSave()
     {
+        Print("[KOTH_Settings] Saving settings to: " + EXPANSION_KOTH_Settings);
         JsonFileLoader<KOTH_Settings>.JsonSaveFile(EXPANSION_KOTH_Settings, this);
         return true;
     }
@@ -311,6 +303,8 @@ class KOTH_Settings: KOTH_SettingsBase
     
     override void Defaults()
     {
+        m_Version = VERSION;
+        
         ModeName = "King of the Hill";
         ScoreLimit = 100;
         CaptureTickSeconds = 1;

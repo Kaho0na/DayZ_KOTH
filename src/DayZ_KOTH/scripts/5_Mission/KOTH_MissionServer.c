@@ -1,16 +1,16 @@
 /**
- * KOTH_MissionServer.c (UNIFIED)
+ * KOTH_MissionServer.c (SIMPLIFIED)
  *
  * King of the Hill by Kahoona
- * Unified mission server handling - startup and player connections
+ * Unified mission server - startup and player connections
  * Place in: 5_Mission/KOTH_MissionServer.c
  */
 
 modded class MissionServer
 {
-    // ═══════════════════════════════════════════════════════════════
-    // SERVER INITIALIZATION
-    // ═══════════════════════════════════════════════════════════════
+    //! ═══════════════════════════════════════════════════════════════
+    //! SERVER INITIALIZATION
+    //! ═══════════════════════════════════════════════════════════════
     
     override void OnInit()
     {
@@ -19,13 +19,15 @@ modded class MissionServer
         if (!GetGame().IsServer()) 
             return;
 
-        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(InitializeKOTHZoneSystem, 1500, false);
-        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(KOTH_ZoneLoader.CreateKOTHZones, 5000, false);
-        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(ConfigurePriorityZone, 6000, false);
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(InitializeKOTHSystem, 2000, false);
     }
 
-    void InitializeKOTHZoneSystem()
+    void InitializeKOTHSystem()
     {
+        Print("[KOTH] ═══════════════════════════════════════════════════");
+        Print("[KOTH] Initializing King of the Hill System");
+        Print("[KOTH] ═══════════════════════════════════════════════════");
+        
         KOTH_ZoneManager zoneManager;
         CF_Modules<KOTH_ZoneManager>.Get(zoneManager);
 
@@ -37,7 +39,7 @@ modded class MissionServer
 
         if (!zoneManager.LoadFirstAvailableZone())
         {
-            Error("[KOTH] ERROR: Failed to load initial zone. No bases spawned.");
+            Error("[KOTH] ERROR: Failed to load initial zone!");
             return;
         }
 
@@ -58,7 +60,7 @@ modded class MissionServer
         KOTH_ZoneData activeZone = zoneManager.GetActiveZone();
         
         Print("[KOTH] ═══════════════════════════════════════════════════");
-        Print("[KOTH] Zone System Initialized");
+        Print("[KOTH] System Initialized Successfully");
         Print("[KOTH] Active Zone: " + zoneManager.GetActiveZoneName());
         Print("[KOTH] Zone Display Name: " + activeZone.GetZoneName());
         Print("[KOTH] Available Zones: " + zoneManager.GetAvailableZones().Count());
@@ -75,63 +77,22 @@ modded class MissionServer
                 Print("[KOTH] Rotation Mode: " + modeStr);
                 Print("[KOTH] Rotation Interval: " + settings.ZoneRotationInterval + " seconds");
             }
+            
+            Print("[KOTH] Priority Zone Movement: " + settings.EnablePriorityZoneMovement);
+            if (settings.EnablePriorityZoneMovement)
+            {
+                Print("[KOTH] - Interval: " + settings.PriorityZoneMovementInterval + "s");
+                Print("[KOTH] - Angle: " + settings.PriorityZoneAngleIncrement + "°");
+                Print("[KOTH] - Bonus: " + settings.PriorityZoneBonusMultiplier + "x");
+            }
         }
         
-        Print("[KOTH] East/West bases spawned successfully");
-        Print("[KOTH] ═══════════════════════════════════════════════════");
-    }
-    
-    void ConfigurePriorityZone()
-    {
-        if (!GetGame().IsServer())
-            return;
-        
-        KOTH_Settings settings = GetExpansionSettings().GetDayZ_KOTH();
-        
-        if (!settings)
-        {
-            Print("[KOTH] WARNING: Could not get KOTH settings, using default priority zone config");
-            return;
-        }
-        
-        if (!settings.EnablePriorityZoneMovement)
-        {
-            Print("[KOTH] Priority zone movement is DISABLED in settings");
-            return;
-        }
-        
-        if (!KOTH_PriorityZoneManager.IsActive())
-        {
-            Print("[KOTH] WARNING: Priority zone manager not active, skipping configuration");
-            return;
-        }
-        
-        Print("[KOTH] ═══════════════════════════════════════════════════");
-        Print("[KOTH] Configuring Dynamic Priority Zone");
-        Print("[KOTH] - Movement Enabled: " + settings.EnablePriorityZoneMovement);
-        Print("[KOTH] - Movement Interval: " + settings.PriorityZoneMovementInterval + " seconds");
-        Print("[KOTH] - Angle Increment: " + settings.PriorityZoneAngleIncrement + "°");
-        
-        string direction;
-        if (settings.PriorityZoneClockwise)
-            direction = "Clockwise";
-        else
-            direction = "Counter-clockwise";
-        Print("[KOTH] - Direction: " + direction);
-        
-        Print("[KOTH] - Bonus Multiplier: " + settings.PriorityZoneBonusMultiplier + "x");
-        
-        KOTH_PriorityZoneManager.SetMovementInterval(settings.PriorityZoneMovementInterval);
-        KOTH_PriorityZoneManager.SetAngleIncrement(settings.PriorityZoneAngleIncrement);
-        KOTH_PriorityZoneManager.SetDirection(settings.PriorityZoneClockwise);
-        
-        Print("[KOTH] Priority zone configuration complete");
         Print("[KOTH] ═══════════════════════════════════════════════════");
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    // PLAYER CONNECTION HANDLING
-    // ═══════════════════════════════════════════════════════════════
+    //! ═══════════════════════════════════════════════════════════════
+    //! PLAYER CONNECTION HANDLING
+    //! ═══════════════════════════════════════════════════════════════
     
     override void InvokeOnConnect(PlayerBase player, PlayerIdentity identity)
     {
@@ -212,13 +173,12 @@ modded class MissionServer
         }
         else
         {
-            Print("[KOTH] " + playerData.PlayerName + " has no team — opening selection menu, skipping spawn.");
+            Print("[KOTH] " + playerData.PlayerName + " has no team — opening selection menu.");
             player.SetPosition("0 10000 0");
             player.SetAllowDamage(false);
             
             KOTH_TeamSelectionModule teamModule;
             CF_Modules<KOTH_TeamSelectionModule>.Get(teamModule);
-            Print("[DayZ_KOTH] Retrieved team module: " + teamModule);
 
             if (teamModule)
             {
@@ -234,9 +194,9 @@ modded class MissionServer
         }
     }
     
-    // ═══════════════════════════════════════════════════════════════
-    // UTILITY METHODS
-    // ═══════════════════════════════════════════════════════════════
+    //! ═══════════════════════════════════════════════════════════════
+    //! UTILITY METHODS
+    //! ═══════════════════════════════════════════════════════════════
     
     void CheckPlayerArmbands()
     {

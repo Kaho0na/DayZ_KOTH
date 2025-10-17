@@ -1,9 +1,8 @@
 /**
- * KOTH_ZoneManager.c (UPDATED WITH MARKER SUPPORT)
+ * KOTH_ZoneManager.c (UNIFIED)
  *
  * King of the Hill by Kahoona
- * Centralized zone management system - handles active zone selection and rotation
- * NOW WITH MAP MARKER INTEGRATION
+ * Complete zone management - data, buildings, triggers, markers
  *
  * This work is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
  * To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-nd/4.0/.
@@ -29,6 +28,8 @@ class KOTH_ZoneManager: CF_ModuleWorld
     private float m_ZoneRotationInterval = 1800.0;
     private bool m_AutoRotateZones = false;
     
+    private KOTH_Area m_MainZoneTrigger;
+    
     void KOTH_ZoneManager()
     {
         s_Instance = this;
@@ -48,7 +49,6 @@ class KOTH_ZoneManager: CF_ModuleWorld
         Expansion_RegisterServerRPC("RPC_RequestZoneInfo");
         Expansion_RegisterServerRPC("RPC_AdminChangeZone");
         
-        //! Initialize marker system
         if (GetGame().IsServer())
         {
             KOTH_MarkerSystem.Initialize();
@@ -65,7 +65,7 @@ class KOTH_ZoneManager: CF_ModuleWorld
     }
     
     //! ═══════════════════════════════════════════════════════════════
-    //! ZONE DISCOVERY & LOADING
+    //! ZONE DISCOVERY
     //! ═══════════════════════════════════════════════════════════════
     
     void DiscoverAvailableZones()
@@ -105,49 +105,126 @@ class KOTH_ZoneManager: CF_ModuleWorld
         Print("[KOTH_ZoneManager] Total zones discovered: " + m_AvailableZones.Count());
     }
     
-    bool LoadZone(string zoneName, bool despawnOldBases = true)
+    //! ═══════════════════════════════════════════════════════════════
+    //! COMPLETE ZONE LOADING (All-in-one)
+    //! ═══════════════════════════════════════════════════════════════
+    
+    bool LoadZone(string zoneName, bool despawnOldZone = true)
     {
         if (!GetGame().IsServer())
             return false;
         
+        Print("[KOTH_ZoneManager] ═══════════════════════════════════════");
         Print("[KOTH_ZoneManager] Loading zone: " + zoneName);
         
-        if (despawnOldBases && m_ActiveZone)
+        if (despawnOldZone && m_ActiveZone)
         {
-            KOTH_SpawnBase.DespawnAll();
-            Print("[KOTH_ZoneManager] Despawned previous zone bases");
-            
-            // Cleanup priority zone from previous zone
-            KOTH_PriorityZoneManager.Cleanup();
+            CleanupCurrentZone();
         }
         
-        m_ActiveZone = KOTH_ZoneData.Load(zoneName);
+        m_ActiveZone = KOTH_Zones.LoadZone(zoneName);
         
         if (!m_ActiveZone)
         {
-            Error("[KOTH_ZoneManager] Failed to load zone: " + zoneName);
+            Error("[KOTH_ZoneManager] Failed to load zone data: " + zoneName);
             return false;
         }
         
         m_ActiveZoneName = zoneName;
         m_CurrentZoneIndex = m_AvailableZones.Find(zoneName);
         
-        KOTH_SpawnBasesForZone(m_ActiveZone);
+        Print("[KOTH_ZoneManager] Zone data loaded successfully");
+        Print("[KOTH_ZoneManager] - Name: " + m_ActiveZone.GetZoneName());
+        Print("[KOTH_ZoneManager] - East Spawn: " + m_ActiveZone.GetEastSpawnBuilding());
+        Print("[KOTH_ZoneManager] - West Spawn: " + m_ActiveZone.GetWestSpawnBuilding());
+        Print("[KOTH_ZoneManager] - AO Center: " + m_ActiveZone.GetAOZoneCenter());
+        Print("[KOTH_ZoneManager] - AO Radius: " + m_ActiveZone.GetAOZoneRadius());
+        Print("[KOTH_ZoneManager] - Priority Radius: " + m_ActiveZone.GetPriorityAORadius());
         
-        Print("[KOTH_ZoneManager] Successfully loaded zone: " + m_ActiveZone.GetZoneName());
-        Print("[KOTH_ZoneManager] East Spawn: " + m_ActiveZone.GetEastSpawnBuilding());
-        Print("[KOTH_ZoneManager] West Spawn: " + m_ActiveZone.GetWestSpawnBuilding());
-        Print("[KOTH_ZoneManager] AO Center: " + m_ActiveZone.GetAOZoneCenter());
-        
-        //! ═══════════════════════════════════════════════════════════════
-        //! PLACE MAP MARKERS FOR NEW ZONE
-        //! ═══════════════════════════════════════════════════════════════
-        KOTH_MarkerSystem.PlaceZoneMarkers(m_ActiveZone);
+        SpawnZoneBuildings();
+        CreateZoneTriggers();
+        PlaceZoneMarkers();
         
         SyncActiveZoneToAllClients();
         NotifyPlayersZoneChange();
         
+        Print("[KOTH_ZoneManager] Zone fully initialized");
+        Print("[KOTH_ZoneManager] ═══════════════════════════════════════");
+        
         return true;
+    }
+    
+    //! ═══════════════════════════════════════════════════════════════
+    //! ZONE SETUP STEPS (Called by LoadZone)
+    //! ═══════════════════════════════════════════════════════════════
+    
+    private void SpawnZoneBuildings()
+    {
+        if (!m_ActiveZone)
+            return;
+        
+        Print("[KOTH_ZoneManager] Spawning base buildings...");
+        KOTH_SpawnBasesForZone(m_ActiveZone);
+        Print("[KOTH_ZoneManager] Base buildings spawned");
+    }
+    
+    private void CreateZoneTriggers()
+    {
+        if (!m_ActiveZone)
+            return;
+        
+        vector aoCenter = m_ActiveZone.GetAOZoneCenter();
+        float aoRadius = m_ActiveZone.GetAOZoneRadius();
+        float priRadius = m_ActiveZone.GetPriorityAORadius();
+        
+        Print("[KOTH_ZoneManager] Creating main capture zone trigger...");
+        if (Class.CastTo(m_MainZoneTrigger, GetGame().CreateObjectEx("KOTH_Area", aoCenter, ECE_NONE)))
+        {
+            m_MainZoneTrigger.KOTH_Init(aoCenter, aoRadius);
+            Print("[KOTH_ZoneManager] Main zone trigger created");
+        }
+        else
+        {
+            Error("[KOTH_ZoneManager] Failed to create main zone trigger!");
+        }
+        
+        if (priRadius > 0)
+        {
+            Print("[KOTH_ZoneManager] Initializing priority zone...");
+            KOTH_PriorityZoneManager.Initialize(aoCenter, aoRadius, priRadius);
+            Print("[KOTH_ZoneManager] Priority zone initialized");
+        }
+    }
+    
+    private void PlaceZoneMarkers()
+    {
+        if (!m_ActiveZone)
+            return;
+        
+        Print("[KOTH_ZoneManager] Placing map markers...");
+        KOTH_MarkerSystem.PlaceZoneMarkers(m_ActiveZone);
+        Print("[KOTH_ZoneManager] Map markers placed");
+    }
+    
+    //! ═══════════════════════════════════════════════════════════════
+    //! ZONE CLEANUP
+    //! ═══════════════════════════════════════════════════════════════
+    
+    private void CleanupCurrentZone()
+    {
+        Print("[KOTH_ZoneManager] Cleaning up current zone...");
+        
+        KOTH_SpawnBase.DespawnAll();
+        KOTH_PriorityZoneManager.Cleanup();
+        KOTH_MarkerSystem.RemoveAllMarkers();
+        
+        if (m_MainZoneTrigger)
+        {
+            GetGame().ObjectDelete(m_MainZoneTrigger);
+            m_MainZoneTrigger = null;
+        }
+        
+        Print("[KOTH_ZoneManager] Cleanup complete");
     }
     
     //! ═══════════════════════════════════════════════════════════════
@@ -208,7 +285,7 @@ class KOTH_ZoneManager: CF_ModuleWorld
                 break;
         }
         
-        return LoadZone(nextZone);
+        return LoadZone(nextZone, true);
     }
     
     bool LoadSpecificZone(string zoneName)
@@ -219,7 +296,7 @@ class KOTH_ZoneManager: CF_ModuleWorld
             return false;
         }
         
-        return LoadZone(zoneName);
+        return LoadZone(zoneName, true);
     }
     
     bool LoadRandomZone()
@@ -234,7 +311,7 @@ class KOTH_ZoneManager: CF_ModuleWorld
         string randomZone = m_AvailableZones.Get(randomIndex);
         
         Print("[KOTH_ZoneManager] Randomly selected zone: " + randomZone);
-        return LoadZone(randomZone);
+        return LoadZone(randomZone, true);
     }
     
     //! ═══════════════════════════════════════════════════════════════

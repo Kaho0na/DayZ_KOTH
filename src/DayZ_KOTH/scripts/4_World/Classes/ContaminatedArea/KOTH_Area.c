@@ -1,7 +1,7 @@
 /**
- * KOTH_Area.c
+ * KOTH_Area.c (HEIGHT FIX)
  *
- * Following ExpansionAINoGoArea pattern exactly
+ * Fixed cylinder height calculation - always from sea level to 200m
  * Place in: 4_World/Classes/ContaminatedArea/KOTH_Area.c
  */
 
@@ -10,7 +10,6 @@ class KOTH_Area : EffectArea
     KOTH_AreaTrigger m_KOTH_Trigger;
     protected int m_UpdateRate = 1000;
     
-    // Static reference for easy access from HUD
     static KOTH_Area s_Instance;
     
     void KOTH_Area()
@@ -39,11 +38,14 @@ class KOTH_Area : EffectArea
     void KOTH_Init(vector position, float radius)
     {
         m_Radius = radius;
-        m_PositiveHeight = 50;
-        m_NegativeHeight = 50;
-        m_Position = position;
+        m_PositiveHeight = 200;
+        m_NegativeHeight = 0;
         
-        Print("[KOTH_Area] Initializing at " + position + " with radius " + radius);
+        m_Position = position;
+        m_Position[1] = 0;
+        
+        Print("[KOTH_Area] Initializing at " + m_Position + " with radius " + radius);
+        Print("[KOTH_Area] Cylinder: Sea level (Y=0) to 200m height");
         
         CreateTrigger(m_Position, m_Radius);
         
@@ -142,8 +144,6 @@ class KOTH_AreaTrigger : CylinderTrigger
                     Print("[KOTH_AreaTrigger] Player entered: " + player.GetIdentity().GetName() + " (Team: " + team + ")");
                     
                     NotifyPlayerEntered(player);
-                    
-                    // Notify sync module of count change
                     NotifyHUDSync();
                 }
             }
@@ -166,8 +166,6 @@ class KOTH_AreaTrigger : CylinderTrigger
                     Print("[KOTH_AreaTrigger] Player left: " + player.GetIdentity().GetName());
                     
                     NotifyPlayerExited(player);
-                    
-                    // Notify sync module of count change
                     NotifyHUDSync();
                 }
             }
@@ -218,7 +216,6 @@ class KOTH_AreaTrigger : CylinderTrigger
         return m_PlayersInside;
     }
     
-    // NEW: Count players by team
     int GetTeamPlayerCount(string teamName)
     {
         int count = 0;

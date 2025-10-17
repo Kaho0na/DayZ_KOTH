@@ -1,9 +1,7 @@
-/**
- * KOTH_PriArea.c
- *
- * Priority zone trigger - managed by KOTH_PriorityZoneManager
- * Place in: 4_World/Classes/ContaminatedArea/KOTH_PriArea.c
- */
+// ═══════════════════════════════════════════════════════════════
+// KOTH_PriArea.c (HEIGHT FIX)
+// Place in: 4_World/Classes/ContaminatedArea/KOTH_PriArea.c
+// ═══════════════════════════════════════════════════════════════
 
 class KOTH_PriArea : EffectArea
 {
@@ -12,11 +10,14 @@ class KOTH_PriArea : EffectArea
     void KOTH_Init(vector position, float radius)
     {
         m_Radius = radius;
-        m_PositiveHeight = 100; // High to prevent exit when jumping
-        m_NegativeHeight = 10;   // Low to avoid triggering when far below
-        m_Position = position;
+        m_PositiveHeight = 200;
+        m_NegativeHeight = 0;
         
-        Print("[KOTH_PriArea] Initializing at " + position + " with radius " + radius);
+        m_Position = position;
+        m_Position[1] = 0;
+        
+        Print("[KOTH_PriArea] Initializing at " + m_Position + " with radius " + radius);
+        Print("[KOTH_PriArea] Cylinder: Sea level (Y=0) to 200m height");
         
         CreateTrigger(m_Position, m_Radius);
     }
@@ -103,14 +104,12 @@ class KOTH_PriAreaTrigger : CylinderTrigger
             {
                 float currentTime = GetGame().GetTime();
                 
-                // Check if player state exists and is false (was outside)
                 bool wasInside = false;
                 if (m_PlayerStates.Contains(player))
                 {
                     wasInside = m_PlayerStates.Get(player);
                 }
                 
-                // Only notify if player was NOT inside and hasn't entered recently (spam protection)
                 if (!wasInside)
                 {
                     float lastEnterTime = 0;
@@ -119,7 +118,6 @@ class KOTH_PriAreaTrigger : CylinderTrigger
                         lastEnterTime = m_PlayerEnterTime.Get(player);
                     }
                     
-                    // Only send message if it's been at least 3 seconds since last enter
                     if (currentTime - lastEnterTime > 3000)
                     {
                         m_PlayerStates.Set(player, true);
@@ -146,7 +144,6 @@ class KOTH_PriAreaTrigger : CylinderTrigger
             {
                 float currentTime = GetGame().GetTime();
                 
-                // Check if player was marked as inside
                 bool wasInside = false;
                 if (m_PlayerStates.Contains(player))
                 {
@@ -161,7 +158,6 @@ class KOTH_PriAreaTrigger : CylinderTrigger
                         lastEnterTime = m_PlayerEnterTime.Get(player);
                     }
                     
-                    // Only send leave message if player was inside for at least 3 seconds
                     if (currentTime - lastEnterTime > 3000)
                     {
                         m_PlayerStates.Set(player, false);
@@ -206,5 +202,16 @@ class KOTH_PriAreaTrigger : CylinderTrigger
                 result.Insert(player);
         }
         return result;
+    }
+    
+    int GetTeamPlayerCount(string teamName)
+    {
+        int count = 0;
+        foreach (PlayerBase player, bool isInside : m_PlayerStates)
+        {
+            if (isInside && player && player.IsAlive() && player.GetKOTHTeam() == teamName)
+                count++;
+        }
+        return count;
     }
 }
