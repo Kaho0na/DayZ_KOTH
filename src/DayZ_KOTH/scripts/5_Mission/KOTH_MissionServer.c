@@ -20,6 +20,12 @@ modded class MissionServer
             return;
 
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(InitializeKOTHSystem, 2000, false);
+        
+        // Test AI detection after a delay
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(KOTH_AIDebugHelper.DebugAllEntitiesInGame, 10000, false);
+
+        // Test zone AI counting every 30 seconds
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(KOTH_AIDebugHelper.TestAIInZone, 15000, true);
     }
 
     void InitializeKOTHSystem()

@@ -1,7 +1,8 @@
 /**
- * KOTH_Area.c (HEIGHT FIX)
+ * KOTH_Area.c (WITH EXPANSION AI COUNTING - FIXED)
  *
- * Fixed cylinder height calculation - always from sea level to 200m
+ * Counts both players and Expansion AI with East/West factions
+ * Expansion AI are PlayerBase entities without identity
  * Place in: 4_World/Classes/ContaminatedArea/KOTH_Area.c
  */
 
@@ -103,10 +104,12 @@ class KOTH_AreaTrigger : CylinderTrigger
 {
     protected EffectArea m_KOTH_EffectArea;
     protected ref array<PlayerBase> m_PlayersInside;
+    protected ref array<PlayerBase> m_AIInside;
     
     void KOTH_AreaTrigger()
     {
         m_PlayersInside = new array<PlayerBase>();
+        m_AIInside = new array<PlayerBase>();
     }
     
     void KOTH_Init(EffectArea area)
@@ -132,18 +135,36 @@ class KOTH_AreaTrigger : CylinderTrigger
     {
         super.OnEnterServerEvent(insider);
         
-        if (insider)
+        if (!insider)
+            return;
+        
+        PlayerBase player;
+        
+        if (Class.CastTo(player, insider.GetObject()))
         {
-            PlayerBase player;
-            if (Class.CastTo(player, insider.GetObject()))
+            if (player.GetIdentity())
             {
-                if (m_PlayersInside.Find(player) == -1)
+                int playerIdx = m_PlayersInside.Find(player);
+                if (playerIdx == -1)
                 {
                     m_PlayersInside.Insert(player);
                     string team = player.GetKOTHTeam();
                     Print("[KOTH_AreaTrigger] Player entered: " + player.GetIdentity().GetName() + " (Team: " + team + ")");
                     
                     NotifyPlayerEntered(player);
+                    NotifyHUDSync();
+                }
+            }
+            else
+            {
+                int aiIdx = m_AIInside.Find(player);
+                if (aiIdx == -1)
+                {
+                    m_AIInside.Insert(player);
+                    
+                    string aiFaction = GetExpansionAIFaction(player);
+                    Print("[KOTH_AreaTrigger] AI entered: " + player.GetType() + " (Faction: " + aiFaction + ")");
+                    
                     NotifyHUDSync();
                 }
             }
@@ -154,22 +175,59 @@ class KOTH_AreaTrigger : CylinderTrigger
     {
         super.OnLeaveServerEvent(insider);
         
-        if (insider)
+        if (!insider)
+            return;
+        
+        PlayerBase player;
+        
+        if (Class.CastTo(player, insider.GetObject()))
         {
-            PlayerBase player;
-            if (Class.CastTo(player, insider.GetObject()))
+            if (player.GetIdentity())
             {
-                int idx = m_PlayersInside.Find(player);
-                if (idx != -1)
+                int playerIdx = m_PlayersInside.Find(player);
+                if (playerIdx != -1)
                 {
-                    m_PlayersInside.Remove(idx);
+                    m_PlayersInside.Remove(playerIdx);
                     Print("[KOTH_AreaTrigger] Player left: " + player.GetIdentity().GetName());
                     
                     NotifyPlayerExited(player);
                     NotifyHUDSync();
                 }
             }
+            else
+            {
+                int aiIdx = m_AIInside.Find(player);
+                if (aiIdx != -1)
+                {
+                    m_AIInside.Remove(aiIdx);
+                    Print("[KOTH_AreaTrigger] AI left: " + player.GetType());
+                    
+                    NotifyHUDSync();
+                }
+            }
         }
+    }
+    
+    string GetExpansionAIFaction(PlayerBase ai)
+    {
+        if (!ai)
+            return "Unknown";
+        
+        eAIBase eaiEntity = eAIBase.Cast(ai);
+        if (eaiEntity)
+        {
+            eAIGroup group = eaiEntity.GetGroup();
+            if (group)
+            {
+                eAIFaction faction = group.GetFaction();
+                if (faction)
+                {
+                    return faction.GetName();
+                }
+            }
+        }
+        
+        return "Unknown";
     }
     
     void NotifyHUDSync()
@@ -179,9 +237,11 @@ class KOTH_AreaTrigger : CylinderTrigger
         
         if (syncModule)
         {
-            int eastCount = GetTeamPlayerCount("East");
-            int westCount = GetTeamPlayerCount("West");
+            int eastCount = GetTeamPlayerCount("East") + GetTeamAICount("East");
+            int westCount = GetTeamPlayerCount("West") + GetTeamAICount("West");
             syncModule.OnPlayerCountsChanged(eastCount, westCount);
+            
+            Print("[KOTH_AreaTrigger] Updated counts - East: " + eastCount + " (AI: " + GetTeamAICount("East") + "), West: " + westCount + " (AI: " + GetTeamAICount("West") + ")");
         }
     }
     
@@ -203,12 +263,12 @@ class KOTH_AreaTrigger : CylinderTrigger
     
     bool HasPlayersInside()
     {
-        return m_PlayersInside.Count() > 0;
+        return m_PlayersInside.Count() > 0 || m_AIInside.Count() > 0;
     }
     
     int GetPlayerCount()
     {
-        return m_PlayersInside.Count();
+        return m_PlayersInside.Count() + m_AIInside.Count();
     }
     
     array<PlayerBase> GetPlayersInside()
@@ -216,13 +276,44 @@ class KOTH_AreaTrigger : CylinderTrigger
         return m_PlayersInside;
     }
     
+    array<PlayerBase> GetAIInside()
+    {
+        return m_AIInside;
+    }
+    
     int GetTeamPlayerCount(string teamName)
     {
         int count = 0;
-        for (int i = 0; i < m_PlayersInside.Count(); i++)
+        int i;
+        PlayerBase player;
+        
+        for (i = 0; i < m_PlayersInside.Count(); i++)
         {
-            PlayerBase player = m_PlayersInside.Get(i);
+            player = m_PlayersInside.Get(i);
             if (player && player.GetKOTHTeam() == teamName)
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+    
+    int GetTeamAICount(string teamName)
+    {
+        int count = 0;
+        int i;
+        PlayerBase ai;
+        string factionName;
+        
+        for (i = 0; i < m_AIInside.Count(); i++)
+        {
+            ai = m_AIInside.Get(i);
+            if (!ai || !ai.IsAlive())
+                continue;
+            
+            factionName = GetExpansionAIFaction(ai);
+            
+            if (factionName == teamName)
             {
                 count++;
             }
