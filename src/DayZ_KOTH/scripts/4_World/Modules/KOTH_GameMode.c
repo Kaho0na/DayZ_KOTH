@@ -1,8 +1,8 @@
 /**
- * KOTH_GameMode.c
+ * KOTH_GameMode.c (WITH CAPTURE TIMER)
  *
  * King of the Hill by Kahoona
- * Main game mode logic - handles scoring, win conditions, and round management
+ * Main game mode logic with capture progress tracking
  *
  * Place in: 4_World/Modules/KOTH_GameMode.c
  */
@@ -18,9 +18,14 @@ class KOTH_GameMode: CF_ModuleWorld
     private bool m_RoundActive = false;
     private bool m_RoundEnded = false;
     
+    // Capture progress tracking
+    private float m_CaptureProgress = 0.0;
+    private string m_CapturingTeam = "None";
+    private float m_LastTickTime = 0;
+    
     // Settings
     private int m_ScoreLimit = 100;
-    private float m_TickInterval = 2.0; // Award points every 2 seconds
+    private float m_TickInterval = 2.0;
     private int m_PointsPerTick = 1;
     
     // References
@@ -43,7 +48,6 @@ class KOTH_GameMode: CF_ModuleWorld
         
         if (GetGame().IsServer())
         {
-            // Initialize after a delay to ensure all modules are loaded
             GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(InitializeGameMode, 3000, false);
         }
     }
@@ -53,7 +57,6 @@ class KOTH_GameMode: CF_ModuleWorld
         if (!GetGame().IsServer())
             return;
         
-        // Get HUD sync module reference
         CF_Modules<KOTH_HUDDataSync>.Get(m_HUDSync);
         
         if (!m_HUDSync)
@@ -62,15 +65,15 @@ class KOTH_GameMode: CF_ModuleWorld
             return;
         }
         
-        // Load settings from KOTH_Settings
         KOTH_Settings settings = GetExpansionSettings().GetDayZ_KOTH();
         if (settings)
         {
             m_ScoreLimit = settings.ScoreLimit;
-            Print("[KOTH_GameMode] Score limit set to: " + m_ScoreLimit);
+            m_TickInterval = settings.CaptureTickSeconds;
+            Print("[KOTH_GameMode] Score limit: " + m_ScoreLimit);
+            Print("[KOTH_GameMode] Capture tick: " + m_TickInterval + " seconds");
         }
         
-        // Start the round
         StartRound();
     }
     
@@ -92,16 +95,18 @@ class KOTH_GameMode: CF_ModuleWorld
         m_WestScore = 0;
         m_RoundActive = true;
         m_RoundEnded = false;
+        m_CaptureProgress = 0.0;
+        m_CapturingTeam = "None";
+        m_LastTickTime = 0;
         
-        // Update HUD with reset scores
         if (m_HUDSync)
         {
             m_HUDSync.SetEastScore(0);
             m_HUDSync.SetWestScore(0);
+            m_HUDSync.SetCaptureProgress(0.0, "None");
         }
         
-        // Start the scoring loop
-        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(TickScore, m_TickInterval * 1000, true);
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(UpdateCapture, 100, true);
         
         Print("[KOTH_GameMode] Round started - Score limit: " + m_ScoreLimit);
         NotifyAllPlayers("[KOTH] Round started! First team to " + m_ScoreLimit + " points wins!");
@@ -115,72 +120,104 @@ class KOTH_GameMode: CF_ModuleWorld
         m_RoundActive = false;
         m_RoundEnded = true;
         
-        // Stop the scoring loop
-        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(TickScore);
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(UpdateCapture);
         
         Print("[KOTH_GameMode] Round ended - Winner: " + winningTeam);
         
-        // Broadcast victory to all clients
         BroadcastRoundEnd(winningTeam);
         
-        // Restart round after 30 seconds
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(StartRound, 30000, false);
     }
     
     // ═══════════════════════════════════════════════════════════════
-    // SCORING LOGIC
+    // CAPTURE LOGIC WITH TIMER
     // ═══════════════════════════════════════════════════════════════
     
-    void TickScore()
+    void UpdateCapture()
     {
         if (!GetGame().IsServer() || !m_RoundActive || !m_HUDSync)
             return;
         
-        // Get current player counts from HUD sync module
         int eastPlayers = m_HUDSync.GetEastPlayersInAO();
         int westPlayers = m_HUDSync.GetWestPlayersInAO();
         
-        // Determine which team should score
+        string controllingTeam = "None";
+        
         if (eastPlayers > westPlayers && eastPlayers > 0)
         {
-            // East team has more players - they score
+            controllingTeam = "East";
+        }
+        else if (westPlayers > eastPlayers && westPlayers > 0)
+        {
+            controllingTeam = "West";
+        }
+        
+        if (controllingTeam == "None")
+        {
+            m_CaptureProgress = 0.0;
+            m_CapturingTeam = "None";
+            
+            if (m_HUDSync)
+            {
+                m_HUDSync.SetCaptureProgress(0.0, "None");
+            }
+            
+            return;
+        }
+        
+        if (m_CapturingTeam != controllingTeam)
+        {
+            m_CaptureProgress = 0.0;
+            m_CapturingTeam = controllingTeam;
+            Print("[KOTH_GameMode] " + controllingTeam + " team started capturing");
+        }
+        
+        m_CaptureProgress = m_CaptureProgress + 0.1;
+        
+        float progressPercent = (m_CaptureProgress / m_TickInterval) * 100.0;
+        if (progressPercent > 100.0)
+            progressPercent = 100.0;
+        
+        if (m_HUDSync)
+        {
+            m_HUDSync.SetCaptureProgress(progressPercent, m_CapturingTeam);
+        }
+        
+        if (m_CaptureProgress >= m_TickInterval)
+        {
+            AwardPoint(controllingTeam);
+            m_CaptureProgress = 0.0;
+        }
+    }
+    
+    void AwardPoint(string team)
+    {
+        if (team == "East")
+        {
             m_EastScore += m_PointsPerTick;
-            m_HUDSync.SetEastScore(m_EastScore);
+            if (m_HUDSync)
+                m_HUDSync.SetEastScore(m_EastScore);
             
-            Print("[KOTH_GameMode] East scores! (" + eastPlayers + " vs " + westPlayers + ") - Score: " + m_EastScore + "/" + m_ScoreLimit);
+            Print("[KOTH_GameMode] East scores! Score: " + m_EastScore + "/" + m_ScoreLimit);
             
-            // Check for victory
             if (m_EastScore >= m_ScoreLimit)
             {
                 EndRound("East");
                 return;
             }
         }
-        else if (westPlayers > eastPlayers && westPlayers > 0)
+        else if (team == "West")
         {
-            // West team has more players - they score
             m_WestScore += m_PointsPerTick;
-            m_HUDSync.SetWestScore(m_WestScore);
+            if (m_HUDSync)
+                m_HUDSync.SetWestScore(m_WestScore);
             
-            Print("[KOTH_GameMode] West scores! (" + eastPlayers + " vs " + westPlayers + ") - Score: " + m_WestScore + "/" + m_ScoreLimit);
+            Print("[KOTH_GameMode] West scores! Score: " + m_WestScore + "/" + m_ScoreLimit);
             
-            // Check for victory
             if (m_WestScore >= m_ScoreLimit)
             {
                 EndRound("West");
                 return;
-            }
-        }
-        else
-        {
-            // Tie or no players - no points awarded
-            if (eastPlayers == 0 && westPlayers == 0)
-            {
-                Print("[KOTH_GameMode] No players in zone - no points awarded");
-            }
-            else
-            {
-                Print("[KOTH_GameMode] Teams tied (" + eastPlayers + " vs " + westPlayers + ") - no points awarded");
             }
         }
     }
@@ -198,9 +235,8 @@ class KOTH_GameMode: CF_ModuleWorld
         rpc.Write(winningTeam);
         rpc.Write(m_EastScore);
         rpc.Write(m_WestScore);
-        rpc.Expansion_Send(true, null); // Broadcast to all
+        rpc.Expansion_Send(true, null);
         
-        // Also notify on server
         string message = "[KOTH] Team " + winningTeam + " wins the round! Final score - East: " + m_EastScore + " | West: " + m_WestScore;
         NotifyAllPlayers(message);
     }
@@ -221,7 +257,6 @@ class KOTH_GameMode: CF_ModuleWorld
         if (!ctx.Read(westScore))
             return;
         
-        // Show victory notification on client
         string message = "═══════════════════════════════\n";
         message += "     TEAM " + winningTeam.ToUpper() + " WINS!\n";
         message += "═══════════════════════════════\n";
@@ -229,7 +264,6 @@ class KOTH_GameMode: CF_ModuleWorld
         message += "East: " + eastScore + " | West: " + westScore + "\n";
         message += "\nNew round starting in 30 seconds...";
         
-        // Get local player and show message
         PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
         if (player)
         {
@@ -281,8 +315,18 @@ class KOTH_GameMode: CF_ModuleWorld
         return m_ScoreLimit;
     }
     
+    float GetCaptureProgress()
+    {
+        return m_CaptureProgress;
+    }
+    
+    string GetCapturingTeam()
+    {
+        return m_CapturingTeam;
+    }
+    
     // ═══════════════════════════════════════════════════════════════
-    // SETTERS (for admin commands or testing)
+    // ADMIN COMMANDS
     // ═══════════════════════════════════════════════════════════════
     
     void SetScoreLimit(int limit)
@@ -294,14 +338,6 @@ class KOTH_GameMode: CF_ModuleWorld
     void SetTickInterval(float seconds)
     {
         m_TickInterval = seconds;
-        
-        // Restart timer with new interval
-        if (GetGame().IsServer() && m_RoundActive)
-        {
-            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(TickScore);
-            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(TickScore, m_TickInterval * 1000, true);
-        }
-        
         Print("[KOTH_GameMode] Tick interval changed to: " + seconds + " seconds");
     }
     
@@ -324,7 +360,6 @@ class KOTH_GameMode: CF_ModuleWorld
         }
     }
     
-    // Manual round control (for testing/admin)
     void ForceEndRound(string winningTeam)
     {
         if (!GetGame().IsServer())
@@ -338,7 +373,7 @@ class KOTH_GameMode: CF_ModuleWorld
         if (!GetGame().IsServer())
             return;
         
-        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(TickScore);
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(UpdateCapture);
         StartRound();
     }
 }

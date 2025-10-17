@@ -1,8 +1,8 @@
 /**
- * KOTH_HUD.c
+ * KOTH_HUD.c (WITH CAPTURE TIMER BAR)
  *
  * King of the Hill by Kahoona
- * HUD Display for team scores, player stats, and zone information
+ * HUD Display with capture progress timer
  *
  * Place in: 5_Mission/GUI/KOTH_HUD.c
  */
@@ -13,11 +13,11 @@ class KOTH_HUD: ExpansionScriptView
     private IngameHud m_Hud;
     
     // Top Panel Widgets (Team Scores)
-    protected TextWidget eastScore;
-    protected TextWidget eastPlayers;
-    protected ProgressBarWidget TeamBar;
     protected TextWidget westScore;
     protected TextWidget westPlayers;
+    protected ProgressBarWidget TeamBar;
+    protected TextWidget eastScore;
+    protected TextWidget eastPlayers;
     
     // Level Panel Widgets (Player Stats)
     protected TextWidget currentLevel;
@@ -26,23 +26,21 @@ class KOTH_HUD: ExpansionScriptView
     protected TextWidget currentMoney;
     
     // Cache for player data
-    private int m_CachedEastScore = 0;
     private int m_CachedWestScore = 0;
-    private int m_CachedEastPlayers = -1;  // Start at -1 to force initial update
-    private int m_CachedWestPlayers = -1;  // Start at -1 to force initial update
-    private int m_CachedLevel = -1;  // Start at -1 to force initial update
-    private int m_CachedXP = -1;  // Start at -1 to force initial update
-    private int m_CachedMaxXP = -1;  // Start at -1 to force initial update
-    private int m_CachedMoney = -1;  // Start at -1 to force initial update
+    private int m_CachedEastScore = 0;
+    private int m_CachedWestPlayers = -1;
+    private int m_CachedEastPlayers = -1;
+    private float m_CachedCaptureProgress = -1.0;
+    private string m_CachedCapturingTeam = "";
+    private int m_CachedLevel = -1;
+    private int m_CachedXP = -1;
+    private int m_CachedMaxXP = -1;
+    private int m_CachedMoney = -1;
     
     // Player data cache to avoid constant file reads
     private ref KOTH_Players m_PlayerDataCache;
     private float m_LastPlayerDataUpdate = 0;
     private float m_PlayerDataUpdateInterval = 5.0;
-    
-    // ═══════════════════════════════════════════════════════════════
-    // INITIALIZATION
-    // ═══════════════════════════════════════════════════════════════
     
     void KOTH_HUD(IngameHud hud)
     {
@@ -50,17 +48,12 @@ class KOTH_HUD: ExpansionScriptView
         m_HUDController = KOTH_HUDController.Cast(GetController());
         
         Print("[KOTH_HUD] Initialized");
-        Print("[KOTH_HUD] Cache initialized - EastPlayers: " + m_CachedEastPlayers + ", WestPlayers: " + m_CachedWestPlayers);
     }
     
     void ~KOTH_HUD()
     {
         Print("[KOTH_HUD] Destroyed");
     }
-    
-    // ═══════════════════════════════════════════════════════════════
-    // EXPANSION SCRIPTVIEW OVERRIDES
-    // ═══════════════════════════════════════════════════════════════
     
     override typename GetControllerType()
     {
@@ -74,12 +67,8 @@ class KOTH_HUD: ExpansionScriptView
     
     override float GetUpdateTickRate()
     {
-        return 1.0;
+        return 0.1;
     }
-    
-    // ═══════════════════════════════════════════════════════════════
-    // UPDATE LOOP
-    // ═══════════════════════════════════════════════════════════════
     
     override void Expansion_Update()
     {
@@ -91,13 +80,8 @@ class KOTH_HUD: ExpansionScriptView
         UpdatePlayerStats(player);
     }
     
-    // ═══════════════════════════════════════════════════════════════
-    // TEAM INFO UPDATE
-    // ═══════════════════════════════════════════════════════════════
-    
     void UpdateTeamInfo()
     {
-        // Get synced data from the sync module (works on both client and server)
         KOTH_HUDDataSync syncModule;
         CF_Modules<KOTH_HUDDataSync>.Get(syncModule);
         
@@ -105,6 +89,8 @@ class KOTH_HUD: ExpansionScriptView
         int westPlayerCount = 0;
         int eastScoreValue = 0;
         int westScoreValue = 0;
+        float captureProgress = 0.0;
+        string capturingTeam = "None";
         
         if (syncModule)
         {
@@ -112,19 +98,8 @@ class KOTH_HUD: ExpansionScriptView
             westPlayerCount = syncModule.GetWestPlayersInAO();
             eastScoreValue = syncModule.GetEastScore();
             westScoreValue = syncModule.GetWestScore();
-        }
-        else
-        {
-            Print("[KOTH_HUD] ERROR: Could not get KOTH_HUDDataSync module!");
-        }
-        
-        if (m_CachedEastScore != eastScoreValue)
-        {
-            m_CachedEastScore = eastScoreValue;
-            if (this.eastScore)
-            {
-                this.eastScore.SetText(eastScoreValue.ToString());
-            }
+            captureProgress = syncModule.GetCaptureProgress();
+            capturingTeam = syncModule.GetCapturingTeam();
         }
         
         if (m_CachedWestScore != westScoreValue)
@@ -136,18 +111,12 @@ class KOTH_HUD: ExpansionScriptView
             }
         }
         
-        if (m_CachedEastPlayers != eastPlayerCount)
+        if (m_CachedEastScore != eastScoreValue)
         {
-            m_CachedEastPlayers = eastPlayerCount;
-            if (eastPlayers)
+            m_CachedEastScore = eastScoreValue;
+            if (this.eastScore)
             {
-                string eastText;
-                if (eastPlayerCount == 1)
-                    eastText = "1 player";
-                else
-                    eastText = eastPlayerCount.ToString() + " players";
-                    
-                eastPlayers.SetText(eastText);
+                this.eastScore.SetText(eastScoreValue.ToString());
             }
         }
         
@@ -166,31 +135,50 @@ class KOTH_HUD: ExpansionScriptView
             }
         }
         
-        if (TeamBar)
+        if (m_CachedEastPlayers != eastPlayerCount)
         {
-            int totalScore = eastScoreValue + westScoreValue;
-            float westPercentage;
-            if (totalScore > 0)
+            m_CachedEastPlayers = eastPlayerCount;
+            if (eastPlayers)
             {
-                westPercentage = ((float)westScoreValue / (float)totalScore) * 100.0;
+                string eastText;
+                if (eastPlayerCount == 1)
+                    eastText = "1 player";
+                else
+                    eastText = eastPlayerCount.ToString() + " players";
+                    
+                eastPlayers.SetText(eastText);
             }
-            else
+        }
+        
+        if (m_CachedCaptureProgress != captureProgress || m_CachedCapturingTeam != capturingTeam)
+        {
+            m_CachedCaptureProgress = captureProgress;
+            m_CachedCapturingTeam = capturingTeam;
+            
+            if (TeamBar)
             {
-                westPercentage = 50.0;
+                TeamBar.SetCurrent(captureProgress);
+                
+                if (capturingTeam == "East")
+                {
+                    TeamBar.SetColor(ARGB(255, 220, 60, 60));
+                }
+                else if (capturingTeam == "West")
+                {
+                    TeamBar.SetColor(ARGB(255, 60, 120, 220));
+                }
+                else
+                {
+                    TeamBar.SetColor(ARGB(255, 100, 100, 100));
+                }
             }
-            TeamBar.SetCurrent(westPercentage);
         }
     }
-    
-    // ═══════════════════════════════════════════════════════════════
-    // PLAYER STATS UPDATE
-    // ═══════════════════════════════════════════════════════════════
     
     void UpdatePlayerStats(PlayerBase player)
     {
         string uid = player.GetIdentity().GetId();
         
-        // Only reload player data every 5 seconds to avoid constant file reads
         float currentTime = GetGame().GetTime();
         bool shouldReload = false;
         
@@ -214,7 +202,6 @@ class KOTH_HUD: ExpansionScriptView
             
             if (m_PlayerDataCache)
             {
-                // Only log on initial load or when data changes
                 if (m_CachedLevel == -1)
                 {
                     Print("[KOTH_HUD] Initial player data load - Level: " + m_PlayerDataCache.CurrentLevel + ", XP: " + m_PlayerDataCache.TotalExperienceEarned + ", Money: " + m_PlayerDataCache.TotalMoneyinBank);
@@ -222,7 +209,6 @@ class KOTH_HUD: ExpansionScriptView
             }
             else
             {
-                // If still NULL after load attempt, create default data
                 Print("[KOTH_HUD] Creating default player data for UID: " + uid);
                 m_PlayerDataCache = new KOTH_Players();
                 m_PlayerDataCache.Defaults();
@@ -233,21 +219,17 @@ class KOTH_HUD: ExpansionScriptView
         
         if (!m_PlayerDataCache)
         {
-            // Fallback to defaults if still NULL
             UpdatePlayerStatsWithDefaults();
             return;
         }
         
-        // Get player stats from cache
         int level = m_PlayerDataCache.CurrentLevel;
         int xp = m_PlayerDataCache.TotalExperienceEarned;
         int money = m_PlayerDataCache.TotalMoneyinBank;
         
-        // Calculate XP for current and next level
         int maxXP = CalculateXPForLevel(level + 1);
         int currentLevelXP = CalculateXPForLevel(level);
         
-        // FIXED: For level 1, start XP from 0, not from calculated base
         int xpProgress;
         int xpNeeded;
         if (level == 1)
@@ -312,7 +294,6 @@ class KOTH_HUD: ExpansionScriptView
     
     void UpdatePlayerStatsWithDefaults()
     {
-        // Show default values when player data unavailable
         if (currentLevel)
             currentLevel.SetText("1");
         
@@ -325,10 +306,6 @@ class KOTH_HUD: ExpansionScriptView
         if (currentMoney)
             currentMoney.SetText("$0");
     }
-    
-    // ═══════════════════════════════════════════════════════════════
-    // HELPER METHODS
-    // ═══════════════════════════════════════════════════════════════
     
     int CalculateXPForLevel(int level)
     {
@@ -360,10 +337,6 @@ class KOTH_HUD: ExpansionScriptView
         return result;
     }
     
-    // ═══════════════════════════════════════════════════════════════
-    // PUBLIC METHODS
-    // ═══════════════════════════════════════════════════════════════
-    
     void ShowHud(bool state)
     {
         if (IsVisible() == state)
@@ -383,16 +356,17 @@ class KOTH_HUD: ExpansionScriptView
     
     void ForceUpdate()
     {
-        m_CachedEastScore = -1;
         m_CachedWestScore = -1;
-        m_CachedEastPlayers = -1;
+        m_CachedEastScore = -1;
         m_CachedWestPlayers = -1;
+        m_CachedEastPlayers = -1;
+        m_CachedCaptureProgress = -1.0;
+        m_CachedCapturingTeam = "";
         m_CachedLevel = -1;
         m_CachedXP = -1;
         m_CachedMaxXP = -1;
         m_CachedMoney = -1;
         
-        // Force reload player data
         m_PlayerDataCache = null;
         m_LastPlayerDataUpdate = 0;
         
@@ -400,24 +374,16 @@ class KOTH_HUD: ExpansionScriptView
     }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// CONTROLLER
-// ═══════════════════════════════════════════════════════════════
-
 class KOTH_HUDController: ExpansionViewController
 {
-    string EastScore;
     string WestScore;
-    string EastPlayers;
+    string EastScore;
     string WestPlayers;
+    string EastPlayers;
     string CurrentLevel;
     string CurrentXP;
     string CurrentMoney;
 }
-
-// ═══════════════════════════════════════════════════════════════
-// MODDED INGAMEHUD - Integration
-// ═══════════════════════════════════════════════════════════════
 
 modded class IngameHud
 {

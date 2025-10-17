@@ -1,7 +1,7 @@
 /**
- * KOTH_HUDDataSync.c
+ * KOTH_HUDDataSync.c (WITH CAPTURE PROGRESS)
  *
- * Syncs HUD data from server to all clients
+ * Syncs HUD data including capture timer from server to all clients
  * Place in: 4_World/Modules/KOTH_HUDDataSync.c
  */
 
@@ -15,12 +15,16 @@ class KOTH_HUDDataSync: CF_ModuleWorld
     private int m_WestScore = 0;
     private int m_EastPlayersInAO = 0;
     private int m_WestPlayersInAO = 0;
+    private float m_CaptureProgress = 0.0;
+    private string m_CapturingTeam = "None";
     
     // Client-side cached data
     private int m_ClientEastScore = 0;
     private int m_ClientWestScore = 0;
     private int m_ClientEastPlayers = 0;
     private int m_ClientWestPlayers = 0;
+    private float m_ClientCaptureProgress = 0.0;
+    private string m_ClientCapturingTeam = "None";
     
     void KOTH_HUDDataSync()
     {
@@ -58,7 +62,21 @@ class KOTH_HUDDataSync: CF_ModuleWorld
         
         Print("[KOTH_HUDDataSync] Player counts changed - East: " + eastCount + ", West: " + westCount);
         
-        // Broadcast to all clients
+        BroadcastHUDData();
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // SERVER: Set capture progress
+    // ═══════════════════════════════════════════════════════════════
+    
+    void SetCaptureProgress(float progress, string team)
+    {
+        if (!GetGame().IsServer())
+            return;
+        
+        m_CaptureProgress = progress;
+        m_CapturingTeam = team;
+        
         BroadcastHUDData();
     }
     
@@ -76,7 +94,9 @@ class KOTH_HUDDataSync: CF_ModuleWorld
         rpc.Write(m_WestScore);
         rpc.Write(m_EastPlayersInAO);
         rpc.Write(m_WestPlayersInAO);
-        rpc.Expansion_Send(true, null); // Broadcast to all
+        rpc.Write(m_CaptureProgress);
+        rpc.Write(m_CapturingTeam);
+        rpc.Expansion_Send(true, null);
     }
     
     // ═══════════════════════════════════════════════════════════════
@@ -96,8 +116,12 @@ class KOTH_HUDDataSync: CF_ModuleWorld
             return;
         if (!ctx.Read(m_ClientWestPlayers))
             return;
+        if (!ctx.Read(m_ClientCaptureProgress))
+            return;
+        if (!ctx.Read(m_ClientCapturingTeam))
+            return;
         
-        Print("[KOTH_HUDDataSync] CLIENT received - East: " + m_ClientEastPlayers + ", West: " + m_ClientWestPlayers);
+        Print("[KOTH_HUDDataSync] CLIENT received - East: " + m_ClientEastPlayers + ", West: " + m_ClientWestPlayers + ", Progress: " + m_ClientCaptureProgress + "%, Team: " + m_ClientCapturingTeam);
     }
     
     // ═══════════════════════════════════════════════════════════════
@@ -132,8 +156,22 @@ class KOTH_HUDDataSync: CF_ModuleWorld
         return m_ClientWestPlayers;
     }
     
+    float GetCaptureProgress()
+    {
+        if (GetGame().IsServer())
+            return m_CaptureProgress;
+        return m_ClientCaptureProgress;
+    }
+    
+    string GetCapturingTeam()
+    {
+        if (GetGame().IsServer())
+            return m_CapturingTeam;
+        return m_ClientCapturingTeam;
+    }
+    
     // ═══════════════════════════════════════════════════════════════
-    // SERVER: Set scores (for future game mode integration)
+    // SERVER: Set scores (for game mode integration)
     // ═══════════════════════════════════════════════════════════════
     
     void SetEastScore(int score)
