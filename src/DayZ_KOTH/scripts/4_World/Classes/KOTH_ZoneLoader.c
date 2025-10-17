@@ -1,7 +1,7 @@
 /**
- * KOTH_ZoneLoader.c (UPDATED)
+ * KOTH_ZoneLoader.c
  *
- * Following Expansion pattern - now with dynamic priority zone
+ * Updated to use KOTH_PriorityZoneManager for smooth movement
  * Place in: 4_World/Classes/KOTH_ZoneLoader.c
  */
 
@@ -13,7 +13,7 @@ class KOTH_ZoneLoader
             return;
             
         Print("[KOTH_ZoneLoader] ═══════════════════════════════════════");
-        Print("[KOTH_ZoneLoader] Creating KOTH zones (Expansion Method)");
+        Print("[KOTH_ZoneLoader] Creating KOTH zones");
         
         KOTH_ZoneManager zoneManager;
         CF_Modules<KOTH_ZoneManager>.Get(zoneManager);
@@ -21,7 +21,8 @@ class KOTH_ZoneLoader
         if (!zoneManager || !zoneManager.IsZoneActive())
         {
             Print("[KOTH_ZoneLoader] No active zone, using test position");
-            CreateMainZone("6585 6 2439", 100);
+            CreateMainZone("6585 6 2439", 400);
+            KOTH_PriorityZoneManager.Initialize("6585 6 2439", 400, 100);
             return;
         }
         
@@ -38,10 +39,10 @@ class KOTH_ZoneLoader
         // Create main zone
         CreateMainZone(aoCenter, aoRadius);
         
-        // Create DYNAMIC priority zone if configured
+        // Initialize priority zone with smooth movement via manager
         if (priRadius > 0)
         {
-            CreateDynamicPriorityZone(aoCenter, aoRadius, priRadius);
+            KOTH_PriorityZoneManager.Initialize(aoCenter, aoRadius, priRadius);
         }
         
         Print("[KOTH_ZoneLoader] ═══════════════════════════════════════");
@@ -61,37 +62,5 @@ class KOTH_ZoneLoader
         {
             Error("[KOTH_ZoneLoader] Failed to create main zone!");
         }
-    }
-    
-    static void CreateDynamicPriorityZone(vector captureCenter, float captureRadius, float priorityRadius)
-    {
-        Print("[KOTH_ZoneLoader] Creating DYNAMIC priority zone system");
-        Print("[KOTH_ZoneLoader] - Capture Center: " + captureCenter);
-        Print("[KOTH_ZoneLoader] - Capture Radius: " + captureRadius + "m");
-        Print("[KOTH_ZoneLoader] - Priority Radius: " + priorityRadius + "m");
-        Print("[KOTH_ZoneLoader] - Trajectory Radius: " + (captureRadius / 2.0) + "m");
-        
-        // Initialize the dynamic priority zone manager
-        KOTH_PriorityZoneManager.Initialize(captureCenter, captureRadius, priorityRadius);
-        
-        Print("[KOTH_ZoneLoader] Dynamic priority zone system initialized!");
-        Print("[KOTH_ZoneLoader] Priority zone will move around the capture zone perimeter");
-    }
-    
-    //! ═══════════════════════════════════════════════════════════════
-    //! CLEANUP FOR ZONE ROTATION
-    //! ═══════════════════════════════════════════════════════════════
-    
-    static void CleanupZones()
-    {
-        if (!GetGame().IsServer())
-            return;
-        
-        Print("[KOTH_ZoneLoader] Cleaning up zones for rotation");
-        
-        // Cleanup priority zone manager
-        KOTH_PriorityZoneManager.Cleanup();
-        
-        // Note: Main zone cleanup handled by zone manager
     }
 }

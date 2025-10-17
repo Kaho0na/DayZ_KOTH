@@ -1,31 +1,24 @@
 /**
  * KOTH_PriArea.c
  *
- * Priority zone following ExpansionAINoGoArea pattern
+ * Priority zone trigger - managed by KOTH_PriorityZoneManager
  * Place in: 4_World/Classes/ContaminatedArea/KOTH_PriArea.c
  */
 
 class KOTH_PriArea : EffectArea
 {
     KOTH_PriAreaTrigger m_KOTH_PriTrigger;
-    protected int m_UpdateRate = 1000;
     
     void KOTH_Init(vector position, float radius)
     {
         m_Radius = radius;
-        m_PositiveHeight = 50;
-        m_NegativeHeight = 50;
+        m_PositiveHeight = 100; // High to prevent exit when jumping
+        m_NegativeHeight = 10;   // Low to avoid triggering when far below
         m_Position = position;
         
-        Print("[KOTH_PriArea] Initializing priority zone at " + position + " with radius " + radius);
+        Print("[KOTH_PriArea] Initializing at " + position + " with radius " + radius);
         
         CreateTrigger(m_Position, m_Radius);
-        
-        // Start update loop
-        if (GetGame().IsServer())
-        {
-            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(UpdatePriorityZone, m_UpdateRate, true);
-        }
     }
     
     override void CreateTrigger(vector pos, int radius)
@@ -34,11 +27,11 @@ class KOTH_PriArea : EffectArea
         {
             m_KOTH_PriTrigger.SetCollisionCylinder(radius, m_PositiveHeight);
             m_KOTH_PriTrigger.KOTH_Init(this);
-            Print("[KOTH_PriArea] Priority trigger created successfully");
+            Print("[KOTH_PriArea] Trigger created successfully");
         }
         else
         {
-            Error("[KOTH_PriArea] Failed to create priority trigger!");
+            Error("[KOTH_PriArea] Failed to create trigger!");
         }
     }
     
@@ -50,49 +43,44 @@ class KOTH_PriArea : EffectArea
         super.EEDelete(parent);
     }
     
-    // Unused - we initialize manually
     override void SetupZoneData(EffectAreaParams params) 
     {
     }
     
     override void OnPlayerEnterServer(PlayerBase player, EffectTrigger trigger)
     {
-        // Not used - handled in trigger
     }
     
     override void OnPlayerExitServer(PlayerBase player, EffectTrigger trigger)
     {
-        // Not used - handled in trigger
     }
     
-    void UpdatePriorityZone()
+    KOTH_PriAreaTrigger GetTrigger()
     {
-        if (m_KOTH_PriTrigger && m_KOTH_PriTrigger.HasPlayersInside())
-        {
-            Print("[KOTH_PriArea] PRIORITY ZONE ACTIVE - BONUS POINTS! Players: " + m_KOTH_PriTrigger.GetPlayerCount());
-        }
+        return m_KOTH_PriTrigger;
     }
 }
 
 class KOTH_PriAreaTrigger : CylinderTrigger
 {
     protected EffectArea m_KOTH_EffectArea;
-    protected ref array<PlayerBase> m_PlayersInside;
+    protected ref map<PlayerBase, bool> m_PlayerStates;
+    protected ref map<PlayerBase, float> m_PlayerEnterTime;
     
     void KOTH_PriAreaTrigger()
     {
-        m_PlayersInside = new array<PlayerBase>();
+        m_PlayerStates = new map<PlayerBase, bool>();
+        m_PlayerEnterTime = new map<PlayerBase, float>();
     }
     
     void KOTH_Init(EffectArea area)
     {
         m_KOTH_EffectArea = area;
-        Print("[KOTH_PriAreaTrigger] Priority trigger initialized");
+        Print("[KOTH_PriAreaTrigger] Initialized");
     }
     
     override protected bool CanAddObjectAsInsider(Object object)
     {
-        // Only track players
         if (PlayerBase.Cast(object))
             return true;
         
@@ -113,14 +101,35 @@ class KOTH_PriAreaTrigger : CylinderTrigger
             PlayerBase player;
             if (Class.CastTo(player, insider.GetObject()))
             {
-                if (m_PlayersInside.Find(player) == -1)
+                float currentTime = GetGame().GetTime();
+                
+                // Check if player state exists and is false (was outside)
+                bool wasInside = false;
+                if (m_PlayerStates.Contains(player))
                 {
-                    m_PlayersInside.Insert(player);
-                    string team = player.GetKOTHTeam();
-                    Print("[KOTH_PriAreaTrigger] Player entered PRIORITY: " + player.GetIdentity().GetName() + " (Team: " + team + ") BONUS POINTS!");
+                    wasInside = m_PlayerStates.Get(player);
+                }
+                
+                // Only notify if player was NOT inside and hasn't entered recently (spam protection)
+                if (!wasInside)
+                {
+                    float lastEnterTime = 0;
+                    if (m_PlayerEnterTime.Contains(player))
+                    {
+                        lastEnterTime = m_PlayerEnterTime.Get(player);
+                    }
                     
-                    // Send notification to player
-                    player.MessageStatus("[KOTH PRIORITY] You entered the BONUS POINTS zone!");
+                    // Only send message if it's been at least 3 seconds since last enter
+                    if (currentTime - lastEnterTime > 3000)
+                    {
+                        m_PlayerStates.Set(player, true);
+                        m_PlayerEnterTime.Set(player, currentTime);
+                        
+                        string team = player.GetKOTHTeam();
+                        Print("[KOTH_PriAreaTrigger] Player entered PRIORITY: " + player.GetIdentity().GetName() + " (Team: " + team + ")");
+                        
+                        player.MessageStatus("[KOTH PRIORITY] You entered the BONUS POINTS zone!");
+                    }
                 }
             }
         }
@@ -135,13 +144,32 @@ class KOTH_PriAreaTrigger : CylinderTrigger
             PlayerBase player;
             if (Class.CastTo(player, insider.GetObject()))
             {
-                int idx = m_PlayersInside.Find(player);
-                if (idx != -1)
+                float currentTime = GetGame().GetTime();
+                
+                // Check if player was marked as inside
+                bool wasInside = false;
+                if (m_PlayerStates.Contains(player))
                 {
-                    m_PlayersInside.Remove(idx);
-                    Print("[KOTH_PriAreaTrigger] Player left PRIORITY: " + player.GetIdentity().GetName());
+                    wasInside = m_PlayerStates.Get(player);
+                }
+                
+                if (wasInside)
+                {
+                    float lastEnterTime = 0;
+                    if (m_PlayerEnterTime.Contains(player))
+                    {
+                        lastEnterTime = m_PlayerEnterTime.Get(player);
+                    }
                     
-                    player.MessageStatus("[KOTH PRIORITY] You left the bonus zone");
+                    // Only send leave message if player was inside for at least 3 seconds
+                    if (currentTime - lastEnterTime > 3000)
+                    {
+                        m_PlayerStates.Set(player, false);
+                        
+                        Print("[KOTH_PriAreaTrigger] Player left PRIORITY: " + player.GetIdentity().GetName());
+                        
+                        player.MessageStatus("[KOTH PRIORITY] You left the bonus zone");
+                    }
                 }
             }
         }
@@ -149,16 +177,34 @@ class KOTH_PriAreaTrigger : CylinderTrigger
     
     bool HasPlayersInside()
     {
-        return m_PlayersInside.Count() > 0;
+        int count = 0;
+        foreach (PlayerBase player, bool isInside : m_PlayerStates)
+        {
+            if (isInside && player && player.IsAlive())
+                count++;
+        }
+        return count > 0;
     }
     
     int GetPlayerCount()
     {
-        return m_PlayersInside.Count();
+        int count = 0;
+        foreach (PlayerBase player, bool isInside : m_PlayerStates)
+        {
+            if (isInside && player && player.IsAlive())
+                count++;
+        }
+        return count;
     }
     
     array<PlayerBase> GetPlayersInside()
     {
-        return m_PlayersInside;
+        array<PlayerBase> result = new array<PlayerBase>();
+        foreach (PlayerBase player, bool isInside : m_PlayerStates)
+        {
+            if (isInside && player && player.IsAlive())
+                result.Insert(player);
+        }
+        return result;
     }
 }
