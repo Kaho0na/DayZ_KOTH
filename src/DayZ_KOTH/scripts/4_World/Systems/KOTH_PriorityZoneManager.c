@@ -1,5 +1,5 @@
 /**
- * KOTH_PriorityZoneManager.c
+ * KOTH_PriorityZoneManager.c (CLEANED)
  *
  * King of the Hill by Kahoona
  * Manages dynamic moving priority zone with SMOOTH circular movement
@@ -15,22 +15,16 @@ class KOTH_PriorityZoneManager
     private static float s_CurrentAngle = 0.0;
     private static bool s_IsActive = false;
     
-    // Movement settings (loaded from KOTH_Settings)
     private static bool s_EnableMovement = true;
     private static float s_MovementInterval = 30.0;
     private static float s_AngleIncrement = 15.0;
     private static bool s_Clockwise = true;
     private static float s_BonusMultiplier = 2.0;
     
-    // Smooth movement state
     private static vector s_CurrentPosition;
     private static vector s_TargetPosition;
     private static bool s_IsMoving = false;
     private static float s_MoveProgress = 0.0;
-    
-    //! ═══════════════════════════════════════════════════════════════
-    //! INITIALIZATION
-    //! ═══════════════════════════════════════════════════════════════
     
     static void Initialize(vector captureCenter, float captureRadius, float priorityRadius)
     {
@@ -42,10 +36,9 @@ class KOTH_PriorityZoneManager
         
         s_CaptureZoneCenter = captureCenter;
         s_PriorityRadius = priorityRadius;
-        s_TrajectoryRadius = captureRadius - priorityRadius - 20.0; // Stay inside with buffer
+        s_TrajectoryRadius = captureRadius - priorityRadius - 20.0;
         s_CurrentAngle = Math.RandomFloat(0, 360);
         
-        // Load settings from JSON
         LoadSettings();
         
         Print("[KOTH_PriorityZoneManager] Capture Zone Center: " + captureCenter);
@@ -55,19 +48,14 @@ class KOTH_PriorityZoneManager
         Print("[KOTH_PriorityZoneManager] Movement Interval: " + s_MovementInterval + "s");
         Print("[KOTH_PriorityZoneManager] Angle Increment: " + s_AngleIncrement + "°");
         
-        // Calculate initial position
         s_CurrentPosition = CalculatePositionOnCircle(s_CaptureZoneCenter, s_TrajectoryRadius, s_CurrentAngle);
         s_TargetPosition = s_CurrentPosition;
         
-        // Create the single priority zone
         CreatePriorityZone();
         
         if (s_EnableMovement)
         {
-            // Start angle update timer (every interval, calculate new target)
             GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(UpdateTargetPosition, s_MovementInterval * 1000, true);
-            
-            // Start smooth movement updater (60 FPS)
             GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(UpdateSmoothMovement, 16, true);
         }
         
@@ -75,10 +63,6 @@ class KOTH_PriorityZoneManager
         
         Print("[KOTH_PriorityZoneManager] ═══════════════════════════════════════");
     }
-    
-    //! ═══════════════════════════════════════════════════════════════
-    //! LOAD SETTINGS FROM JSON
-    //! ═══════════════════════════════════════════════════════════════
     
     static void LoadSettings()
     {
@@ -99,10 +83,6 @@ class KOTH_PriorityZoneManager
         }
     }
     
-    //! ═══════════════════════════════════════════════════════════════
-    //! CREATE PRIORITY ZONE
-    //! ═══════════════════════════════════════════════════════════════
-    
     static void CreatePriorityZone()
     {
         if (!GetGame().IsServer())
@@ -114,9 +94,6 @@ class KOTH_PriorityZoneManager
         {
             s_ActivePriorityZone.KOTH_Init(s_CurrentPosition, s_PriorityRadius);
             Print("[KOTH_PriorityZoneManager] Priority zone created successfully");
-            
-            // Create initial marker
-            KOTH_MarkerSystem.UpdatePriorityMarker(s_CurrentPosition, s_PriorityRadius);
         }
         else
         {
@@ -124,31 +101,23 @@ class KOTH_PriorityZoneManager
         }
     }
     
-    //! ═══════════════════════════════════════════════════════════════
-    //! SMOOTH MOVEMENT SYSTEM
-    //! ═══════════════════════════════════════════════════════════════
-    
     static void UpdateTargetPosition()
     {
         if (!s_EnableMovement || !s_IsActive)
             return;
         
-        // Calculate next angle
         if (s_Clockwise)
             s_CurrentAngle = s_CurrentAngle + s_AngleIncrement;
         else
             s_CurrentAngle = s_CurrentAngle - s_AngleIncrement;
         
-        // Normalize angle to 0-360
         while (s_CurrentAngle >= 360.0)
             s_CurrentAngle = s_CurrentAngle - 360.0;
         while (s_CurrentAngle < 0.0)
             s_CurrentAngle = s_CurrentAngle + 360.0;
         
-        // Calculate new target position
         s_TargetPosition = CalculatePositionOnCircle(s_CaptureZoneCenter, s_TrajectoryRadius, s_CurrentAngle);
         
-        // Start smooth movement
         s_IsMoving = true;
         s_MoveProgress = 0.0;
         
@@ -163,39 +132,27 @@ class KOTH_PriorityZoneManager
         if (!s_IsMoving)
             return;
         
-        // Calculate progress per frame (60 FPS over interval)
         float progressPerFrame = 1.0 / (s_MovementInterval * 60.0);
         s_MoveProgress = s_MoveProgress + progressPerFrame;
         
         if (s_MoveProgress >= 1.0)
         {
-            // Reached target
             s_CurrentPosition = s_TargetPosition;
             s_IsMoving = false;
             s_MoveProgress = 1.0;
         }
         else
         {
-            // Lerp between current and target
             s_CurrentPosition = vector.Lerp(s_CurrentPosition, s_TargetPosition, s_MoveProgress);
         }
         
-        // Update zone position
         s_ActivePriorityZone.SetPosition(s_CurrentPosition);
         
-        // Update trigger position
         if (s_ActivePriorityZone.GetTrigger())
         {
             s_ActivePriorityZone.GetTrigger().SetPosition(s_CurrentPosition);
         }
-        
-        // Update marker position (every frame for smooth visual)
-        KOTH_MarkerSystem.UpdatePriorityMarker(s_CurrentPosition, s_PriorityRadius);
     }
-    
-    //! ═══════════════════════════════════════════════════════════════
-    //! POSITION CALCULATION
-    //! ═══════════════════════════════════════════════════════════════
     
     static vector CalculatePositionOnCircle(vector center, float radius, float angleDegrees)
     {
@@ -210,10 +167,6 @@ class KOTH_PriorityZoneManager
         
         return newPos;
     }
-    
-    //! ═══════════════════════════════════════════════════════════════
-    //! CONFIGURATION
-    //! ═══════════════════════════════════════════════════════════════
     
     static void SetMovementInterval(float seconds)
     {
@@ -245,10 +198,6 @@ class KOTH_PriorityZoneManager
         Print("[KOTH_PriorityZoneManager] Direction set to " + dir);
     }
     
-    //! ═══════════════════════════════════════════════════════════════
-    //! CLEANUP
-    //! ═══════════════════════════════════════════════════════════════
-    
     static void Cleanup()
     {
         if (!GetGame().IsServer())
@@ -269,10 +218,6 @@ class KOTH_PriorityZoneManager
         
         Print("[KOTH_PriorityZoneManager] Priority zone cleanup complete");
     }
-    
-    //! ═══════════════════════════════════════════════════════════════
-    //! GETTERS
-    //! ═══════════════════════════════════════════════════════════════
     
     static vector GetCurrentPosition()
     {

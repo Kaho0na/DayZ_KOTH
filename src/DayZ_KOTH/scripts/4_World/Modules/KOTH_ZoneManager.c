@@ -1,11 +1,9 @@
 /**
- * KOTH_ZoneManager.c (UNIFIED)
+ * KOTH_ZoneManager.c (NBZ RPC PATTERN - CLEANED)
  *
  * King of the Hill by Kahoona
- * Complete zone management - data, buildings, triggers, markers
- *
- * This work is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
- * To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-nd/4.0/.
+ * Following NBZ mod's RPC pattern - no separate marker system needed
+ * Place in: 4_World/Modules/KOTH_ZoneManager.c
  */
 
 enum KOTHZoneSelectionMode
@@ -30,10 +28,21 @@ class KOTH_ZoneManager: CF_ModuleWorld
     
     private KOTH_Area m_MainZoneTrigger;
     
+    ref array<string> zoneNames;
+    ref array<vector> zonePositions;
+    ref array<float> zoneRadii;
+    ref array<int> zoneColors;
+    ref array<bool> zoneDrawCircles;
+    
     void KOTH_ZoneManager()
     {
         s_Instance = this;
         m_AvailableZones = new array<string>();
+        zoneNames = new array<string>();
+        zonePositions = new array<vector>();
+        zoneRadii = new array<float>();
+        zoneColors = new array<int>();
+        zoneDrawCircles = new array<bool>();
     }
     
     override void OnInit()
@@ -48,11 +57,58 @@ class KOTH_ZoneManager: CF_ModuleWorld
         Expansion_RegisterClientRPC("RPC_SyncActiveZone");
         Expansion_RegisterServerRPC("RPC_RequestZoneInfo");
         Expansion_RegisterServerRPC("RPC_AdminChangeZone");
-        
+    }
+    
+    override void OnMissionStart(Class sender, CF_EventArgs args)
+    {
+        super.OnMissionStart(sender, args);
+        InitRPC();
+    }
+    
+    void InitRPC()
+    {
         if (GetGame().IsServer())
         {
-            KOTH_MarkerSystem.Initialize();
+            GetRPCManager().AddRPC("KOTH_MapMenu", "RequestKOTHZones", this, SingleplayerExecutionType.Server);
+            GetRPCManager().AddRPC("KOTH_MapMenu", "ReceiveKOTHZones", this, SingleplayerExecutionType.Server);
+            Print("[KOTH_ZoneManager] Server-side RPC initialized");
         }
+        else
+        {
+            GetRPCManager().AddRPC("KOTH_MapMenu", "ReceiveKOTHZones", this, SingleplayerExecutionType.Client);
+            Print("[KOTH_ZoneManager] Client-side RPC initialized");
+        }
+    }
+    
+    void RequestKOTHZones(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
+    {
+        if (type != CallType.Server)
+            return;
+
+        if (sender == null)
+            return;
+
+        Print("[KOTH_ZoneManager] Client " + sender.GetName() + " requested zone data");
+
+        GetRPCManager().SendRPC("KOTH_MapMenu", "ReceiveKOTHZones", new Param5<array<string>, array<vector>, array<float>, array<int>, array<bool>>(zoneNames, zonePositions, zoneRadii, zoneColors, zoneDrawCircles), true, sender);
+    }
+    
+    void ReceiveKOTHZones(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
+    {
+        if (type != CallType.Client)
+            return;
+
+        Param5<array<string>, array<vector>, array<float>, array<int>, array<bool>> data;
+        if (!ctx.Read(data))
+            return;
+
+        zoneNames = data.param1;
+        zonePositions = data.param2;
+        zoneRadii = data.param3;
+        zoneColors = data.param4;
+        zoneDrawCircles = data.param5;
+
+        Print("[KOTH_ZoneManager] Client received zone data - " + zoneNames.Count() + " zones");
     }
     
     static KOTH_ZoneManager GetInstance()
@@ -63,10 +119,6 @@ class KOTH_ZoneManager: CF_ModuleWorld
         }
         return s_Instance;
     }
-    
-    //! ═══════════════════════════════════════════════════════════════
-    //! ZONE DISCOVERY
-    //! ═══════════════════════════════════════════════════════════════
     
     void DiscoverAvailableZones()
     {
@@ -105,10 +157,6 @@ class KOTH_ZoneManager: CF_ModuleWorld
         Print("[KOTH_ZoneManager] Total zones discovered: " + m_AvailableZones.Count());
     }
     
-    //! ═══════════════════════════════════════════════════════════════
-    //! COMPLETE ZONE LOADING (All-in-one)
-    //! ═══════════════════════════════════════════════════════════════
-    
     bool LoadZone(string zoneName, bool despawnOldZone = true)
     {
         if (!GetGame().IsServer())
@@ -143,7 +191,7 @@ class KOTH_ZoneManager: CF_ModuleWorld
         
         SpawnZoneBuildings();
         CreateZoneTriggers();
-        PlaceZoneMarkers();
+        PrepareMapCircleData();
         
         SyncActiveZoneToAllClients();
         NotifyPlayersZoneChange();
@@ -153,10 +201,6 @@ class KOTH_ZoneManager: CF_ModuleWorld
         
         return true;
     }
-    
-    //! ═══════════════════════════════════════════════════════════════
-    //! ZONE SETUP STEPS (Called by LoadZone)
-    //! ═══════════════════════════════════════════════════════════════
     
     private void SpawnZoneBuildings()
     {
@@ -196,19 +240,46 @@ class KOTH_ZoneManager: CF_ModuleWorld
         }
     }
     
-    private void PlaceZoneMarkers()
+    private void PrepareMapCircleData()
     {
         if (!m_ActiveZone)
             return;
         
-        Print("[KOTH_ZoneManager] Placing map markers...");
-        KOTH_MarkerSystem.PlaceZoneMarkers(m_ActiveZone);
-        Print("[KOTH_ZoneManager] Map markers placed");
+        zoneNames.Clear();
+        zonePositions.Clear();
+        zoneRadii.Clear();
+        zoneColors.Clear();
+        zoneDrawCircles.Clear();
+        
+        zoneNames.Insert("East Base - " + m_ActiveZone.GetZoneName());
+        zonePositions.Insert(m_ActiveZone.GetEastSpawnBuilding());
+        zoneRadii.Insert(m_ActiveZone.GetEastSafeZoneRadius());
+        zoneColors.Insert(ARGB(255, 220, 60, 60));
+        zoneDrawCircles.Insert(true);
+        
+        zoneNames.Insert("West Base - " + m_ActiveZone.GetZoneName());
+        zonePositions.Insert(m_ActiveZone.GetWestSpawnBuilding());
+        zoneRadii.Insert(m_ActiveZone.GetWestSafeZoneRadius());
+        zoneColors.Insert(ARGB(255, 60, 120, 220));
+        zoneDrawCircles.Insert(true);
+        
+        zoneNames.Insert("AO Zone - " + m_ActiveZone.GetZoneName());
+        zonePositions.Insert(m_ActiveZone.GetAOZoneCenter());
+        zoneRadii.Insert(m_ActiveZone.GetAOZoneRadius());
+        zoneColors.Insert(ARGB(255, 180, 60, 220));
+        zoneDrawCircles.Insert(true);
+        
+        if (m_ActiveZone.GetPriorityAORadius() > 0)
+        {
+            zoneNames.Insert("Priority Zone");
+            zonePositions.Insert(m_ActiveZone.GetAOZoneCenter());
+            zoneRadii.Insert(m_ActiveZone.GetPriorityAORadius());
+            zoneColors.Insert(ARGB(255, 220, 200, 60));
+            zoneDrawCircles.Insert(true);
+        }
+        
+        Print("[KOTH_ZoneManager] Map circle data prepared - " + zoneNames.Count() + " circles");
     }
-    
-    //! ═══════════════════════════════════════════════════════════════
-    //! ZONE CLEANUP
-    //! ═══════════════════════════════════════════════════════════════
     
     private void CleanupCurrentZone()
     {
@@ -216,7 +287,6 @@ class KOTH_ZoneManager: CF_ModuleWorld
         
         KOTH_SpawnBase.DespawnAll();
         KOTH_PriorityZoneManager.Cleanup();
-        KOTH_MarkerSystem.RemoveAllMarkers();
         
         if (m_MainZoneTrigger)
         {
@@ -226,10 +296,6 @@ class KOTH_ZoneManager: CF_ModuleWorld
         
         Print("[KOTH_ZoneManager] Cleanup complete");
     }
-    
-    //! ═══════════════════════════════════════════════════════════════
-    //! ZONE SELECTION METHODS
-    //! ═══════════════════════════════════════════════════════════════
     
     bool LoadFirstAvailableZone()
     {
@@ -314,10 +380,6 @@ class KOTH_ZoneManager: CF_ModuleWorld
         return LoadZone(randomZone, true);
     }
     
-    //! ═══════════════════════════════════════════════════════════════
-    //! AUTO ROTATION
-    //! ═══════════════════════════════════════════════════════════════
-    
     void EnableAutoRotation(float intervalSeconds, KOTHZoneSelectionMode mode)
     {
         if (!GetGame().IsServer())
@@ -329,7 +391,7 @@ class KOTH_ZoneManager: CF_ModuleWorld
         
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(AutoRotateZone, m_ZoneRotationInterval * 1000, true);
         
-        Print("[KOTH_ZoneManager] Auto-rotation enabled: " + intervalSeconds + "s interval, mode: " + typename.EnumToString(KOTHZoneSelectionMode, mode));
+        Print("[KOTH_ZoneManager] Auto-rotation enabled: " + intervalSeconds + "s interval");
     }
     
     void DisableAutoRotation()
@@ -347,10 +409,6 @@ class KOTH_ZoneManager: CF_ModuleWorld
         Print("[KOTH_ZoneManager] Auto-rotating to next zone");
         LoadNextZone();
     }
-    
-    //! ═══════════════════════════════════════════════════════════════
-    //! NETWORK SYNCHRONIZATION
-    //! ═══════════════════════════════════════════════════════════════
     
     void SyncActiveZoneToAllClients()
     {
@@ -407,10 +465,6 @@ class KOTH_ZoneManager: CF_ModuleWorld
         LoadSpecificZone(zoneName);
     }
     
-    //! ═══════════════════════════════════════════════════════════════
-    //! NOTIFICATIONS
-    //! ═══════════════════════════════════════════════════════════════
-    
     void NotifyPlayersZoneChange()
     {
         if (!GetGame().IsServer())
@@ -430,10 +484,6 @@ class KOTH_ZoneManager: CF_ModuleWorld
             }
         }
     }
-    
-    //! ═══════════════════════════════════════════════════════════════
-    //! GETTERS
-    //! ═══════════════════════════════════════════════════════════════
     
     KOTH_ZoneData GetActiveZone() { return m_ActiveZone; }
     string GetActiveZoneName() { return m_ActiveZoneName; }
