@@ -1,7 +1,7 @@
 /**
- * KOTH_HUDDataSync.c (WITH PLAYER COUNTS)
+ * KOTH_HUDDataSync.c (PHASE 1 - SCRIPTINVOKERS ADDED)
  *
- * Syncs HUD data including AO and priority zone player counts
+ * Syncs HUD data with event broadcasting
  * Place in: 4_World/Modules/KOTH_HUDDataSync.c
  */
 
@@ -9,6 +9,14 @@
 class KOTH_HUDDataSync: CF_ModuleWorld
 {
     private static ref KOTH_HUDDataSync s_Instance;
+    
+    // ═══════════════════════════════════════════════════════════════
+    // PHASE 1: EVENT INVOKERS
+    // ═══════════════════════════════════════════════════════════════
+    
+    static ref ScriptInvoker SI_OnZonePlayersChanged = new ScriptInvoker();
+    static ref ScriptInvoker SI_OnScoreUpdate = new ScriptInvoker();
+    static ref ScriptInvoker SI_OnCaptureUpdate = new ScriptInvoker();
     
     // Server-side data
     private int m_EastScore = 0;
@@ -33,6 +41,13 @@ class KOTH_HUDDataSync: CF_ModuleWorld
     void KOTH_HUDDataSync()
     {
         s_Instance = this;
+        
+        if (!SI_OnZonePlayersChanged)
+            SI_OnZonePlayersChanged = new ScriptInvoker();
+        if (!SI_OnScoreUpdate)
+            SI_OnScoreUpdate = new ScriptInvoker();
+        if (!SI_OnCaptureUpdate)
+            SI_OnCaptureUpdate = new ScriptInvoker();
     }
     
     override void OnInit()
@@ -44,7 +59,7 @@ class KOTH_HUDDataSync: CF_ModuleWorld
         
         Expansion_RegisterClientRPC("RPC_SyncHUDData");
         
-        Print("[KOTH_HUDDataSync] Initialized");
+        Print("[KOTH_HUDDataSync] Initialized with ScriptInvokers");
     }
     
     static KOTH_HUDDataSync GetInstance()
@@ -83,6 +98,9 @@ class KOTH_HUDDataSync: CF_ModuleWorld
         m_EastPlayersInPriority = eastPriority;
         m_WestPlayersInPriority = westPriority;
         
+        // PHASE 1: Invoke zone players changed event
+        SI_OnZonePlayersChanged.Invoke(eastAO, westAO, eastPriority, westPriority);
+        
         BroadcastHUDData();
     }
     
@@ -97,6 +115,9 @@ class KOTH_HUDDataSync: CF_ModuleWorld
         
         m_CaptureProgress = progress;
         m_CapturingTeam = team;
+        
+        // PHASE 1: Invoke capture update event
+        SI_OnCaptureUpdate.Invoke(progress, team);
         
         BroadcastHUDData();
     }
@@ -151,6 +172,11 @@ class KOTH_HUDDataSync: CF_ModuleWorld
             return;
         
         Print("[KOTH_HUDDataSync] CLIENT received - AO: East " + m_ClientEastPlayers + ", West " + m_ClientWestPlayers + " | Priority: East " + m_ClientEastPriority + ", West " + m_ClientWestPriority);
+        
+        // PHASE 1: Invoke client-side events
+        SI_OnZonePlayersChanged.Invoke(m_ClientEastPlayers, m_ClientWestPlayers, m_ClientEastPriority, m_ClientWestPriority);
+        SI_OnScoreUpdate.Invoke(m_ClientEastScore, m_ClientWestScore);
+        SI_OnCaptureUpdate.Invoke(m_ClientCaptureProgress, m_ClientCapturingTeam);
     }
     
     // ═══════════════════════════════════════════════════════════════
@@ -223,6 +249,10 @@ class KOTH_HUDDataSync: CF_ModuleWorld
             return;
         
         m_EastScore = score;
+        
+        // PHASE 1: Invoke score update event
+        SI_OnScoreUpdate.Invoke(m_EastScore, m_WestScore);
+        
         BroadcastHUDData();
     }
     
@@ -232,6 +262,29 @@ class KOTH_HUDDataSync: CF_ModuleWorld
             return;
         
         m_WestScore = score;
+        
+        // PHASE 1: Invoke score update event
+        SI_OnScoreUpdate.Invoke(m_EastScore, m_WestScore);
+        
         BroadcastHUDData();
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // PHASE 1: ACCESSOR FOR SCRIPTINVOKERS
+    // ═══════════════════════════════════════════════════════════════
+    
+    static ScriptInvoker GetZonePlayersChangedSI()
+    {
+        return SI_OnZonePlayersChanged;
+    }
+    
+    static ScriptInvoker GetScoreUpdateSI()
+    {
+        return SI_OnScoreUpdate;
+    }
+    
+    static ScriptInvoker GetCaptureUpdateSI()
+    {
+        return SI_OnCaptureUpdate;
     }
 }

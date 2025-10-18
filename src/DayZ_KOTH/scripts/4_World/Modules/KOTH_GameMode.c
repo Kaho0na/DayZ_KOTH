@@ -1,8 +1,8 @@
 /**
- * KOTH_GameMode.c (WITH PLAYERPOINT SCORING)
+ * KOTH_GameMode.c (PHASE 1 - SCRIPTINVOKERS ADDED)
  *
  * King of the Hill by Kahoona
- * Scoring based on playerpoint differential (AO + Priority bonus)
+ * Added event-driven architecture via ScriptInvokers
  *
  * Place in: 4_World/Modules/KOTH_GameMode.c
  */
@@ -11,6 +11,15 @@
 class KOTH_GameMode: CF_ModuleWorld
 {
     private static ref KOTH_GameMode s_Instance;
+    
+    // ═══════════════════════════════════════════════════════════════
+    // PHASE 1: EVENT INVOKERS
+    // ═══════════════════════════════════════════════════════════════
+    
+    static ref ScriptInvoker SI_OnScoreChanged = new ScriptInvoker();
+    static ref ScriptInvoker SI_OnCaptureProgressChanged = new ScriptInvoker();
+    static ref ScriptInvoker SI_OnRoundEnd = new ScriptInvoker();
+    static ref ScriptInvoker SI_OnRoundStart = new ScriptInvoker();
     
     // Game state
     private int m_EastScore = 0;
@@ -37,6 +46,15 @@ class KOTH_GameMode: CF_ModuleWorld
     void KOTH_GameMode()
     {
         s_Instance = this;
+        
+        if (!SI_OnScoreChanged)
+            SI_OnScoreChanged = new ScriptInvoker();
+        if (!SI_OnCaptureProgressChanged)
+            SI_OnCaptureProgressChanged = new ScriptInvoker();
+        if (!SI_OnRoundEnd)
+            SI_OnRoundEnd = new ScriptInvoker();
+        if (!SI_OnRoundStart)
+            SI_OnRoundStart = new ScriptInvoker();
     }
     
     override void OnInit()
@@ -47,7 +65,7 @@ class KOTH_GameMode: CF_ModuleWorld
         
         Expansion_RegisterClientRPC("RPC_RoundEnd");
         
-        Print("[KOTH_GameMode] Initialized");
+        Print("[KOTH_GameMode] Initialized with ScriptInvokers");
         
         if (GetGame().IsServer())
         {
@@ -119,6 +137,9 @@ class KOTH_GameMode: CF_ModuleWorld
         
         Print("[KOTH_GameMode] Round started - Score limit: " + m_ScoreLimit);
         NotifyAllPlayers("[KOTH] Round started! First team to " + m_ScoreLimit + " points wins!");
+        
+        // PHASE 1: Invoke round start event
+        SI_OnRoundStart.Invoke(m_ScoreLimit);
     }
     
     void EndRound(string winningTeam)
@@ -135,6 +156,9 @@ class KOTH_GameMode: CF_ModuleWorld
         
         BroadcastRoundEnd(winningTeam);
         
+        // PHASE 1: Invoke round end event
+        SI_OnRoundEnd.Invoke(winningTeam, m_EastScore, m_WestScore);
+        
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(StartRound, 30000, false);
     }
     
@@ -147,11 +171,9 @@ class KOTH_GameMode: CF_ModuleWorld
         if (!GetGame().IsServer() || !m_RoundActive || !m_HUDSync)
             return;
         
-        // Get main AO counts
         int eastAO = m_HUDSync.GetEastPlayersInAO();
         int westAO = m_HUDSync.GetWestPlayersInAO();
         
-        // Get priority zone counts
         int eastPriority = 0;
         int westPriority = 0;
         
@@ -168,18 +190,15 @@ class KOTH_GameMode: CF_ModuleWorld
             }
         }
         
-        // Calculate outer AO (not in priority)
         int eastOuter = eastAO - eastPriority;
         int westOuter = westAO - westPriority;
         
         if (eastOuter < 0) eastOuter = 0;
         if (westOuter < 0) westOuter = 0;
         
-        // Calculate playerpoints
         float eastPlayerPoints = (eastOuter * m_PointsPerTickPerPlayer) + (eastPriority * m_PointsPerTickPerPlayer * m_PriorityBonusMultiplier);
         float westPlayerPoints = (westOuter * m_PointsPerTickPerPlayer) + (westPriority * m_PointsPerTickPerPlayer * m_PriorityBonusMultiplier);
         
-        // Determine controlling team (needs at least MinPlayersToInfluence playerpoint advantage)
         float playerPointDiff = eastPlayerPoints - westPlayerPoints;
         string controllingTeam = "None";
         
@@ -192,17 +211,14 @@ class KOTH_GameMode: CF_ModuleWorld
             controllingTeam = "West";
         }
         
-        // Debug output
         Print("[KOTH_GameMode] AO: East " + eastAO + " vs West " + westAO + " | Priority: East " + eastPriority + " vs West " + westPriority);
         Print("[KOTH_GameMode] PlayerPoints: East " + eastPlayerPoints + " vs West " + westPlayerPoints + " | Diff: " + playerPointDiff + " | Leader: " + controllingTeam);
         
-        // Send player counts to HUD AFTER calculating everything
         if (m_HUDSync)
         {
             m_HUDSync.SetPlayerCounts(eastAO, westAO, eastPriority, westPriority);
         }
         
-        // Reset capture if no team is controlling
         if (controllingTeam == "None")
         {
             m_CaptureProgress = 0.0;
@@ -213,10 +229,12 @@ class KOTH_GameMode: CF_ModuleWorld
                 m_HUDSync.SetCaptureProgress(0.0, "None");
             }
             
+            // PHASE 1: Invoke capture progress event
+            SI_OnCaptureProgressChanged.Invoke(0.0, "None");
+            
             return;
         }
         
-        // Reset capture if team changed
         if (m_CapturingTeam != controllingTeam)
         {
             m_CaptureProgress = 0.0;
@@ -224,7 +242,6 @@ class KOTH_GameMode: CF_ModuleWorld
             Print("[KOTH_GameMode] " + controllingTeam + " team started capturing (advantage: " + Math.AbsFloat(playerPointDiff) + " playerpoints)");
         }
         
-        // Progress capture timer
         m_CaptureProgress = m_CaptureProgress + 0.1;
         
         float progressPercent = (m_CaptureProgress / m_TickInterval) * 100.0;
@@ -236,7 +253,9 @@ class KOTH_GameMode: CF_ModuleWorld
             m_HUDSync.SetCaptureProgress(progressPercent, m_CapturingTeam);
         }
         
-        // Award point when timer completes
+        // PHASE 1: Invoke capture progress event
+        SI_OnCaptureProgressChanged.Invoke(progressPercent, m_CapturingTeam);
+        
         if (m_CaptureProgress >= m_TickInterval)
         {
             AwardPoint(controllingTeam);
@@ -254,6 +273,9 @@ class KOTH_GameMode: CF_ModuleWorld
             
             Print("[KOTH_GameMode] East scores! Score: " + m_EastScore + "/" + m_ScoreLimit);
             
+            // PHASE 1: Invoke score changed event
+            SI_OnScoreChanged.Invoke(m_EastScore, m_WestScore);
+            
             if (m_EastScore >= m_ScoreLimit)
             {
                 EndRound("East");
@@ -267,6 +289,9 @@ class KOTH_GameMode: CF_ModuleWorld
                 m_HUDSync.SetWestScore(m_WestScore);
             
             Print("[KOTH_GameMode] West scores! Score: " + m_WestScore + "/" + m_ScoreLimit);
+            
+            // PHASE 1: Invoke score changed event
+            SI_OnScoreChanged.Invoke(m_EastScore, m_WestScore);
             
             if (m_WestScore >= m_ScoreLimit)
             {
@@ -325,6 +350,9 @@ class KOTH_GameMode: CF_ModuleWorld
         }
         
         Print("[KOTH_GameMode] CLIENT: " + winningTeam + " team wins! " + eastScore + "-" + westScore);
+        
+        // PHASE 1: Invoke round end event on client
+        SI_OnRoundEnd.Invoke(winningTeam, eastScore, westScore);
     }
     
     void NotifyAllPlayers(string message)
@@ -405,12 +433,16 @@ class KOTH_GameMode: CF_ModuleWorld
             m_EastScore += points;
             if (m_HUDSync)
                 m_HUDSync.SetEastScore(m_EastScore);
+            
+            SI_OnScoreChanged.Invoke(m_EastScore, m_WestScore);
         }
         else if (team == "West")
         {
             m_WestScore += points;
             if (m_HUDSync)
                 m_HUDSync.SetWestScore(m_WestScore);
+            
+            SI_OnScoreChanged.Invoke(m_EastScore, m_WestScore);
         }
     }
     
