@@ -54,7 +54,9 @@ static ref array<ref KOTHSpawnPiece> KOTH_SPAWN_COMPOUND = {
 	new KOTHSpawnPiece("SurvivorM_Denis",             1.00293,  -4.79736,  3.38896,    0.0000),
 
 	new KOTHSpawnPiece("bldr_misc_flagpole",         -0.55908,   5.8681,   6.66342,    0.0000),
-	new KOTHSpawnPiece("bldr_prop_Flag_Bear",        -0.64502,   5.8510,   10.1842,    0.0000)
+	new KOTHSpawnPiece("bldr_prop_Flag_Bear",        -0.64502,   5.8510,   10.1842,    0.0000),
+
+	new KOTHSpawnPiece("ExpansionATM_1",        -2.30615,   3.86182,   3.38896,    -54)
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

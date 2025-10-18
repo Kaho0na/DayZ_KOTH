@@ -68,7 +68,6 @@ class KOTH_HUDDataSync: CF_ModuleWorld
         m_EastPlayersInAO = eastCount;
         m_WestPlayersInAO = westCount;
         
-        Print("[KOTH_HUDDataSync] SERVER: OnPlayerCountsChanged - East: " + eastCount + ", West: " + westCount);
         
         BroadcastHUDData();
     }
@@ -78,16 +77,13 @@ class KOTH_HUDDataSync: CF_ModuleWorld
         if (!GetGame().IsServer())
             return;
         
-        Print("[KOTH_HUDDataSync] SERVER: SetPlayerCounts called - AO: E" + eastAO + " W" + westAO + " | Priority: E" + eastPriority + " W" + westPriority);
-        
         m_EastPlayersInAO = eastAO;
         m_WestPlayersInAO = westAO;
         m_EastPlayersInPriority = eastPriority;
         m_WestPlayersInPriority = westPriority;
         
         SI_OnZonePlayersChanged.Invoke(eastAO, westAO, eastPriority, westPriority);
-        
-        Print("[KOTH_HUDDataSync] SERVER: About to broadcast RPC...");
+
         BroadcastHUDData();
     }
     
@@ -108,9 +104,7 @@ class KOTH_HUDDataSync: CF_ModuleWorld
     {
         if (!GetGame().IsServer())
             return;
-        
-        Print("[KOTH_HUDDataSync] SERVER: Broadcasting RPC - AO: E" + m_EastPlayersInAO + " W" + m_WestPlayersInAO + " | Priority: E" + m_EastPlayersInPriority + " W" + m_WestPlayersInPriority);
-        
+
         auto rpc = Expansion_CreateRPC("RPC_SyncHUDData");
         rpc.Write(m_EastScore);
         rpc.Write(m_WestScore);
@@ -122,7 +116,6 @@ class KOTH_HUDDataSync: CF_ModuleWorld
         rpc.Write(m_CapturingTeam);
         rpc.Expansion_Send(true, null);
         
-        Print("[KOTH_HUDDataSync] SERVER: RPC sent to all clients");
     }
     
     void RPC_SyncHUDData(PlayerIdentity sender, Object target, ParamsReadContext ctx)

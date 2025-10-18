@@ -37,7 +37,7 @@ class KOTH_SpawnUtils
         {
             // Reduced lift to prevent floating - adjust this value as needed
             // Try values between 0.01 and 0.1 to find the sweet spot
-            hitPos[1] = hitPos[1] + 0.05; // Reduced from 0.15 to 0.05
+            hitPos[1] = hitPos[1] + 0.01; // Reduced from 0.15 to 0.05
             player.SetPosition(hitPos);
             Print("[KOTH] Safe-spawned player at: " + hitPos + " (offset " + offsetX + ", " + offsetZ + ")");
         }
