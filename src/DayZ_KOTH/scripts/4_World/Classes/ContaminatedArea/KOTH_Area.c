@@ -1,8 +1,7 @@
 /**
- * KOTH_Area.c (WITH EXPANSION AI COUNTING - FIXED)
+ * KOTH_Area.c (PHASE 4 - EVENT-DRIVEN TRIGGERS)
  *
- * Counts both players and Expansion AI with East/West factions
- * Expansion AI are PlayerBase entities without identity
+ * Triggers notify GameMode only when players enter/exit
  * Place in: 4_World/Classes/ContaminatedArea/KOTH_Area.c
  */
 
@@ -46,7 +45,6 @@ class KOTH_Area : EffectArea
         m_Position[1] = 0;
         
         Print("[KOTH_Area] Initializing at " + m_Position + " with radius " + radius);
-        Print("[KOTH_Area] Cylinder: Sea level (Y=0) to 200m height");
         
         CreateTrigger(m_Position, m_Radius);
         
@@ -115,7 +113,7 @@ class KOTH_AreaTrigger : CylinderTrigger
     void KOTH_Init(EffectArea area)
     {
         m_KOTH_EffectArea = area;
-        Print("[KOTH_AreaTrigger] Initialized with area");
+        Print("[KOTH_AreaTrigger] Initialized");
     }
     
     override protected bool CanAddObjectAsInsider(Object object)
@@ -152,7 +150,9 @@ class KOTH_AreaTrigger : CylinderTrigger
                     Print("[KOTH_AreaTrigger] Player entered: " + player.GetIdentity().GetName() + " (Team: " + team + ")");
                     
                     NotifyPlayerEntered(player);
-                    NotifyHUDSync();
+                    
+                    // PHASE 4: Notify GameMode of count change
+                    NotifyGameModeCountChanged();
                 }
             }
             else
@@ -165,7 +165,8 @@ class KOTH_AreaTrigger : CylinderTrigger
                     string aiFaction = GetExpansionAIFaction(player);
                     Print("[KOTH_AreaTrigger] AI entered: " + player.GetType() + " (Faction: " + aiFaction + ")");
                     
-                    NotifyHUDSync();
+                    // PHASE 4: Notify GameMode of count change
+                    NotifyGameModeCountChanged();
                 }
             }
         }
@@ -191,7 +192,9 @@ class KOTH_AreaTrigger : CylinderTrigger
                     Print("[KOTH_AreaTrigger] Player left: " + player.GetIdentity().GetName());
                     
                     NotifyPlayerExited(player);
-                    NotifyHUDSync();
+                    
+                    // PHASE 4: Notify GameMode of count change
+                    NotifyGameModeCountChanged();
                 }
             }
             else
@@ -202,9 +205,26 @@ class KOTH_AreaTrigger : CylinderTrigger
                     m_AIInside.Remove(aiIdx);
                     Print("[KOTH_AreaTrigger] AI left: " + player.GetType());
                     
-                    NotifyHUDSync();
+                    // PHASE 4: Notify GameMode of count change
+                    NotifyGameModeCountChanged();
                 }
             }
+        }
+    }
+    
+    // PHASE 4: Event-driven count notification
+    void NotifyGameModeCountChanged()
+    {
+        if (!GetGame().IsServer())
+            return;
+        
+        int eastCount = GetTeamPlayerCount("East");
+        int westCount = GetTeamPlayerCount("West");
+        
+        KOTH_GameMode gameMode = KOTH_GameMode.GetInstance();
+        if (gameMode)
+        {
+            gameMode.OnAOZonePlayersChanged(eastCount, westCount);
         }
     }
     
@@ -228,21 +248,6 @@ class KOTH_AreaTrigger : CylinderTrigger
         }
         
         return "Unknown";
-    }
-    
-    void NotifyHUDSync()
-    {
-        KOTH_HUDDataSync syncModule;
-        CF_Modules<KOTH_HUDDataSync>.Get(syncModule);
-        
-        if (syncModule)
-        {
-            int eastCount = GetTeamPlayerCount("East") + GetTeamAICount("East");
-            int westCount = GetTeamPlayerCount("West") + GetTeamAICount("West");
-            syncModule.OnPlayerCountsChanged(eastCount, westCount);
-            
-            Print("[KOTH_AreaTrigger] Updated counts - East: " + eastCount + " (AI: " + GetTeamAICount("East") + "), West: " + westCount + " (AI: " + GetTeamAICount("West") + ")");
-        }
     }
     
     void NotifyPlayerEntered(PlayerBase player)
@@ -286,15 +291,33 @@ class KOTH_AreaTrigger : CylinderTrigger
         int count = 0;
         int i;
         PlayerBase player;
+        string factionName;
         
+        // Count human players
         for (i = 0; i < m_PlayersInside.Count(); i++)
         {
             player = m_PlayersInside.Get(i);
-            if (player && player.GetKOTHTeam() == teamName)
+            if (player && player.IsAlive() && player.GetKOTHTeam() == teamName)
             {
                 count++;
             }
         }
+        
+        // Count AI players
+        for (i = 0; i < m_AIInside.Count(); i++)
+        {
+            PlayerBase ai = m_AIInside.Get(i);
+            if (!ai || !ai.IsAlive())
+                continue;
+            
+            factionName = GetExpansionAIFaction(ai);
+            
+            if (factionName == teamName)
+            {
+                count++;
+            }
+        }
+        
         return count;
     }
     

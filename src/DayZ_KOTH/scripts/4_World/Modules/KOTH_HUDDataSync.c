@@ -1,7 +1,7 @@
 /**
- * KOTH_HUDDataSync.c (PHASE 3 - REDUCED LOGGING)
+ * KOTH_HUDDataSync.c (PHASE 4 - RPC BROADCAST FIX)
  *
- * Syncs HUD data with minimal console spam
+ * Fixed: Added debug logging to trace RPC issues
  * Place in: 4_World/Modules/KOTH_HUDDataSync.c
  */
 
@@ -51,6 +51,8 @@ class KOTH_HUDDataSync: CF_ModuleWorld
         EnableMissionStart();
         Expansion_EnableRPCManager();
         Expansion_RegisterClientRPC("RPC_SyncHUDData");
+        
+        Print("[KOTH_HUDDataSync] Module initialized");
     }
     
     static KOTH_HUDDataSync GetInstance()
@@ -66,6 +68,8 @@ class KOTH_HUDDataSync: CF_ModuleWorld
         m_EastPlayersInAO = eastCount;
         m_WestPlayersInAO = westCount;
         
+        Print("[KOTH_HUDDataSync] SERVER: OnPlayerCountsChanged - East: " + eastCount + ", West: " + westCount);
+        
         BroadcastHUDData();
     }
     
@@ -74,6 +78,8 @@ class KOTH_HUDDataSync: CF_ModuleWorld
         if (!GetGame().IsServer())
             return;
         
+        Print("[KOTH_HUDDataSync] SERVER: SetPlayerCounts called - AO: E" + eastAO + " W" + westAO + " | Priority: E" + eastPriority + " W" + westPriority);
+        
         m_EastPlayersInAO = eastAO;
         m_WestPlayersInAO = westAO;
         m_EastPlayersInPriority = eastPriority;
@@ -81,6 +87,7 @@ class KOTH_HUDDataSync: CF_ModuleWorld
         
         SI_OnZonePlayersChanged.Invoke(eastAO, westAO, eastPriority, westPriority);
         
+        Print("[KOTH_HUDDataSync] SERVER: About to broadcast RPC...");
         BroadcastHUDData();
     }
     
@@ -102,6 +109,8 @@ class KOTH_HUDDataSync: CF_ModuleWorld
         if (!GetGame().IsServer())
             return;
         
+        Print("[KOTH_HUDDataSync] SERVER: Broadcasting RPC - AO: E" + m_EastPlayersInAO + " W" + m_WestPlayersInAO + " | Priority: E" + m_EastPlayersInPriority + " W" + m_WestPlayersInPriority);
+        
         auto rpc = Expansion_CreateRPC("RPC_SyncHUDData");
         rpc.Write(m_EastScore);
         rpc.Write(m_WestScore);
@@ -112,6 +121,8 @@ class KOTH_HUDDataSync: CF_ModuleWorld
         rpc.Write(m_CaptureProgress);
         rpc.Write(m_CapturingTeam);
         rpc.Expansion_Send(true, null);
+        
+        Print("[KOTH_HUDDataSync] SERVER: RPC sent to all clients");
     }
     
     void RPC_SyncHUDData(PlayerIdentity sender, Object target, ParamsReadContext ctx)
@@ -120,25 +131,53 @@ class KOTH_HUDDataSync: CF_ModuleWorld
             return;
         
         if (!ctx.Read(m_ClientEastScore))
+        {
+            Error("[KOTH_HUDDataSync] CLIENT: Failed to read EastScore");
             return;
+        }
         if (!ctx.Read(m_ClientWestScore))
+        {
+            Error("[KOTH_HUDDataSync] CLIENT: Failed to read WestScore");
             return;
+        }
         if (!ctx.Read(m_ClientEastPlayers))
+        {
+            Error("[KOTH_HUDDataSync] CLIENT: Failed to read EastPlayers");
             return;
+        }
         if (!ctx.Read(m_ClientWestPlayers))
+        {
+            Error("[KOTH_HUDDataSync] CLIENT: Failed to read WestPlayers");
             return;
+        }
         if (!ctx.Read(m_ClientEastPriority))
+        {
+            Error("[KOTH_HUDDataSync] CLIENT: Failed to read EastPriority");
             return;
+        }
         if (!ctx.Read(m_ClientWestPriority))
+        {
+            Error("[KOTH_HUDDataSync] CLIENT: Failed to read WestPriority");
             return;
+        }
         if (!ctx.Read(m_ClientCaptureProgress))
+        {
+            Error("[KOTH_HUDDataSync] CLIENT: Failed to read CaptureProgress");
             return;
+        }
         if (!ctx.Read(m_ClientCapturingTeam))
+        {
+            Error("[KOTH_HUDDataSync] CLIENT: Failed to read CapturingTeam");
             return;
+        }
         
+        Print("[KOTH_HUDDataSync] CLIENT: Received RPC - AO: East " + m_ClientEastPlayers + ", West " + m_ClientWestPlayers + " | Priority: East " + m_ClientEastPriority + ", West " + m_ClientWestPriority);
+        
+        Print("[KOTH_HUDDataSync] CLIENT: Invoking events...");
         SI_OnZonePlayersChanged.Invoke(m_ClientEastPlayers, m_ClientWestPlayers, m_ClientEastPriority, m_ClientWestPriority);
         SI_OnScoreUpdate.Invoke(m_ClientEastScore, m_ClientWestScore);
         SI_OnCaptureUpdate.Invoke(m_ClientCaptureProgress, m_ClientCapturingTeam);
+        Print("[KOTH_HUDDataSync] CLIENT: Events invoked");
     }
     
     int GetEastScore()

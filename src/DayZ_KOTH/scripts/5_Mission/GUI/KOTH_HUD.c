@@ -1,9 +1,7 @@
 /**
- * KOTH_HUD.c (PHASE 3 - PURE EVENT-DRIVEN)
+ * KOTH_HUD.c (PHASE 4 - DEBUG LOGGING)
  *
- * King of the Hill by Kahoona
- * Polling removed, events only
- *
+ * Added extensive logging to trace event flow
  * Place in: 5_Mission/GUI/KOTH_HUD.c
  */
 
@@ -12,7 +10,6 @@ class KOTH_HUD: ExpansionScriptView
     private ref KOTH_HUDController m_HUDController;
     private IngameHud m_Hud;
     
-    // Top Panel Widgets (Team Scores)
     protected TextWidget westScore;
     protected TextWidget westAOPlayers;
     protected TextWidget westPriorityPlayers;
@@ -21,13 +18,11 @@ class KOTH_HUD: ExpansionScriptView
     protected TextWidget eastAOPlayers;
     protected TextWidget eastPriorityPlayers;
     
-    // Level Panel Widgets (Player Stats)
     protected TextWidget currentLevel;
     protected ProgressBarWidget XPBar;
     protected TextWidget currentXP;
     protected TextWidget currentMoney;
     
-    // Cache for preventing duplicate updates
     private int m_CachedWestScore = -1;
     private int m_CachedEastScore = -1;
     private int m_CachedWestAO = -1;
@@ -45,9 +40,9 @@ class KOTH_HUD: ExpansionScriptView
         m_Hud = hud;
         m_HUDController = KOTH_HUDController.Cast(GetController());
         
+        Print("[KOTH_HUD] Constructing HUD...");
         SubscribeToEvents();
-        
-        Print("[KOTH_HUD] Initialized (event-driven mode)");
+        Print("[KOTH_HUD] HUD initialized (event-driven mode)");
     }
     
     void ~KOTH_HUD()
@@ -56,29 +51,47 @@ class KOTH_HUD: ExpansionScriptView
         Print("[KOTH_HUD] Destroyed");
     }
     
-    // ═══════════════════════════════════════════════════════════════
-    // EVENT SUBSCRIPTION
-    // ═══════════════════════════════════════════════════════════════
-    
     void SubscribeToEvents()
     {
+        Print("[KOTH_HUD] Subscribing to events...");
+        
         if (KOTH_GameMode.SI_OnScoreChanged)
+        {
             KOTH_GameMode.SI_OnScoreChanged.Insert(OnScoreChanged);
+            Print("[KOTH_HUD] - Subscribed to SI_OnScoreChanged");
+        }
         
         if (KOTH_GameMode.SI_OnCaptureProgressChanged)
+        {
             KOTH_GameMode.SI_OnCaptureProgressChanged.Insert(OnCaptureProgressChanged);
+            Print("[KOTH_HUD] - Subscribed to SI_OnCaptureProgressChanged");
+        }
         
         if (KOTH_HUDDataSync.SI_OnZonePlayersChanged)
+        {
             KOTH_HUDDataSync.SI_OnZonePlayersChanged.Insert(OnZonePlayersChanged);
+            Print("[KOTH_HUD] - Subscribed to SI_OnZonePlayersChanged");
+        }
         
         if (KOTH_HUDDataSync.SI_OnScoreUpdate)
+        {
             KOTH_HUDDataSync.SI_OnScoreUpdate.Insert(OnScoreUpdate);
+            Print("[KOTH_HUD] - Subscribed to SI_OnScoreUpdate");
+        }
         
         if (KOTH_HUDDataSync.SI_OnCaptureUpdate)
+        {
             KOTH_HUDDataSync.SI_OnCaptureUpdate.Insert(OnCaptureUpdate);
+            Print("[KOTH_HUD] - Subscribed to SI_OnCaptureUpdate");
+        }
         
         if (KOTH_PlayerRewardManager.SI_OnPlayerStatsChanged)
+        {
             KOTH_PlayerRewardManager.SI_OnPlayerStatsChanged.Insert(OnPlayerStatsChanged);
+            Print("[KOTH_HUD] - Subscribed to SI_OnPlayerStatsChanged");
+        }
+        
+        Print("[KOTH_HUD] All subscriptions complete");
     }
     
     void UnsubscribeFromEvents()
@@ -102,29 +115,34 @@ class KOTH_HUD: ExpansionScriptView
             KOTH_PlayerRewardManager.SI_OnPlayerStatsChanged.Remove(OnPlayerStatsChanged);
     }
     
-    // ═══════════════════════════════════════════════════════════════
-    // EVENT HANDLERS
-    // ═══════════════════════════════════════════════════════════════
-    
     void OnScoreChanged(int eastScore, int westScore)
     {
+        Print("[KOTH_HUD] OnScoreChanged called - East: " + eastScore + ", West: " + westScore);
+        
         if (m_CachedEastScore != eastScore)
         {
             m_CachedEastScore = eastScore;
             if (this.eastScore)
+            {
                 this.eastScore.SetText(eastScore.ToString());
+                Print("[KOTH_HUD] Updated East score display to: " + eastScore);
+            }
         }
         
         if (m_CachedWestScore != westScore)
         {
             m_CachedWestScore = westScore;
             if (this.westScore)
+            {
                 this.westScore.SetText(westScore.ToString());
+                Print("[KOTH_HUD] Updated West score display to: " + westScore);
+            }
         }
     }
     
     void OnScoreUpdate(int eastScore, int westScore)
     {
+        Print("[KOTH_HUD] OnScoreUpdate called - East: " + eastScore + ", West: " + westScore);
         OnScoreChanged(eastScore, westScore);
     }
     
@@ -156,6 +174,9 @@ class KOTH_HUD: ExpansionScriptView
     
     void OnZonePlayersChanged(int eastAO, int westAO, int eastPriority, int westPriority)
     {
+        Print("[KOTH_HUD] OnZonePlayersChanged called - AO: E" + eastAO + " W" + westAO + " | Priority: E" + eastPriority + " W" + westPriority);
+        Print("[KOTH_HUD] Current cache - AO: E" + m_CachedEastAO + " W" + m_CachedWestAO + " | Priority: E" + m_CachedEastPriority + " W" + m_CachedWestPriority);
+        
         if (m_CachedEastAO != eastAO)
         {
             m_CachedEastAO = eastAO;
@@ -168,7 +189,16 @@ class KOTH_HUD: ExpansionScriptView
                     eastText = eastAO.ToString() + " in AO";
                     
                 eastAOPlayers.SetText(eastText);
+                Print("[KOTH_HUD] Updated East AO display to: " + eastText);
             }
+            else
+            {
+                Print("[KOTH_HUD] WARNING: eastAOPlayers widget is NULL!");
+            }
+        }
+        else
+        {
+            Print("[KOTH_HUD] East AO unchanged, skipping update");
         }
         
         if (m_CachedWestAO != westAO)
@@ -183,7 +213,16 @@ class KOTH_HUD: ExpansionScriptView
                     westText = westAO.ToString() + " in AO";
                     
                 westAOPlayers.SetText(westText);
+                Print("[KOTH_HUD] Updated West AO display to: " + westText);
             }
+            else
+            {
+                Print("[KOTH_HUD] WARNING: westAOPlayers widget is NULL!");
+            }
+        }
+        else
+        {
+            Print("[KOTH_HUD] West AO unchanged, skipping update");
         }
         
         if (m_CachedEastPriority != eastPriority)
@@ -198,6 +237,7 @@ class KOTH_HUD: ExpansionScriptView
                     eastPriText = eastPriority.ToString() + " priority";
                     
                 eastPriorityPlayers.SetText(eastPriText);
+                Print("[KOTH_HUD] Updated East Priority display to: " + eastPriText);
             }
         }
         
@@ -213,8 +253,11 @@ class KOTH_HUD: ExpansionScriptView
                     westPriText = westPriority.ToString() + " priority";
                     
                 westPriorityPlayers.SetText(westPriText);
+                Print("[KOTH_HUD] Updated West Priority display to: " + westPriText);
             }
         }
+        
+        Print("[KOTH_HUD] OnZonePlayersChanged complete");
     }
     
     void OnPlayerStatsChanged(int xp, int money, int level)
@@ -279,10 +322,6 @@ class KOTH_HUD: ExpansionScriptView
         }
     }
     
-    // ═══════════════════════════════════════════════════════════════
-    // OVERRIDE METHODS
-    // ═══════════════════════════════════════════════════════════════
-    
     override typename GetControllerType()
     {
         return KOTH_HUDController;
@@ -300,12 +339,7 @@ class KOTH_HUD: ExpansionScriptView
     
     override void Expansion_Update()
     {
-        // PHASE 3: No polling - events only
     }
-    
-    // ═══════════════════════════════════════════════════════════════
-    // HELPER METHODS
-    // ═══════════════════════════════════════════════════════════════
     
     int CalculateXPForLevel(int level)
     {
@@ -397,12 +431,13 @@ modded class IngameHud
     
     void InitKOTHHUD()
     {
+        Print("[KOTH_IngameHud] Creating KOTH HUD...");
         m_KOTH_HUD = new KOTH_HUD(this);
         
         if (m_KOTH_HUD)
         {
             m_KOTH_HUD.ShowHud(true);
-            Print("[KOTH_IngameHud] KOTH HUD created (event-driven)");
+            Print("[KOTH_IngameHud] KOTH HUD created successfully");
         }
         else
         {

@@ -1,7 +1,7 @@
 /**
- * KOTH_PriArea.c (FIXED COUNT REPORTING)
+ * KOTH_PriArea.c (PHASE 4 - EVENT-DRIVEN TRIGGERS)
  *
- * Priority zone with proper player count tracking
+ * Priority zone triggers notify GameMode only on enter/exit
  * Place in: 4_World/Classes/ContaminatedArea/KOTH_PriArea.c
  */
 
@@ -19,7 +19,6 @@ class KOTH_PriArea : EffectArea
         m_Position[1] = 0;
         
         Print("[KOTH_PriArea] Initializing at " + m_Position + " with radius " + radius);
-        Print("[KOTH_PriArea] Cylinder: Sea level (Y=0) to 200m height");
         
         CreateTrigger(m_Position, m_Radius);
     }
@@ -116,6 +115,9 @@ class KOTH_PriAreaTrigger : CylinderTrigger
                     Print("[KOTH_PriAreaTrigger] Player entered PRIORITY: " + player.GetIdentity().GetName() + " (Team: " + team + ")");
                     
                     player.MessageStatus("[KOTH PRIORITY] You entered the BONUS POINTS zone!");
+                    
+                    // PHASE 4: Notify GameMode of count change
+                    NotifyGameModeCountChanged();
                 }
             }
             else
@@ -127,6 +129,9 @@ class KOTH_PriAreaTrigger : CylinderTrigger
                     
                     string aiFaction = GetExpansionAIFaction(player);
                     Print("[KOTH_PriAreaTrigger] AI entered PRIORITY: " + player.GetType() + " (Faction: " + aiFaction + ")");
+                    
+                    // PHASE 4: Notify GameMode of count change
+                    NotifyGameModeCountChanged();
                 }
             }
         }
@@ -152,6 +157,9 @@ class KOTH_PriAreaTrigger : CylinderTrigger
                     Print("[KOTH_PriAreaTrigger] Player left PRIORITY: " + player.GetIdentity().GetName());
                     
                     player.MessageStatus("[KOTH PRIORITY] You left the bonus zone");
+                    
+                    // PHASE 4: Notify GameMode of count change
+                    NotifyGameModeCountChanged();
                 }
             }
             else
@@ -161,8 +169,27 @@ class KOTH_PriAreaTrigger : CylinderTrigger
                 {
                     m_AIInside.Remove(aiIdx);
                     Print("[KOTH_PriAreaTrigger] AI left PRIORITY: " + player.GetType());
+                    
+                    // PHASE 4: Notify GameMode of count change
+                    NotifyGameModeCountChanged();
                 }
             }
+        }
+    }
+    
+    // PHASE 4: Event-driven count notification
+    void NotifyGameModeCountChanged()
+    {
+        if (!GetGame().IsServer())
+            return;
+        
+        int eastCount = GetTeamPlayerCount("East");
+        int westCount = GetTeamPlayerCount("West");
+        
+        KOTH_GameMode gameMode = KOTH_GameMode.GetInstance();
+        if (gameMode)
+        {
+            gameMode.OnPriorityZonePlayersChanged(eastCount, westCount);
         }
     }
     
@@ -237,8 +264,6 @@ class KOTH_PriAreaTrigger : CylinderTrigger
                 count++;
             }
         }
-        
-        Print("[KOTH_PriAreaTrigger] GetTeamPlayerCount(" + teamName + ") = " + count + " (Players: " + m_PlayersInside.Count() + ", AI: " + m_AIInside.Count() + ")");
         
         return count;
     }

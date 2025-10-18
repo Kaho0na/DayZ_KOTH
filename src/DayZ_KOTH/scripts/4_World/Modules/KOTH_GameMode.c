@@ -1,8 +1,8 @@
 /**
- * KOTH_GameMode.c (PHASE 3 - REDUCED LOGGING)
+ * KOTH_GameMode.c (PHASE 4 - EVENT-DRIVEN ZONE COUNTS)
  *
  * King of the Hill by Kahoona
- * Cleaned up debug spam
+ * Receives player counts from triggers, not polling
  *
  * Place in: 4_World/Modules/KOTH_GameMode.c
  */
@@ -32,6 +32,12 @@ class KOTH_GameMode: CF_ModuleWorld
     private float m_PriorityBonusMultiplier = 2.0;
     private int m_MinPlayersToInfluence = 1;
     private float m_PointsPerTickPerPlayer = 1.0;
+    
+    // PHASE 4: Cached player counts (set by triggers)
+    private int m_CurrentEastAO = 0;
+    private int m_CurrentWestAO = 0;
+    private int m_CurrentEastPriority = 0;
+    private int m_CurrentWestPriority = 0;
     
     private ref KOTH_HUDDataSync m_HUDSync;
     
@@ -93,6 +99,44 @@ class KOTH_GameMode: CF_ModuleWorld
         return s_Instance;
     }
     
+    // ═══════════════════════════════════════════════════════════════
+    // PHASE 4: EVENT-DRIVEN PLAYER COUNT UPDATES
+    // ═══════════════════════════════════════════════════════════════
+    
+    void OnAOZonePlayersChanged(int eastCount, int westCount)
+    {
+        if (!GetGame().IsServer())
+            return;
+        
+        m_CurrentEastAO = eastCount;
+        m_CurrentWestAO = westCount;
+        
+        // Broadcast to clients immediately
+        if (m_HUDSync)
+        {
+            m_HUDSync.SetPlayerCounts(m_CurrentEastAO, m_CurrentWestAO, m_CurrentEastPriority, m_CurrentWestPriority);
+        }
+    }
+    
+    void OnPriorityZonePlayersChanged(int eastCount, int westCount)
+    {
+        if (!GetGame().IsServer())
+            return;
+        
+        m_CurrentEastPriority = eastCount;
+        m_CurrentWestPriority = westCount;
+        
+        // Broadcast to clients immediately
+        if (m_HUDSync)
+        {
+            m_HUDSync.SetPlayerCounts(m_CurrentEastAO, m_CurrentWestAO, m_CurrentEastPriority, m_CurrentWestPriority);
+        }
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // ROUND MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════
+    
     void StartRound()
     {
         if (!GetGame().IsServer())
@@ -139,29 +183,20 @@ class KOTH_GameMode: CF_ModuleWorld
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(StartRound, 30000, false);
     }
     
+    // ═══════════════════════════════════════════════════════════════
+    // CAPTURE TIMER (USES CACHED COUNTS)
+    // ═══════════════════════════════════════════════════════════════
+    
     void UpdateCapture()
     {
         if (!GetGame().IsServer() || !m_RoundActive || !m_HUDSync)
             return;
         
-        int eastAO = m_HUDSync.GetEastPlayersInAO();
-        int westAO = m_HUDSync.GetWestPlayersInAO();
-        
-        int eastPriority = 0;
-        int westPriority = 0;
-        
-        KOTH_PriorityZoneManager priManager;
-        KOTH_PriArea priZone = KOTH_PriorityZoneManager.GetActivePriorityZone();
-        
-        if (priZone)
-        {
-            KOTH_PriAreaTrigger priTrigger = priZone.GetTrigger();
-            if (priTrigger)
-            {
-                eastPriority = priTrigger.GetTeamPlayerCount("East");
-                westPriority = priTrigger.GetTeamPlayerCount("West");
-            }
-        }
+        // PHASE 4: Use cached values (set by trigger events)
+        int eastAO = m_CurrentEastAO;
+        int westAO = m_CurrentWestAO;
+        int eastPriority = m_CurrentEastPriority;
+        int westPriority = m_CurrentWestPriority;
         
         int eastOuter = eastAO - eastPriority;
         int westOuter = westAO - westPriority;
@@ -182,11 +217,6 @@ class KOTH_GameMode: CF_ModuleWorld
         else if (playerPointDiff <= -m_MinPlayersToInfluence)
         {
             controllingTeam = "West";
-        }
-        
-        if (m_HUDSync)
-        {
-            m_HUDSync.SetPlayerCounts(eastAO, westAO, eastPriority, westPriority);
         }
         
         if (controllingTeam == "None")
@@ -262,6 +292,10 @@ class KOTH_GameMode: CF_ModuleWorld
         }
     }
     
+    // ═══════════════════════════════════════════════════════════════
+    // NOTIFICATIONS
+    // ═══════════════════════════════════════════════════════════════
+    
     void BroadcastRoundEnd(string winningTeam)
     {
         if (!GetGame().IsServer())
@@ -327,12 +361,20 @@ class KOTH_GameMode: CF_ModuleWorld
         }
     }
     
+    // ═══════════════════════════════════════════════════════════════
+    // GETTERS
+    // ═══════════════════════════════════════════════════════════════
+    
     int GetEastScore() { return m_EastScore; }
     int GetWestScore() { return m_WestScore; }
     bool IsRoundActive() { return m_RoundActive; }
     int GetScoreLimit() { return m_ScoreLimit; }
     float GetCaptureProgress() { return m_CaptureProgress; }
     string GetCapturingTeam() { return m_CapturingTeam; }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // ADMIN COMMANDS
+    // ═══════════════════════════════════════════════════════════════
     
     void SetScoreLimit(int limit)
     {
