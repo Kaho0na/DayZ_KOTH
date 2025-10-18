@@ -75,13 +75,6 @@ modded class PlayerBase
             return;
         }
         
-        if (this.GetIdentity())
-        {
-            rewardManager.ProcessKill(killerPlayer, this);
-        }
-        else
-        {
-            rewardManager.ProcessAIKill(killerPlayer, this);
-        }
+        rewardManager.ProcessKill(killerPlayer, this);
     }
 }

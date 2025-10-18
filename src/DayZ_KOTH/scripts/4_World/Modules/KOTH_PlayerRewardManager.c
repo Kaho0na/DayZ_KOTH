@@ -22,6 +22,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     
     private int m_KillReward = 100;
     private int m_TeamKillPenalty = 100;
+    private int m_KillXP = 100;
     
     void KOTH_PlayerRewardManager()
     {
@@ -212,6 +213,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         
         atmData.RemoveMoney(moneyAmount);
         atmData.Save();
+        
         Print("[KOTH_PlayerRewardManager] Removed $" + moneyAmount + " from " + ident.GetName() + " (" + reason + ") - ATM: $" + atmData.GetMoney());
     }
     
@@ -259,6 +261,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         else
         {
             AddPlayerMoney(killer, m_KillReward, "Enemy Kill");
+            AddPlayerXP(killer, m_KillXP, "Enemy Kill");
             
             KOTH_Players playerData = GetPlayerData(killerUID);
             if (playerData)
@@ -267,13 +270,8 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
                 SavePlayerData(killerUID);
             }
             
-            ExpansionNotification("Kill Reward", "+$" + m_KillReward + " deposited to your account").Success(killerIdent);
+            ExpansionNotification("Kill Reward", "+$" + m_KillReward + " | +" + m_KillXP + " XP").Success(killerIdent);
         }
-    }
-    
-    void ProcessAIKill(PlayerBase killer, PlayerBase aiVictim)
-    {
-        ProcessKill(killer, aiVictim);
     }
     
     string GetExpansionAIFaction(PlayerBase ai)
@@ -371,6 +369,12 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         Print("[KOTH_PlayerRewardManager] Team kill penalty set to $" + amount);
     }
     
+    void SetKillXP(int amount)
+    {
+        m_KillXP = amount;
+        Print("[KOTH_PlayerRewardManager] Kill XP set to " + amount);
+    }
+    
     int GetKillReward()
     {
         return m_KillReward;
@@ -379,6 +383,11 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     int GetTeamKillPenalty()
     {
         return m_TeamKillPenalty;
+    }
+    
+    int GetKillXP()
+    {
+        return m_KillXP;
     }
     
     static ScriptInvoker GetPlayerStatsChangedSI()
