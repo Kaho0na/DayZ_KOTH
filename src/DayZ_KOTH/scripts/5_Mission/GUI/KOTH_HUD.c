@@ -1,8 +1,8 @@
 /**
- * KOTH_HUD.c (WITH AO AND PRIORITY COUNTS)
+ * KOTH_HUD.c (PHASE 2 - EVENT-DRIVEN WITH POLLING FALLBACK)
  *
  * King of the Hill by Kahoona
- * HUD Display with AO and priority zone player counts
+ * HUD now subscribes to events but keeps polling as safety net
  *
  * Place in: 5_Mission/GUI/KOTH_HUD.c
  */
@@ -41,7 +41,11 @@ class KOTH_HUD: ExpansionScriptView
     private int m_CachedMaxXP = -1;
     private int m_CachedMoney = -1;
     
-    // Player data cache to avoid constant file reads
+    // PHASE 2: Event-driven flags
+    private bool m_UseEventDrivenUpdates = true;
+    private bool m_UsePollingFallback = true;
+    
+    // Player data cache - now only used as fallback
     private ref KOTH_Players m_PlayerDataCache;
     private float m_LastPlayerDataUpdate = 0;
     private float m_PlayerDataUpdateInterval = 5.0;
@@ -51,157 +55,130 @@ class KOTH_HUD: ExpansionScriptView
         m_Hud = hud;
         m_HUDController = KOTH_HUDController.Cast(GetController());
         
-        Print("[KOTH_HUD] Initialized");
+        // PHASE 2: Subscribe to all events
+        SubscribeToEvents();
+        
+        Print("[KOTH_HUD] Initialized with event subscriptions");
     }
     
     void ~KOTH_HUD()
     {
+        // PHASE 2: Unsubscribe from events
+        UnsubscribeFromEvents();
+        
         Print("[KOTH_HUD] Destroyed");
     }
     
-    override typename GetControllerType()
-    {
-        return KOTH_HUDController;
-    }
+    // ═══════════════════════════════════════════════════════════════
+    // PHASE 2: EVENT SUBSCRIPTION
+    // ═══════════════════════════════════════════════════════════════
     
-    override string GetLayoutFile()
+    void SubscribeToEvents()
     {
-        return "DayZ_KOTH/GUI/layouts/hud/KOTH_HUD.layout";
-    }
-    
-    override float GetUpdateTickRate()
-    {
-        return 0.1;
-    }
-    
-    override void Expansion_Update()
-    {
-        PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
-        if (!player || !player.GetIdentity())
+        if (!m_UseEventDrivenUpdates)
             return;
         
-        UpdateTeamInfo();
-        UpdatePlayerStats(player);
+        // Subscribe to GameMode events
+        if (KOTH_GameMode.SI_OnScoreChanged)
+            KOTH_GameMode.SI_OnScoreChanged.Insert(OnScoreChanged);
+        
+        if (KOTH_GameMode.SI_OnCaptureProgressChanged)
+            KOTH_GameMode.SI_OnCaptureProgressChanged.Insert(OnCaptureProgressChanged);
+        
+        // Subscribe to HUDDataSync events
+        if (KOTH_HUDDataSync.SI_OnZonePlayersChanged)
+            KOTH_HUDDataSync.SI_OnZonePlayersChanged.Insert(OnZonePlayersChanged);
+        
+        if (KOTH_HUDDataSync.SI_OnScoreUpdate)
+            KOTH_HUDDataSync.SI_OnScoreUpdate.Insert(OnScoreUpdate);
+        
+        if (KOTH_HUDDataSync.SI_OnCaptureUpdate)
+            KOTH_HUDDataSync.SI_OnCaptureUpdate.Insert(OnCaptureUpdate);
+        
+        // Subscribe to PlayerRewardManager events
+        if (KOTH_PlayerRewardManager.SI_OnPlayerStatsChanged)
+            KOTH_PlayerRewardManager.SI_OnPlayerStatsChanged.Insert(OnPlayerStatsChanged);
+        
+        Print("[KOTH_HUD] Subscribed to all ScriptInvoker events");
     }
     
-    void UpdateTeamInfo()
+    void UnsubscribeFromEvents()
     {
-        KOTH_HUDDataSync syncModule;
-        CF_Modules<KOTH_HUDDataSync>.Get(syncModule);
+        if (!m_UseEventDrivenUpdates)
+            return;
         
-        int eastAOCount = 0;
-        int westAOCount = 0;
-        int eastPriorityCount = 0;
-        int westPriorityCount = 0;
-        int eastScoreValue = 0;
-        int westScoreValue = 0;
-        float captureProgress = 0.0;
-        string capturingTeam = "None";
+        if (KOTH_GameMode.SI_OnScoreChanged)
+            KOTH_GameMode.SI_OnScoreChanged.Remove(OnScoreChanged);
         
-        if (syncModule)
+        if (KOTH_GameMode.SI_OnCaptureProgressChanged)
+            KOTH_GameMode.SI_OnCaptureProgressChanged.Remove(OnCaptureProgressChanged);
+        
+        if (KOTH_HUDDataSync.SI_OnZonePlayersChanged)
+            KOTH_HUDDataSync.SI_OnZonePlayersChanged.Remove(OnZonePlayersChanged);
+        
+        if (KOTH_HUDDataSync.SI_OnScoreUpdate)
+            KOTH_HUDDataSync.SI_OnScoreUpdate.Remove(OnScoreUpdate);
+        
+        if (KOTH_HUDDataSync.SI_OnCaptureUpdate)
+            KOTH_HUDDataSync.SI_OnCaptureUpdate.Remove(OnCaptureUpdate);
+        
+        if (KOTH_PlayerRewardManager.SI_OnPlayerStatsChanged)
+            KOTH_PlayerRewardManager.SI_OnPlayerStatsChanged.Remove(OnPlayerStatsChanged);
+        
+        Print("[KOTH_HUD] Unsubscribed from all events");
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // PHASE 2: EVENT HANDLERS
+    // ═══════════════════════════════════════════════════════════════
+    
+    void OnScoreChanged(int eastScore, int westScore)
+    {
+        Print("[KOTH_HUD] EVENT: OnScoreChanged - East: " + eastScore + ", West: " + westScore);
+        
+        if (m_CachedEastScore != eastScore)
         {
-            eastAOCount = syncModule.GetEastPlayersInAO();
-            westAOCount = syncModule.GetWestPlayersInAO();
-            eastPriorityCount = syncModule.GetEastPlayersInPriority();
-            westPriorityCount = syncModule.GetWestPlayersInPriority();
-            eastScoreValue = syncModule.GetEastScore();
-            westScoreValue = syncModule.GetWestScore();
-            captureProgress = syncModule.GetCaptureProgress();
-            capturingTeam = syncModule.GetCapturingTeam();
-        }
-        
-        if (m_CachedWestScore != westScoreValue)
-        {
-            m_CachedWestScore = westScoreValue;
-            if (this.westScore)
-            {
-                this.westScore.SetText(westScoreValue.ToString());
-            }
-        }
-        
-        if (m_CachedEastScore != eastScoreValue)
-        {
-            m_CachedEastScore = eastScoreValue;
+            m_CachedEastScore = eastScore;
             if (this.eastScore)
             {
-                this.eastScore.SetText(eastScoreValue.ToString());
+                this.eastScore.SetText(eastScore.ToString());
             }
         }
         
-        if (m_CachedWestAO != westAOCount)
+        if (m_CachedWestScore != westScore)
         {
-            m_CachedWestAO = westAOCount;
-            if (westAOPlayers)
+            m_CachedWestScore = westScore;
+            if (this.westScore)
             {
-                string westText;
-                if (westAOCount == 1)
-                    westText = "1 in AO";
-                else
-                    westText = westAOCount.ToString() + " in AO";
-                    
-                westAOPlayers.SetText(westText);
+                this.westScore.SetText(westScore.ToString());
             }
         }
+    }
+    
+    void OnScoreUpdate(int eastScore, int westScore)
+    {
+        Print("[KOTH_HUD] EVENT: OnScoreUpdate - East: " + eastScore + ", West: " + westScore);
+        OnScoreChanged(eastScore, westScore);
+    }
+    
+    void OnCaptureProgressChanged(float progress, string team)
+    {
+        Print("[KOTH_HUD] EVENT: OnCaptureProgressChanged - Progress: " + progress + "%, Team: " + team);
         
-        if (m_CachedEastAO != eastAOCount)
+        if (m_CachedCaptureProgress != progress || m_CachedCapturingTeam != team)
         {
-            m_CachedEastAO = eastAOCount;
-            if (eastAOPlayers)
-            {
-                string eastText;
-                if (eastAOCount == 1)
-                    eastText = "1 in AO";
-                else
-                    eastText = eastAOCount.ToString() + " in AO";
-                    
-                eastAOPlayers.SetText(eastText);
-            }
-        }
-        
-        if (m_CachedWestPriority != westPriorityCount)
-        {
-            m_CachedWestPriority = westPriorityCount;
-            if (westPriorityPlayers)
-            {
-                string westPriText;
-                if (westPriorityCount == 1)
-                    westPriText = "1 priority";
-                else
-                    westPriText = westPriorityCount.ToString() + " priority";
-                    
-                westPriorityPlayers.SetText(westPriText);
-            }
-        }
-        
-        if (m_CachedEastPriority != eastPriorityCount)
-        {
-            m_CachedEastPriority = eastPriorityCount;
-            if (eastPriorityPlayers)
-            {
-                string eastPriText;
-                if (eastPriorityCount == 1)
-                    eastPriText = "1 priority";
-                else
-                    eastPriText = eastPriorityCount.ToString() + " priority";
-                    
-                eastPriorityPlayers.SetText(eastPriText);
-            }
-        }
-        
-        if (m_CachedCaptureProgress != captureProgress || m_CachedCapturingTeam != capturingTeam)
-        {
-            m_CachedCaptureProgress = captureProgress;
-            m_CachedCapturingTeam = capturingTeam;
+            m_CachedCaptureProgress = progress;
+            m_CachedCapturingTeam = team;
             
             if (TeamBar)
             {
-                TeamBar.SetCurrent(captureProgress);
+                TeamBar.SetCurrent(progress);
                 
-                if (capturingTeam == "East")
+                if (team == "East")
                 {
                     TeamBar.SetColor(ARGB(255, 220, 60, 60));
                 }
-                else if (capturingTeam == "West")
+                else if (team == "West")
                 {
                     TeamBar.SetColor(ARGB(255, 60, 120, 220));
                 }
@@ -213,57 +190,80 @@ class KOTH_HUD: ExpansionScriptView
         }
     }
     
-    void UpdatePlayerStats(PlayerBase player)
+    void OnCaptureUpdate(float progress, string team)
     {
-        string uid = player.GetIdentity().GetId();
+        Print("[KOTH_HUD] EVENT: OnCaptureUpdate - Progress: " + progress + "%, Team: " + team);
+        OnCaptureProgressChanged(progress, team);
+    }
+    
+    void OnZonePlayersChanged(int eastAO, int westAO, int eastPriority, int westPriority)
+    {
+        Print("[KOTH_HUD] EVENT: OnZonePlayersChanged - AO: E" + eastAO + " W" + westAO + " | Priority: E" + eastPriority + " W" + westPriority);
         
-        float currentTime = GetGame().GetTime();
-        bool shouldReload = false;
-        
-        if (!m_PlayerDataCache)
+        if (m_CachedEastAO != eastAO)
         {
-            shouldReload = true;
-        }
-        else
-        {
-            float timeSinceLastUpdate = currentTime - m_LastPlayerDataUpdate;
-            if (timeSinceLastUpdate > (m_PlayerDataUpdateInterval * 1000))
+            m_CachedEastAO = eastAO;
+            if (eastAOPlayers)
             {
-                shouldReload = true;
+                string eastText;
+                if (eastAO == 1)
+                    eastText = "1 in AO";
+                else
+                    eastText = eastAO.ToString() + " in AO";
+                    
+                eastAOPlayers.SetText(eastText);
             }
         }
         
-        if (shouldReload)
+        if (m_CachedWestAO != westAO)
         {
-            m_PlayerDataCache = KOTH_Players.Load(uid);
-            m_LastPlayerDataUpdate = currentTime;
-            
-            if (m_PlayerDataCache)
+            m_CachedWestAO = westAO;
+            if (westAOPlayers)
             {
-                if (m_CachedLevel == -1)
-                {
-                    Print("[KOTH_HUD] Initial player data load - Level: " + m_PlayerDataCache.CurrentLevel + ", XP: " + m_PlayerDataCache.TotalExperienceEarned + ", Money: " + m_PlayerDataCache.TotalMoneyinBank);
-                }
-            }
-            else
-            {
-                Print("[KOTH_HUD] Creating default player data for UID: " + uid);
-                m_PlayerDataCache = new KOTH_Players();
-                m_PlayerDataCache.Defaults();
-                m_PlayerDataCache.PlayerID = uid;
-                m_PlayerDataCache.PlayerName = player.GetIdentity().GetName();
+                string westText;
+                if (westAO == 1)
+                    westText = "1 in AO";
+                else
+                    westText = westAO.ToString() + " in AO";
+                    
+                westAOPlayers.SetText(westText);
             }
         }
         
-        if (!m_PlayerDataCache)
+        if (m_CachedEastPriority != eastPriority)
         {
-            UpdatePlayerStatsWithDefaults();
-            return;
+            m_CachedEastPriority = eastPriority;
+            if (eastPriorityPlayers)
+            {
+                string eastPriText;
+                if (eastPriority == 1)
+                    eastPriText = "1 priority";
+                else
+                    eastPriText = eastPriority.ToString() + " priority";
+                    
+                eastPriorityPlayers.SetText(eastPriText);
+            }
         }
         
-        int level = m_PlayerDataCache.CurrentLevel;
-        int xp = m_PlayerDataCache.TotalExperienceEarned;
-        int money = m_PlayerDataCache.TotalMoneyinBank;
+        if (m_CachedWestPriority != westPriority)
+        {
+            m_CachedWestPriority = westPriority;
+            if (westPriorityPlayers)
+            {
+                string westPriText;
+                if (westPriority == 1)
+                    westPriText = "1 priority";
+                else
+                    westPriText = westPriority.ToString() + " priority";
+                    
+                westPriorityPlayers.SetText(westPriText);
+            }
+        }
+    }
+    
+    void OnPlayerStatsChanged(int xp, int money, int level)
+    {
+        Print("[KOTH_HUD] EVENT: OnPlayerStatsChanged - XP: " + xp + ", Money: " + money + ", Level: " + level);
         
         int maxXP = CalculateXPForLevel(level + 1);
         int currentLevelXP = CalculateXPForLevel(level);
@@ -330,20 +330,134 @@ class KOTH_HUD: ExpansionScriptView
         }
     }
     
-    void UpdatePlayerStatsWithDefaults()
+    // ═══════════════════════════════════════════════════════════════
+    // OVERRIDE METHODS
+    // ═══════════════════════════════════════════════════════════════
+    
+    override typename GetControllerType()
     {
-        if (currentLevel)
-            currentLevel.SetText("1");
-        
-        if (currentXP)
-            currentXP.SetText("0 / 1,000 XP");
-        
-        if (XPBar)
-            XPBar.SetCurrent(0);
-        
-        if (currentMoney)
-            currentMoney.SetText("$0");
+        return KOTH_HUDController;
     }
+    
+    override string GetLayoutFile()
+    {
+        return "DayZ_KOTH/GUI/layouts/hud/KOTH_HUD.layout";
+    }
+    
+    override float GetUpdateTickRate()
+    {
+        return 0.1;
+    }
+    
+    override void Expansion_Update()
+    {
+        // PHASE 2: Only use polling as fallback if events are disabled
+        if (!m_UsePollingFallback)
+            return;
+        
+        PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+        if (!player || !player.GetIdentity())
+            return;
+        
+        // Keep polling team info as fallback
+        UpdateTeamInfoPolling();
+        
+        // Keep polling player stats as fallback
+        UpdatePlayerStatsPolling(player);
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // PHASE 2: POLLING FALLBACK (LEGACY CODE)
+    // ═══════════════════════════════════════════════════════════════
+    
+    void UpdateTeamInfoPolling()
+    {
+        KOTH_HUDDataSync syncModule;
+        CF_Modules<KOTH_HUDDataSync>.Get(syncModule);
+        
+        if (!syncModule)
+            return;
+        
+        int eastAOCount = syncModule.GetEastPlayersInAO();
+        int westAOCount = syncModule.GetWestPlayersInAO();
+        int eastPriorityCount = syncModule.GetEastPlayersInPriority();
+        int westPriorityCount = syncModule.GetWestPlayersInPriority();
+        int eastScoreValue = syncModule.GetEastScore();
+        int westScoreValue = syncModule.GetWestScore();
+        float captureProgress = syncModule.GetCaptureProgress();
+        string capturingTeam = syncModule.GetCapturingTeam();
+        
+        // Only update if cache is stale (events might not have fired)
+        if (m_CachedWestScore != westScoreValue)
+        {
+            OnScoreChanged(eastScoreValue, westScoreValue);
+        }
+        
+        if (m_CachedWestAO != westAOCount || m_CachedEastAO != eastAOCount || m_CachedWestPriority != westPriorityCount || m_CachedEastPriority != eastPriorityCount)
+        {
+            OnZonePlayersChanged(eastAOCount, westAOCount, eastPriorityCount, westPriorityCount);
+        }
+        
+        if (m_CachedCaptureProgress != captureProgress || m_CachedCapturingTeam != capturingTeam)
+        {
+            OnCaptureProgressChanged(captureProgress, capturingTeam);
+        }
+    }
+    
+    void UpdatePlayerStatsPolling(PlayerBase player)
+    {
+        string uid = player.GetIdentity().GetId();
+        
+        float currentTime = GetGame().GetTime();
+        bool shouldReload = false;
+        
+        if (!m_PlayerDataCache)
+        {
+            shouldReload = true;
+        }
+        else
+        {
+            float timeSinceLastUpdate = currentTime - m_LastPlayerDataUpdate;
+            if (timeSinceLastUpdate > (m_PlayerDataUpdateInterval * 1000))
+            {
+                shouldReload = true;
+            }
+        }
+        
+        if (shouldReload)
+        {
+            m_PlayerDataCache = KOTH_Players.Load(uid);
+            m_LastPlayerDataUpdate = currentTime;
+            
+            if (m_PlayerDataCache)
+            {
+                if (m_CachedLevel == -1)
+                {
+                    Print("[KOTH_HUD] POLLING: Initial player data load - Level: " + m_PlayerDataCache.CurrentLevel + ", XP: " + m_PlayerDataCache.TotalExperienceEarned + ", Money: " + m_PlayerDataCache.TotalMoneyinBank);
+                }
+                
+                // Only update if cache is stale (events might not have fired)
+                if (m_CachedXP != m_PlayerDataCache.TotalExperienceEarned || m_CachedMoney != m_PlayerDataCache.TotalMoneyinBank || m_CachedLevel != m_PlayerDataCache.CurrentLevel)
+                {
+                    OnPlayerStatsChanged(m_PlayerDataCache.TotalExperienceEarned, m_PlayerDataCache.TotalMoneyinBank, m_PlayerDataCache.CurrentLevel);
+                }
+            }
+            else
+            {
+                Print("[KOTH_HUD] POLLING: Creating default player data for UID: " + uid);
+                m_PlayerDataCache = new KOTH_Players();
+                m_PlayerDataCache.Defaults();
+                m_PlayerDataCache.PlayerID = uid;
+                m_PlayerDataCache.PlayerName = player.GetIdentity().GetName();
+                
+                OnPlayerStatsChanged(0, 0, 1);
+            }
+        }
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // HELPER METHODS
+    // ═══════════════════════════════════════════════════════════════
     
     int CalculateXPForLevel(int level)
     {
@@ -412,6 +526,39 @@ class KOTH_HUD: ExpansionScriptView
         
         Expansion_Update();
     }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // PHASE 2: DEBUG TOGGLES
+    // ═══════════════════════════════════════════════════════════════
+    
+    void EnableEventDrivenUpdates(bool enable)
+    {
+        m_UseEventDrivenUpdates = enable;
+        
+        if (enable)
+        {
+            SubscribeToEvents();
+            Print("[KOTH_HUD] Event-driven updates ENABLED");
+        }
+        else
+        {
+            UnsubscribeFromEvents();
+            Print("[KOTH_HUD] Event-driven updates DISABLED");
+        }
+    }
+    
+    void EnablePollingFallback(bool enable)
+    {
+        m_UsePollingFallback = enable;
+        
+        string status;
+        if (enable)
+            status = "ENABLED";
+        else
+            status = "DISABLED";
+        
+        Print("[KOTH_HUD] Polling fallback " + status);
+    }
 }
 
 class KOTH_HUDController: ExpansionViewController
@@ -452,7 +599,7 @@ modded class IngameHud
         if (m_KOTH_HUD)
         {
             m_KOTH_HUD.ShowHud(true);
-            Print("[KOTH_IngameHud] KOTH HUD created and shown");
+            Print("[KOTH_IngameHud] KOTH HUD created with event subscriptions");
         }
         else
         {
