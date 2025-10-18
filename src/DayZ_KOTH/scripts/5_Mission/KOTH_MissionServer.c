@@ -1,8 +1,8 @@
 /**
- * KOTH_MissionServer.c (SIMPLIFIED)
+ * KOTH_MissionServer.c (PHASE 3 - REWARD INTEGRATION)
  *
  * King of the Hill by Kahoona
- * Unified mission server - startup and player connections
+ * Integrated reward system with initial stats sync
  * Place in: 5_Mission/KOTH_MissionServer.c
  */
 
@@ -21,10 +21,7 @@ modded class MissionServer
 
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(InitializeKOTHSystem, 2000, false);
         
-        // Test AI detection after a delay
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(KOTH_AIDebugHelper.DebugAllEntitiesInGame, 10000, false);
-
-        // Test zone AI counting every 30 seconds
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(KOTH_AIDebugHelper.TestAIInZone, 15000, true);
     }
 
@@ -167,6 +164,9 @@ modded class MissionServer
             spawnPos = zoneManager.GetEastSpawnPosition();
             Print("[KOTH] " + playerData.PlayerName + " spawning at EAST base: " + spawnPos);
             GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(KOTH_SpawnUtils.SpawnPlayerAtPosition, 500, false, player, spawnPos);
+            
+            // PHASE 3: Sync initial stats to client
+            SyncInitialStatsToClient(player, identity, playerData);
         }
         else if (playerData.LastTeamSelection == "West")
         {
@@ -175,6 +175,9 @@ modded class MissionServer
             spawnPos = zoneManager.GetWestSpawnPosition();
             Print("[KOTH] " + playerData.PlayerName + " spawning at WEST base: " + spawnPos);
             GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(KOTH_SpawnUtils.SpawnPlayerAtPosition, 500, false, player, spawnPos);
+            
+            // PHASE 3: Sync initial stats to client
+            SyncInitialStatsToClient(player, identity, playerData);
         }
         else
         {
@@ -196,6 +199,25 @@ modded class MissionServer
             }
 
             return;
+        }
+    }
+    
+    //! ═══════════════════════════════════════════════════════════════
+    //! PHASE 3: INITIAL STATS SYNC
+    //! ═══════════════════════════════════════════════════════════════
+    
+    void SyncInitialStatsToClient(PlayerBase player, PlayerIdentity identity, KOTH_Players data)
+    {
+        if (!player || !identity || !data)
+            return;
+        
+        KOTH_PlayerRewardManager rewardManager;
+        CF_Modules<KOTH_PlayerRewardManager>.Get(rewardManager);
+        
+        if (rewardManager)
+        {
+            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(rewardManager.SyncPlayerStatsToClient, 1500, false, identity, data);
+            Print("[KOTH] Scheduled initial stats sync for " + identity.GetName());
         }
     }
     

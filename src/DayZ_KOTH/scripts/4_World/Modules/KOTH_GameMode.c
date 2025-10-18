@@ -1,8 +1,8 @@
 /**
- * KOTH_GameMode.c (PHASE 1 - SCRIPTINVOKERS ADDED)
+ * KOTH_GameMode.c (PHASE 3 - REDUCED LOGGING)
  *
  * King of the Hill by Kahoona
- * Added event-driven architecture via ScriptInvokers
+ * Cleaned up debug spam
  *
  * Place in: 4_World/Modules/KOTH_GameMode.c
  */
@@ -12,27 +12,20 @@ class KOTH_GameMode: CF_ModuleWorld
 {
     private static ref KOTH_GameMode s_Instance;
     
-    // ═══════════════════════════════════════════════════════════════
-    // PHASE 1: EVENT INVOKERS
-    // ═══════════════════════════════════════════════════════════════
-    
     static ref ScriptInvoker SI_OnScoreChanged = new ScriptInvoker();
     static ref ScriptInvoker SI_OnCaptureProgressChanged = new ScriptInvoker();
     static ref ScriptInvoker SI_OnRoundEnd = new ScriptInvoker();
     static ref ScriptInvoker SI_OnRoundStart = new ScriptInvoker();
     
-    // Game state
     private int m_EastScore = 0;
     private int m_WestScore = 0;
     private bool m_RoundActive = false;
     private bool m_RoundEnded = false;
     
-    // Capture progress tracking
     private float m_CaptureProgress = 0.0;
     private string m_CapturingTeam = "None";
     private float m_LastTickTime = 0;
     
-    // Settings
     private int m_ScoreLimit = 100;
     private float m_TickInterval = 2.0;
     private int m_PointsPerTick = 1;
@@ -40,7 +33,6 @@ class KOTH_GameMode: CF_ModuleWorld
     private int m_MinPlayersToInfluence = 1;
     private float m_PointsPerTickPerPlayer = 1.0;
     
-    // References
     private ref KOTH_HUDDataSync m_HUDSync;
     
     void KOTH_GameMode()
@@ -62,10 +54,7 @@ class KOTH_GameMode: CF_ModuleWorld
         super.OnInit();
         
         Expansion_EnableRPCManager();
-        
         Expansion_RegisterClientRPC("RPC_RoundEnd");
-        
-        Print("[KOTH_GameMode] Initialized with ScriptInvokers");
         
         if (GetGame().IsServer())
         {
@@ -94,11 +83,6 @@ class KOTH_GameMode: CF_ModuleWorld
             m_PriorityBonusMultiplier = settings.PriorityZoneBonusMultiplier;
             m_MinPlayersToInfluence = settings.MinPlayersToInfluence;
             m_PointsPerTickPerPlayer = settings.PointsPerTickPerPlayer;
-            Print("[KOTH_GameMode] Score limit: " + m_ScoreLimit);
-            Print("[KOTH_GameMode] Capture tick: " + m_TickInterval + " seconds");
-            Print("[KOTH_GameMode] Priority bonus: " + m_PriorityBonusMultiplier + "x");
-            Print("[KOTH_GameMode] Min playerpoint advantage: " + m_MinPlayersToInfluence);
-            Print("[KOTH_GameMode] Points per player: " + m_PointsPerTickPerPlayer);
         }
         
         StartRound();
@@ -108,10 +92,6 @@ class KOTH_GameMode: CF_ModuleWorld
     {
         return s_Instance;
     }
-    
-    // ═══════════════════════════════════════════════════════════════
-    // ROUND MANAGEMENT
-    // ═══════════════════════════════════════════════════════════════
     
     void StartRound()
     {
@@ -138,7 +118,6 @@ class KOTH_GameMode: CF_ModuleWorld
         Print("[KOTH_GameMode] Round started - Score limit: " + m_ScoreLimit);
         NotifyAllPlayers("[KOTH] Round started! First team to " + m_ScoreLimit + " points wins!");
         
-        // PHASE 1: Invoke round start event
         SI_OnRoundStart.Invoke(m_ScoreLimit);
     }
     
@@ -155,16 +134,10 @@ class KOTH_GameMode: CF_ModuleWorld
         Print("[KOTH_GameMode] Round ended - Winner: " + winningTeam);
         
         BroadcastRoundEnd(winningTeam);
-        
-        // PHASE 1: Invoke round end event
         SI_OnRoundEnd.Invoke(winningTeam, m_EastScore, m_WestScore);
         
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(StartRound, 30000, false);
     }
-    
-    // ═══════════════════════════════════════════════════════════════
-    // PLAYERPOINT SCORING SYSTEM
-    // ═══════════════════════════════════════════════════════════════
     
     void UpdateCapture()
     {
@@ -211,9 +184,6 @@ class KOTH_GameMode: CF_ModuleWorld
             controllingTeam = "West";
         }
         
-        Print("[KOTH_GameMode] AO: East " + eastAO + " vs West " + westAO + " | Priority: East " + eastPriority + " vs West " + westPriority);
-        Print("[KOTH_GameMode] PlayerPoints: East " + eastPlayerPoints + " vs West " + westPlayerPoints + " | Diff: " + playerPointDiff + " | Leader: " + controllingTeam);
-        
         if (m_HUDSync)
         {
             m_HUDSync.SetPlayerCounts(eastAO, westAO, eastPriority, westPriority);
@@ -229,7 +199,6 @@ class KOTH_GameMode: CF_ModuleWorld
                 m_HUDSync.SetCaptureProgress(0.0, "None");
             }
             
-            // PHASE 1: Invoke capture progress event
             SI_OnCaptureProgressChanged.Invoke(0.0, "None");
             
             return;
@@ -239,7 +208,6 @@ class KOTH_GameMode: CF_ModuleWorld
         {
             m_CaptureProgress = 0.0;
             m_CapturingTeam = controllingTeam;
-            Print("[KOTH_GameMode] " + controllingTeam + " team started capturing (advantage: " + Math.AbsFloat(playerPointDiff) + " playerpoints)");
         }
         
         m_CaptureProgress = m_CaptureProgress + 0.1;
@@ -253,7 +221,6 @@ class KOTH_GameMode: CF_ModuleWorld
             m_HUDSync.SetCaptureProgress(progressPercent, m_CapturingTeam);
         }
         
-        // PHASE 1: Invoke capture progress event
         SI_OnCaptureProgressChanged.Invoke(progressPercent, m_CapturingTeam);
         
         if (m_CaptureProgress >= m_TickInterval)
@@ -271,9 +238,6 @@ class KOTH_GameMode: CF_ModuleWorld
             if (m_HUDSync)
                 m_HUDSync.SetEastScore(m_EastScore);
             
-            Print("[KOTH_GameMode] East scores! Score: " + m_EastScore + "/" + m_ScoreLimit);
-            
-            // PHASE 1: Invoke score changed event
             SI_OnScoreChanged.Invoke(m_EastScore, m_WestScore);
             
             if (m_EastScore >= m_ScoreLimit)
@@ -288,9 +252,6 @@ class KOTH_GameMode: CF_ModuleWorld
             if (m_HUDSync)
                 m_HUDSync.SetWestScore(m_WestScore);
             
-            Print("[KOTH_GameMode] West scores! Score: " + m_WestScore + "/" + m_ScoreLimit);
-            
-            // PHASE 1: Invoke score changed event
             SI_OnScoreChanged.Invoke(m_EastScore, m_WestScore);
             
             if (m_WestScore >= m_ScoreLimit)
@@ -300,10 +261,6 @@ class KOTH_GameMode: CF_ModuleWorld
             }
         }
     }
-    
-    // ═══════════════════════════════════════════════════════════════
-    // NOTIFICATIONS
-    // ═══════════════════════════════════════════════════════════════
     
     void BroadcastRoundEnd(string winningTeam)
     {
@@ -349,9 +306,6 @@ class KOTH_GameMode: CF_ModuleWorld
             player.MessageStatus(message);
         }
         
-        Print("[KOTH_GameMode] CLIENT: " + winningTeam + " team wins! " + eastScore + "-" + westScore);
-        
-        // PHASE 1: Invoke round end event on client
         SI_OnRoundEnd.Invoke(winningTeam, eastScore, westScore);
     }
     
@@ -373,54 +327,21 @@ class KOTH_GameMode: CF_ModuleWorld
         }
     }
     
-    // ═══════════════════════════════════════════════════════════════
-    // GETTERS
-    // ═══════════════════════════════════════════════════════════════
-    
-    int GetEastScore()
-    {
-        return m_EastScore;
-    }
-    
-    int GetWestScore()
-    {
-        return m_WestScore;
-    }
-    
-    bool IsRoundActive()
-    {
-        return m_RoundActive;
-    }
-    
-    int GetScoreLimit()
-    {
-        return m_ScoreLimit;
-    }
-    
-    float GetCaptureProgress()
-    {
-        return m_CaptureProgress;
-    }
-    
-    string GetCapturingTeam()
-    {
-        return m_CapturingTeam;
-    }
-    
-    // ═══════════════════════════════════════════════════════════════
-    // ADMIN COMMANDS
-    // ═══════════════════════════════════════════════════════════════
+    int GetEastScore() { return m_EastScore; }
+    int GetWestScore() { return m_WestScore; }
+    bool IsRoundActive() { return m_RoundActive; }
+    int GetScoreLimit() { return m_ScoreLimit; }
+    float GetCaptureProgress() { return m_CaptureProgress; }
+    string GetCapturingTeam() { return m_CapturingTeam; }
     
     void SetScoreLimit(int limit)
     {
         m_ScoreLimit = limit;
-        Print("[KOTH_GameMode] Score limit changed to: " + limit);
     }
     
     void SetTickInterval(float seconds)
     {
         m_TickInterval = seconds;
-        Print("[KOTH_GameMode] Tick interval changed to: " + seconds + " seconds");
     }
     
     void AddScoreToTeam(string team, int points)
