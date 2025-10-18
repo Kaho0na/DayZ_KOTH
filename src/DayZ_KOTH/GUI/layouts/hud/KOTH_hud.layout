@@ -17,7 +17,7 @@ FrameWidgetClass KOTHHudFrameWidget {
    ignorepointer 1
    color 0 0 0 0.7
    position 0 20
-   size 400 80
+   size 400 100
    halign center_ref
    valign top_ref
    hexactpos 1
@@ -46,8 +46,8 @@ FrameWidgetClass KOTHHudFrameWidget {
      "size to text v" 0
     }
     
-    // East Players Count
-    TextWidgetClass eastPlayers {
+    // East AO Players Count
+    TextWidgetClass eastAOPlayers {
      ignorepointer 1
      color 0.9 0.9 0.9 1
      position 50 55
@@ -58,7 +58,26 @@ FrameWidgetClass KOTHHudFrameWidget {
      vexactpos 1
      hexactsize 1
      vexactsize 1
-     text "0 players"
+     text "0 in AO"
+     font "gui/fonts/etelkatextpro"
+     "text halign" center
+     "text valign" center
+     "exact text" 0
+    }
+    
+    // East Priority Players Count
+    TextWidgetClass eastPriorityPlayers {
+     ignorepointer 1
+     color 0.85 0.7 0.3 1
+     position 50 73
+     size 80 18
+     halign left_ref
+     valign top_ref
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text "0 in Mission"
      font "gui/fonts/etelkatextpro"
      "text halign" center
      "text valign" center
@@ -68,7 +87,7 @@ FrameWidgetClass KOTHHudFrameWidget {
     // Progress Bar (Team dominance)
     ProgressBarWidgetClass TeamBar {
      ignorepointer 1
-     position 0 35
+     position 0 45
      size 300 6
      halign center_ref
      valign center_ref
@@ -102,8 +121,8 @@ FrameWidgetClass KOTHHudFrameWidget {
      "size to text v" 0
     }
     
-    // West Players Count
-    TextWidgetClass westPlayers {
+    // West AO Players Count
+    TextWidgetClass westAOPlayers {
      ignorepointer 1
      color 0.9 0.9 0.9 1
      position 270 55
@@ -114,7 +133,26 @@ FrameWidgetClass KOTHHudFrameWidget {
      vexactpos 1
      hexactsize 1
      vexactsize 1
-     text "0 players"
+     text "0 in AO"
+     font "gui/fonts/etelkatextpro"
+     "text halign" center
+     "text valign" center
+     "exact text" 0
+    }
+    
+    // West Priority Players Count
+    TextWidgetClass westPriorityPlayers {
+     ignorepointer 1
+     color 0.85 0.7 0.3 1
+     position 270 73
+     size 80 18
+     halign left_ref
+     valign top_ref
+     hexactpos 1
+     vexactpos 1
+     hexactsize 1
+     vexactsize 1
+     text "0 priority"
      font "gui/fonts/etelkatextpro"
      "text halign" center
      "text valign" center

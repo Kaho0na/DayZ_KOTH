@@ -196,6 +196,12 @@ class KOTH_GameMode: CF_ModuleWorld
         Print("[KOTH_GameMode] AO: East " + eastAO + " vs West " + westAO + " | Priority: East " + eastPriority + " vs West " + westPriority);
         Print("[KOTH_GameMode] PlayerPoints: East " + eastPlayerPoints + " vs West " + westPlayerPoints + " | Diff: " + playerPointDiff + " | Leader: " + controllingTeam);
         
+        // Send player counts to HUD AFTER calculating everything
+        if (m_HUDSync)
+        {
+            m_HUDSync.SetPlayerCounts(eastAO, westAO, eastPriority, westPriority);
+        }
+        
         // Reset capture if no team is controlling
         if (controllingTeam == "None")
         {

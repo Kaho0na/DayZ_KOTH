@@ -1,8 +1,7 @@
 /**
- * KOTH_PriArea.c (WITH EXPANSION AI COUNTING - FIXED)
+ * KOTH_PriArea.c (FIXED COUNT REPORTING)
  *
- * Priority zone with Expansion AI counting support
- * Expansion AI are PlayerBase entities without identity
+ * Priority zone with proper player count tracking
  * Place in: 4_World/Classes/ContaminatedArea/KOTH_PriArea.c
  */
 
@@ -68,17 +67,13 @@ class KOTH_PriArea : EffectArea
 class KOTH_PriAreaTrigger : CylinderTrigger
 {
     protected EffectArea m_KOTH_EffectArea;
-    protected ref map<PlayerBase, bool> m_PlayerStates;
-    protected ref map<PlayerBase, float> m_PlayerEnterTime;
-    protected ref map<PlayerBase, bool> m_AIStates;
-    protected ref map<PlayerBase, float> m_AIEnterTime;
+    protected ref array<PlayerBase> m_PlayersInside;
+    protected ref array<PlayerBase> m_AIInside;
     
     void KOTH_PriAreaTrigger()
     {
-        m_PlayerStates = new map<PlayerBase, bool>();
-        m_PlayerEnterTime = new map<PlayerBase, float>();
-        m_AIStates = new map<PlayerBase, bool>();
-        m_AIEnterTime = new map<PlayerBase, float>();
+        m_PlayersInside = new array<PlayerBase>();
+        m_AIInside = new array<PlayerBase>();
     }
     
     void KOTH_Init(EffectArea area)
@@ -107,67 +102,31 @@ class KOTH_PriAreaTrigger : CylinderTrigger
         if (!insider)
             return;
         
-        float currentTime = GetGame().GetTime();
         PlayerBase player;
-        bool entityWasInside;
-        float lastEnterTime;
-        string team;
-        string aiFaction;
         
         if (Class.CastTo(player, insider.GetObject()))
         {
             if (player.GetIdentity())
             {
-                entityWasInside = false;
-                if (m_PlayerStates.Contains(player))
+                int playerIdx = m_PlayersInside.Find(player);
+                if (playerIdx == -1)
                 {
-                    entityWasInside = m_PlayerStates.Get(player);
-                }
-                
-                if (!entityWasInside)
-                {
-                    lastEnterTime = 0;
-                    if (m_PlayerEnterTime.Contains(player))
-                    {
-                        lastEnterTime = m_PlayerEnterTime.Get(player);
-                    }
+                    m_PlayersInside.Insert(player);
+                    string team = player.GetKOTHTeam();
+                    Print("[KOTH_PriAreaTrigger] Player entered PRIORITY: " + player.GetIdentity().GetName() + " (Team: " + team + ")");
                     
-                    if (currentTime - lastEnterTime > 3000)
-                    {
-                        m_PlayerStates.Set(player, true);
-                        m_PlayerEnterTime.Set(player, currentTime);
-                        
-                        team = player.GetKOTHTeam();
-                        Print("[KOTH_PriAreaTrigger] Player entered PRIORITY: " + player.GetIdentity().GetName() + " (Team: " + team + ")");
-                        
-                        player.MessageStatus("[KOTH PRIORITY] You entered the BONUS POINTS zone!");
-                    }
+                    player.MessageStatus("[KOTH PRIORITY] You entered the BONUS POINTS zone!");
                 }
             }
             else
             {
-                entityWasInside = false;
-                if (m_AIStates.Contains(player))
+                int aiIdx = m_AIInside.Find(player);
+                if (aiIdx == -1)
                 {
-                    entityWasInside = m_AIStates.Get(player);
-                }
-                
-                if (!entityWasInside)
-                {
-                    lastEnterTime = 0;
-                    if (m_AIEnterTime.Contains(player))
-                    {
-                        lastEnterTime = m_AIEnterTime.Get(player);
-                    }
+                    m_AIInside.Insert(player);
                     
-                    if (currentTime - lastEnterTime > 3000)
-                    {
-                        m_AIStates.Set(player, true);
-                        m_AIEnterTime.Set(player, currentTime);
-                        
-                        aiFaction = GetExpansionAIFaction(player);
-                        Print("[KOTH_PriAreaTrigger] AI entered PRIORITY: " + player.GetType() + " (Faction: " + aiFaction + ")");
-                    }
+                    string aiFaction = GetExpansionAIFaction(player);
+                    Print("[KOTH_PriAreaTrigger] AI entered PRIORITY: " + player.GetType() + " (Faction: " + aiFaction + ")");
                 }
             }
         }
@@ -180,61 +139,28 @@ class KOTH_PriAreaTrigger : CylinderTrigger
         if (!insider)
             return;
         
-        float currentTime = GetGame().GetTime();
         PlayerBase player;
-        bool entityWasInside;
-        float lastEnterTime;
         
         if (Class.CastTo(player, insider.GetObject()))
         {
             if (player.GetIdentity())
             {
-                entityWasInside = false;
-                if (m_PlayerStates.Contains(player))
+                int playerIdx = m_PlayersInside.Find(player);
+                if (playerIdx != -1)
                 {
-                    entityWasInside = m_PlayerStates.Get(player);
-                }
-                
-                if (entityWasInside)
-                {
-                    lastEnterTime = 0;
-                    if (m_PlayerEnterTime.Contains(player))
-                    {
-                        lastEnterTime = m_PlayerEnterTime.Get(player);
-                    }
+                    m_PlayersInside.Remove(playerIdx);
+                    Print("[KOTH_PriAreaTrigger] Player left PRIORITY: " + player.GetIdentity().GetName());
                     
-                    if (currentTime - lastEnterTime > 3000)
-                    {
-                        m_PlayerStates.Set(player, false);
-                        
-                        Print("[KOTH_PriAreaTrigger] Player left PRIORITY: " + player.GetIdentity().GetName());
-                        
-                        player.MessageStatus("[KOTH PRIORITY] You left the bonus zone");
-                    }
+                    player.MessageStatus("[KOTH PRIORITY] You left the bonus zone");
                 }
             }
             else
             {
-                entityWasInside = false;
-                if (m_AIStates.Contains(player))
+                int aiIdx = m_AIInside.Find(player);
+                if (aiIdx != -1)
                 {
-                    entityWasInside = m_AIStates.Get(player);
-                }
-                
-                if (entityWasInside)
-                {
-                    lastEnterTime = 0;
-                    if (m_AIEnterTime.Contains(player))
-                    {
-                        lastEnterTime = m_AIEnterTime.Get(player);
-                    }
-                    
-                    if (currentTime - lastEnterTime > 3000)
-                    {
-                        m_AIStates.Set(player, false);
-                        
-                        Print("[KOTH_PriAreaTrigger] AI left PRIORITY: " + player.GetType());
-                    }
+                    m_AIInside.Remove(aiIdx);
+                    Print("[KOTH_PriAreaTrigger] AI left PRIORITY: " + player.GetType());
                 }
             }
         }
@@ -264,113 +190,55 @@ class KOTH_PriAreaTrigger : CylinderTrigger
     
     bool HasPlayersInside()
     {
-        int count = 0;
-        int i;
-        array<PlayerBase> playerKeys = m_PlayerStates.GetKeyArray();
-        array<PlayerBase> aiKeys = m_AIStates.GetKeyArray();
-        
-        for (i = 0; i < playerKeys.Count(); i++)
-        {
-            PlayerBase player = playerKeys.Get(i);
-            if (player && player.IsAlive() && m_PlayerStates.Get(player))
-                count++;
-        }
-        
-        for (i = 0; i < aiKeys.Count(); i++)
-        {
-            PlayerBase ai = aiKeys.Get(i);
-            if (ai && ai.IsAlive() && m_AIStates.Get(ai))
-                count++;
-        }
-        
-        return count > 0;
+        return m_PlayersInside.Count() > 0 || m_AIInside.Count() > 0;
     }
     
     int GetPlayerCount()
     {
-        int count = 0;
-        int i;
-        array<PlayerBase> playerKeys = m_PlayerStates.GetKeyArray();
-        array<PlayerBase> aiKeys = m_AIStates.GetKeyArray();
-        
-        for (i = 0; i < playerKeys.Count(); i++)
-        {
-            PlayerBase player = playerKeys.Get(i);
-            if (player && player.IsAlive() && m_PlayerStates.Get(player))
-                count++;
-        }
-        
-        for (i = 0; i < aiKeys.Count(); i++)
-        {
-            PlayerBase ai = aiKeys.Get(i);
-            if (ai && ai.IsAlive() && m_AIStates.Get(ai))
-                count++;
-        }
-        
-        return count;
+        return m_PlayersInside.Count() + m_AIInside.Count();
     }
     
     array<PlayerBase> GetPlayersInside()
     {
-        array<PlayerBase> result = new array<PlayerBase>();
-        array<PlayerBase> playerKeys = m_PlayerStates.GetKeyArray();
-        int i;
-        
-        for (i = 0; i < playerKeys.Count(); i++)
-        {
-            PlayerBase player = playerKeys.Get(i);
-            if (player && player.IsAlive() && m_PlayerStates.Get(player))
-                result.Insert(player);
-        }
-        
-        return result;
+        return m_PlayersInside;
     }
     
     array<PlayerBase> GetAIInside()
     {
-        array<PlayerBase> result = new array<PlayerBase>();
-        array<PlayerBase> aiKeys = m_AIStates.GetKeyArray();
-        int i;
-        
-        for (i = 0; i < aiKeys.Count(); i++)
-        {
-            PlayerBase ai = aiKeys.Get(i);
-            if (ai && ai.IsAlive() && m_AIStates.Get(ai))
-                result.Insert(ai);
-        }
-        
-        return result;
+        return m_AIInside;
     }
     
     int GetTeamPlayerCount(string teamName)
     {
         int count = 0;
         int i;
-        array<PlayerBase> playerKeys = m_PlayerStates.GetKeyArray();
-        array<PlayerBase> aiKeys = m_AIStates.GetKeyArray();
+        PlayerBase player;
         string factionName;
         
-        for (i = 0; i < playerKeys.Count(); i++)
+        for (i = 0; i < m_PlayersInside.Count(); i++)
         {
-            PlayerBase player = playerKeys.Get(i);
-            if (player && player.IsAlive() && m_PlayerStates.Get(player))
+            player = m_PlayersInside.Get(i);
+            if (player && player.IsAlive() && player.GetKOTHTeam() == teamName)
             {
-                if (player.GetKOTHTeam() == teamName)
-                    count++;
+                count++;
             }
         }
         
-        for (i = 0; i < aiKeys.Count(); i++)
+        for (i = 0; i < m_AIInside.Count(); i++)
         {
-            PlayerBase ai = aiKeys.Get(i);
-            if (!ai || !ai.IsAlive() || !m_AIStates.Get(ai))
+            PlayerBase ai = m_AIInside.Get(i);
+            if (!ai || !ai.IsAlive())
                 continue;
             
             factionName = GetExpansionAIFaction(ai);
             
             if (factionName == teamName)
+            {
                 count++;
+            }
         }
+        
+        Print("[KOTH_PriAreaTrigger] GetTeamPlayerCount(" + teamName + ") = " + count + " (Players: " + m_PlayersInside.Count() + ", AI: " + m_AIInside.Count() + ")");
         
         return count;
     }

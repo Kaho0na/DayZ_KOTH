@@ -1,7 +1,7 @@
 /**
- * KOTH_HUDDataSync.c (WITH CAPTURE PROGRESS)
+ * KOTH_HUDDataSync.c (WITH PLAYER COUNTS)
  *
- * Syncs HUD data including capture timer from server to all clients
+ * Syncs HUD data including AO and priority zone player counts
  * Place in: 4_World/Modules/KOTH_HUDDataSync.c
  */
 
@@ -15,6 +15,8 @@ class KOTH_HUDDataSync: CF_ModuleWorld
     private int m_WestScore = 0;
     private int m_EastPlayersInAO = 0;
     private int m_WestPlayersInAO = 0;
+    private int m_EastPlayersInPriority = 0;
+    private int m_WestPlayersInPriority = 0;
     private float m_CaptureProgress = 0.0;
     private string m_CapturingTeam = "None";
     
@@ -23,6 +25,8 @@ class KOTH_HUDDataSync: CF_ModuleWorld
     private int m_ClientWestScore = 0;
     private int m_ClientEastPlayers = 0;
     private int m_ClientWestPlayers = 0;
+    private int m_ClientEastPriority = 0;
+    private int m_ClientWestPriority = 0;
     private float m_ClientCaptureProgress = 0.0;
     private string m_ClientCapturingTeam = "None";
     
@@ -66,6 +70,23 @@ class KOTH_HUDDataSync: CF_ModuleWorld
     }
     
     // ═══════════════════════════════════════════════════════════════
+    // SERVER: Set player counts (called by game mode)
+    // ═══════════════════════════════════════════════════════════════
+    
+    void SetPlayerCounts(int eastAO, int westAO, int eastPriority, int westPriority)
+    {
+        if (!GetGame().IsServer())
+            return;
+        
+        m_EastPlayersInAO = eastAO;
+        m_WestPlayersInAO = westAO;
+        m_EastPlayersInPriority = eastPriority;
+        m_WestPlayersInPriority = westPriority;
+        
+        BroadcastHUDData();
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
     // SERVER: Set capture progress
     // ═══════════════════════════════════════════════════════════════
     
@@ -89,11 +110,15 @@ class KOTH_HUDDataSync: CF_ModuleWorld
         if (!GetGame().IsServer())
             return;
         
+        Print("[KOTH_HUDDataSync] Broadcasting - AO: E" + m_EastPlayersInAO + " W" + m_WestPlayersInAO + " | Priority: E" + m_EastPlayersInPriority + " W" + m_WestPlayersInPriority);
+        
         auto rpc = Expansion_CreateRPC("RPC_SyncHUDData");
         rpc.Write(m_EastScore);
         rpc.Write(m_WestScore);
         rpc.Write(m_EastPlayersInAO);
         rpc.Write(m_WestPlayersInAO);
+        rpc.Write(m_EastPlayersInPriority);
+        rpc.Write(m_WestPlayersInPriority);
         rpc.Write(m_CaptureProgress);
         rpc.Write(m_CapturingTeam);
         rpc.Expansion_Send(true, null);
@@ -116,12 +141,16 @@ class KOTH_HUDDataSync: CF_ModuleWorld
             return;
         if (!ctx.Read(m_ClientWestPlayers))
             return;
+        if (!ctx.Read(m_ClientEastPriority))
+            return;
+        if (!ctx.Read(m_ClientWestPriority))
+            return;
         if (!ctx.Read(m_ClientCaptureProgress))
             return;
         if (!ctx.Read(m_ClientCapturingTeam))
             return;
         
-        Print("[KOTH_HUDDataSync] CLIENT received - East: " + m_ClientEastPlayers + ", West: " + m_ClientWestPlayers + ", Progress: " + m_ClientCaptureProgress + "%, Team: " + m_ClientCapturingTeam);
+        Print("[KOTH_HUDDataSync] CLIENT received - AO: East " + m_ClientEastPlayers + ", West " + m_ClientWestPlayers + " | Priority: East " + m_ClientEastPriority + ", West " + m_ClientWestPriority);
     }
     
     // ═══════════════════════════════════════════════════════════════
@@ -154,6 +183,20 @@ class KOTH_HUDDataSync: CF_ModuleWorld
         if (GetGame().IsServer())
             return m_WestPlayersInAO;
         return m_ClientWestPlayers;
+    }
+    
+    int GetEastPlayersInPriority()
+    {
+        if (GetGame().IsServer())
+            return m_EastPlayersInPriority;
+        return m_ClientEastPriority;
+    }
+    
+    int GetWestPlayersInPriority()
+    {
+        if (GetGame().IsServer())
+            return m_WestPlayersInPriority;
+        return m_ClientWestPriority;
     }
     
     float GetCaptureProgress()

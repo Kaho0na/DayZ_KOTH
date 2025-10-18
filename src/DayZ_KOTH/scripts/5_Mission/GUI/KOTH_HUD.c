@@ -1,8 +1,8 @@
 /**
- * KOTH_HUD.c (WITH CAPTURE TIMER BAR)
+ * KOTH_HUD.c (WITH AO AND PRIORITY COUNTS)
  *
  * King of the Hill by Kahoona
- * HUD Display with capture progress timer
+ * HUD Display with AO and priority zone player counts
  *
  * Place in: 5_Mission/GUI/KOTH_HUD.c
  */
@@ -14,10 +14,12 @@ class KOTH_HUD: ExpansionScriptView
     
     // Top Panel Widgets (Team Scores)
     protected TextWidget westScore;
-    protected TextWidget westPlayers;
+    protected TextWidget westAOPlayers;
+    protected TextWidget westPriorityPlayers;
     protected ProgressBarWidget TeamBar;
     protected TextWidget eastScore;
-    protected TextWidget eastPlayers;
+    protected TextWidget eastAOPlayers;
+    protected TextWidget eastPriorityPlayers;
     
     // Level Panel Widgets (Player Stats)
     protected TextWidget currentLevel;
@@ -28,8 +30,10 @@ class KOTH_HUD: ExpansionScriptView
     // Cache for player data
     private int m_CachedWestScore = 0;
     private int m_CachedEastScore = 0;
-    private int m_CachedWestPlayers = -1;
-    private int m_CachedEastPlayers = -1;
+    private int m_CachedWestAO = -1;
+    private int m_CachedEastAO = -1;
+    private int m_CachedWestPriority = -1;
+    private int m_CachedEastPriority = -1;
     private float m_CachedCaptureProgress = -1.0;
     private string m_CachedCapturingTeam = "";
     private int m_CachedLevel = -1;
@@ -85,8 +89,10 @@ class KOTH_HUD: ExpansionScriptView
         KOTH_HUDDataSync syncModule;
         CF_Modules<KOTH_HUDDataSync>.Get(syncModule);
         
-        int eastPlayerCount = 0;
-        int westPlayerCount = 0;
+        int eastAOCount = 0;
+        int westAOCount = 0;
+        int eastPriorityCount = 0;
+        int westPriorityCount = 0;
         int eastScoreValue = 0;
         int westScoreValue = 0;
         float captureProgress = 0.0;
@@ -94,8 +100,10 @@ class KOTH_HUD: ExpansionScriptView
         
         if (syncModule)
         {
-            eastPlayerCount = syncModule.GetEastPlayersInAO();
-            westPlayerCount = syncModule.GetWestPlayersInAO();
+            eastAOCount = syncModule.GetEastPlayersInAO();
+            westAOCount = syncModule.GetWestPlayersInAO();
+            eastPriorityCount = syncModule.GetEastPlayersInPriority();
+            westPriorityCount = syncModule.GetWestPlayersInPriority();
             eastScoreValue = syncModule.GetEastScore();
             westScoreValue = syncModule.GetWestScore();
             captureProgress = syncModule.GetCaptureProgress();
@@ -120,33 +128,63 @@ class KOTH_HUD: ExpansionScriptView
             }
         }
         
-        if (m_CachedWestPlayers != westPlayerCount)
+        if (m_CachedWestAO != westAOCount)
         {
-            m_CachedWestPlayers = westPlayerCount;
-            if (westPlayers)
+            m_CachedWestAO = westAOCount;
+            if (westAOPlayers)
             {
                 string westText;
-                if (westPlayerCount == 1)
-                    westText = "1 player";
+                if (westAOCount == 1)
+                    westText = "1 in AO";
                 else
-                    westText = westPlayerCount.ToString() + " players";
+                    westText = westAOCount.ToString() + " in AO";
                     
-                westPlayers.SetText(westText);
+                westAOPlayers.SetText(westText);
             }
         }
         
-        if (m_CachedEastPlayers != eastPlayerCount)
+        if (m_CachedEastAO != eastAOCount)
         {
-            m_CachedEastPlayers = eastPlayerCount;
-            if (eastPlayers)
+            m_CachedEastAO = eastAOCount;
+            if (eastAOPlayers)
             {
                 string eastText;
-                if (eastPlayerCount == 1)
-                    eastText = "1 player";
+                if (eastAOCount == 1)
+                    eastText = "1 in AO";
                 else
-                    eastText = eastPlayerCount.ToString() + " players";
+                    eastText = eastAOCount.ToString() + " in AO";
                     
-                eastPlayers.SetText(eastText);
+                eastAOPlayers.SetText(eastText);
+            }
+        }
+        
+        if (m_CachedWestPriority != westPriorityCount)
+        {
+            m_CachedWestPriority = westPriorityCount;
+            if (westPriorityPlayers)
+            {
+                string westPriText;
+                if (westPriorityCount == 1)
+                    westPriText = "1 priority";
+                else
+                    westPriText = westPriorityCount.ToString() + " priority";
+                    
+                westPriorityPlayers.SetText(westPriText);
+            }
+        }
+        
+        if (m_CachedEastPriority != eastPriorityCount)
+        {
+            m_CachedEastPriority = eastPriorityCount;
+            if (eastPriorityPlayers)
+            {
+                string eastPriText;
+                if (eastPriorityCount == 1)
+                    eastPriText = "1 priority";
+                else
+                    eastPriText = eastPriorityCount.ToString() + " priority";
+                    
+                eastPriorityPlayers.SetText(eastPriText);
             }
         }
         
@@ -358,8 +396,10 @@ class KOTH_HUD: ExpansionScriptView
     {
         m_CachedWestScore = -1;
         m_CachedEastScore = -1;
-        m_CachedWestPlayers = -1;
-        m_CachedEastPlayers = -1;
+        m_CachedWestAO = -1;
+        m_CachedEastAO = -1;
+        m_CachedWestPriority = -1;
+        m_CachedEastPriority = -1;
         m_CachedCaptureProgress = -1.0;
         m_CachedCapturingTeam = "";
         m_CachedLevel = -1;
@@ -378,8 +418,10 @@ class KOTH_HUDController: ExpansionViewController
 {
     string WestScore;
     string EastScore;
-    string WestPlayers;
-    string EastPlayers;
+    string WestAOPlayers;
+    string EastAOPlayers;
+    string WestPriorityPlayers;
+    string EastPriorityPlayers;
     string CurrentLevel;
     string CurrentXP;
     string CurrentMoney;
