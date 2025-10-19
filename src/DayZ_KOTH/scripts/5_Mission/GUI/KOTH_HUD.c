@@ -40,58 +40,58 @@ class KOTH_HUD: ExpansionScriptView
         m_Hud = hud;
         m_HUDController = KOTH_HUDController.Cast(GetController());
         
-        Print("[KOTH_HUD] Constructing HUD...");
+        //Print("[KOTH_HUD] Constructing HUD...");
         SubscribeToEvents();
-        Print("[KOTH_HUD] HUD initialized (event-driven mode)");
+        //Print("[KOTH_HUD] HUD initialized (event-driven mode)");
     }
     
     void ~KOTH_HUD()
     {
         UnsubscribeFromEvents();
-        Print("[KOTH_HUD] Destroyed");
+        //Print("[KOTH_HUD] Destroyed");
     }
     
     void SubscribeToEvents()
     {
-        Print("[KOTH_HUD] Subscribing to events...");
+        //Print("[KOTH_HUD] Subscribing to events...");
         
         if (KOTH_GameMode.SI_OnScoreChanged)
         {
             KOTH_GameMode.SI_OnScoreChanged.Insert(OnScoreChanged);
-            Print("[KOTH_HUD] - Subscribed to SI_OnScoreChanged");
+            //Print("[KOTH_HUD] - Subscribed to SI_OnScoreChanged");
         }
         
         if (KOTH_GameMode.SI_OnCaptureProgressChanged)
         {
             KOTH_GameMode.SI_OnCaptureProgressChanged.Insert(OnCaptureProgressChanged);
-            Print("[KOTH_HUD] - Subscribed to SI_OnCaptureProgressChanged");
+            //Print("[KOTH_HUD] - Subscribed to SI_OnCaptureProgressChanged");
         }
         
         if (KOTH_HUDDataSync.SI_OnZonePlayersChanged)
         {
             KOTH_HUDDataSync.SI_OnZonePlayersChanged.Insert(OnZonePlayersChanged);
-            Print("[KOTH_HUD] - Subscribed to SI_OnZonePlayersChanged");
+            //Print("[KOTH_HUD] - Subscribed to SI_OnZonePlayersChanged");
         }
         
         if (KOTH_HUDDataSync.SI_OnScoreUpdate)
         {
             KOTH_HUDDataSync.SI_OnScoreUpdate.Insert(OnScoreUpdate);
-            Print("[KOTH_HUD] - Subscribed to SI_OnScoreUpdate");
+            //Print("[KOTH_HUD] - Subscribed to SI_OnScoreUpdate");
         }
         
         if (KOTH_HUDDataSync.SI_OnCaptureUpdate)
         {
             KOTH_HUDDataSync.SI_OnCaptureUpdate.Insert(OnCaptureUpdate);
-            Print("[KOTH_HUD] - Subscribed to SI_OnCaptureUpdate");
+            //Print("[KOTH_HUD] - Subscribed to SI_OnCaptureUpdate");
         }
         
         if (KOTH_PlayerRewardManager.SI_OnPlayerStatsChanged)
         {
             KOTH_PlayerRewardManager.SI_OnPlayerStatsChanged.Insert(OnPlayerStatsChanged);
-            Print("[KOTH_HUD] - Subscribed to SI_OnPlayerStatsChanged");
+            //Print("[KOTH_HUD] - Subscribed to SI_OnPlayerStatsChanged");
         }
         
-        Print("[KOTH_HUD] All subscriptions complete");
+        //Print("[KOTH_HUD] All subscriptions complete");
     }
     
     void UnsubscribeFromEvents()
@@ -117,7 +117,7 @@ class KOTH_HUD: ExpansionScriptView
     
     void OnScoreChanged(int eastScore, int westScore)
     {
-        Print("[KOTH_HUD] OnScoreChanged called - East: " + eastScore + ", West: " + westScore);
+        //Print("[KOTH_HUD] OnScoreChanged called - East: " + eastScore + ", West: " + westScore);
         
         if (m_CachedEastScore != eastScore)
         {
@@ -125,7 +125,7 @@ class KOTH_HUD: ExpansionScriptView
             if (this.eastScore)
             {
                 this.eastScore.SetText(eastScore.ToString());
-                Print("[KOTH_HUD] Updated East score display to: " + eastScore);
+                //Print("[KOTH_HUD] Updated East score display to: " + eastScore);
             }
         }
         
@@ -135,14 +135,14 @@ class KOTH_HUD: ExpansionScriptView
             if (this.westScore)
             {
                 this.westScore.SetText(westScore.ToString());
-                Print("[KOTH_HUD] Updated West score display to: " + westScore);
+                //Print("[KOTH_HUD] Updated West score display to: " + westScore);
             }
         }
     }
     
     void OnScoreUpdate(int eastScore, int westScore)
     {
-        Print("[KOTH_HUD] OnScoreUpdate called - East: " + eastScore + ", West: " + westScore);
+        //Print("[KOTH_HUD] OnScoreUpdate called - East: " + eastScore + ", West: " + westScore);
         OnScoreChanged(eastScore, westScore);
     }
     
@@ -174,8 +174,8 @@ class KOTH_HUD: ExpansionScriptView
     
     void OnZonePlayersChanged(int eastAO, int westAO, int eastPriority, int westPriority)
     {
-        Print("[KOTH_HUD] OnZonePlayersChanged called - AO: E" + eastAO + " W" + westAO + " | Priority: E" + eastPriority + " W" + westPriority);
-        Print("[KOTH_HUD] Current cache - AO: E" + m_CachedEastAO + " W" + m_CachedWestAO + " | Priority: E" + m_CachedEastPriority + " W" + m_CachedWestPriority);
+        //Print("[KOTH_HUD] OnZonePlayersChanged called - AO: E" + eastAO + " W" + westAO + " | Priority: E" + eastPriority + " W" + westPriority);
+        //Print("[KOTH_HUD] Current cache - AO: E" + m_CachedEastAO + " W" + m_CachedWestAO + " | Priority: E" + m_CachedEastPriority + " W" + m_CachedWestPriority);
         
         if (m_CachedEastAO != eastAO)
         {
@@ -189,16 +189,16 @@ class KOTH_HUD: ExpansionScriptView
                     eastText = eastAO.ToString() + " in AO";
                     
                 eastAOPlayers.SetText(eastText);
-                Print("[KOTH_HUD] Updated East AO display to: " + eastText);
+                //Print("[KOTH_HUD] Updated East AO display to: " + eastText);
             }
             else
             {
-                Print("[KOTH_HUD] WARNING: eastAOPlayers widget is NULL!");
+                //Print("[KOTH_HUD] WARNING: eastAOPlayers widget is NULL!");
             }
         }
         else
         {
-            Print("[KOTH_HUD] East AO unchanged, skipping update");
+            //Print("[KOTH_HUD] East AO unchanged, skipping update");
         }
         
         if (m_CachedWestAO != westAO)
@@ -213,16 +213,16 @@ class KOTH_HUD: ExpansionScriptView
                     westText = westAO.ToString() + " in AO";
                     
                 westAOPlayers.SetText(westText);
-                Print("[KOTH_HUD] Updated West AO display to: " + westText);
+                //Print("[KOTH_HUD] Updated West AO display to: " + westText);
             }
             else
             {
-                Print("[KOTH_HUD] WARNING: westAOPlayers widget is NULL!");
+                //Print("[KOTH_HUD] WARNING: westAOPlayers widget is NULL!");
             }
         }
         else
         {
-            Print("[KOTH_HUD] West AO unchanged, skipping update");
+            //Print("[KOTH_HUD] West AO unchanged, skipping update");
         }
         
         if (m_CachedEastPriority != eastPriority)
@@ -237,7 +237,7 @@ class KOTH_HUD: ExpansionScriptView
                     eastPriText = eastPriority.ToString() + " priority";
                     
                 eastPriorityPlayers.SetText(eastPriText);
-                Print("[KOTH_HUD] Updated East Priority display to: " + eastPriText);
+                //Print("[KOTH_HUD] Updated East Priority display to: " + eastPriText);
             }
         }
         
@@ -253,11 +253,11 @@ class KOTH_HUD: ExpansionScriptView
                     westPriText = westPriority.ToString() + " priority";
                     
                 westPriorityPlayers.SetText(westPriText);
-                Print("[KOTH_HUD] Updated West Priority display to: " + westPriText);
+                //Print("[KOTH_HUD] Updated West Priority display to: " + westPriText);
             }
         }
         
-        Print("[KOTH_HUD] OnZonePlayersChanged complete");
+        //Print("[KOTH_HUD] OnZonePlayersChanged complete");
     }
     
     void OnPlayerStatsChanged(int xp, int money, int level)
@@ -424,13 +424,13 @@ modded class IngameHud
     
     void InitKOTHHUD()
     {
-        Print("[KOTH_IngameHud] Creating KOTH HUD...");
+        //Print("[KOTH_IngameHud] Creating KOTH HUD...");
         m_KOTH_HUD = new KOTH_HUD(this);
         
         if (m_KOTH_HUD)
         {
             m_KOTH_HUD.ShowHud(true);
-            Print("[KOTH_IngameHud] KOTH HUD created successfully");
+            //Print("[KOTH_IngameHud] KOTH HUD created successfully");
         }
         else
         {

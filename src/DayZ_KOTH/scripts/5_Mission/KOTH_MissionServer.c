@@ -11,7 +11,10 @@ modded class MissionServer
     //! ═══════════════════════════════════════════════════════════════
     //! SERVER INITIALIZATION
     //! ═══════════════════════════════════════════════════════════════
-    
+    protected int m_TestNotificationCounter = 0;
+    protected bool m_NotificationTestStarted = false;
+
+
     override void OnInit()
     {
         super.OnInit();
@@ -23,7 +26,74 @@ modded class MissionServer
         
         //GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(KOTH_AIDebugHelper.DebugAllEntitiesInGame, 10000, false);
         //GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(KOTH_AIDebugHelper.TestAIInZone, 15000, true);
+
+        
+        // Start notification testing
+        /*if (!m_NotificationTestStarted)
+        {
+            m_NotificationTestStarted = true;
+            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(AutoTestNotifications, 5000, true);
+        }*/
     }
+
+void AutoTestNotifications()
+{
+    m_TestNotificationCounter++;
+    string message;
+    string money;
+    int moneyColor;
+    string xp;
+    int xpColor;
+    int accentColor;
+    
+    if (m_TestNotificationCounter % 5 == 1)
+    {
+        message = "Enemy Killed";
+        money = "$100";
+        moneyColor = ARGB(255, 0, 255, 0);
+        xp = "50XP";
+        xpColor = ARGB(255, 144, 238, 144);
+        accentColor = ARGB(255, 255, 255, 0);
+    }
+    else if (m_TestNotificationCounter % 5 == 2)
+    {
+        message = "City Alpha liberated";
+        money = "$500";
+        moneyColor = ARGB(255, 0, 255, 0);
+        xp = "200XP";
+        xpColor = ARGB(255, 144, 238, 144);
+        accentColor = ARGB(255, 0, 255, 0);
+    }
+    else if (m_TestNotificationCounter % 5 == 3)
+    {
+        message = "Bribe failed";
+        money = "";
+        moneyColor = ARGB(255, 255, 255, 255);
+        xp = "";
+        xpColor = ARGB(255, 255, 255, 255);
+        accentColor = ARGB(255, 255, 0, 0);
+    }
+    else if (m_TestNotificationCounter % 5 == 4)
+    {
+        message = "Priority area active";
+        money = "";
+        moneyColor = ARGB(255, 255, 255, 255);
+        xp = "";
+        xpColor = ARGB(255, 255, 255, 255);
+        accentColor = ARGB(255, 0, 136, 255);
+    }
+    else
+    {
+        message = "Headshot Kill";
+        money = "$150";
+        moneyColor = ARGB(255, 255, 215, 0);
+        xp = "75XP";
+        xpColor = ARGB(255, 255, 165, 0);
+        accentColor = ARGB(255, 255, 255, 255);
+    }
+    
+    KOTH_NotificationModule.ShowNotificationAdvanced(message, money, moneyColor, xp, xpColor, accentColor);
+}
 
     void InitializeKOTHSystem()
     {
@@ -245,4 +315,5 @@ modded class MissionServer
             }
         }
     }
+    
 }
