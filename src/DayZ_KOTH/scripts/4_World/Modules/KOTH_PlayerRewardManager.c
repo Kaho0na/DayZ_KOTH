@@ -19,12 +19,14 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     
     private ref map<string, ref KOTH_Players> m_PlayerDataCache;
     private ref map<string, int> m_PlayerKillstreaks;
+    private ref map<string, float> m_PlayerLastCaptureReward;
     private ref ExpansionMarketModule m_MarketModule;
     
     private int m_KillReward = 100;
     private int m_HeadshotReward = 200;
     private int m_AssistReward = 50;
     private int m_ReviveReward = 50;
+    private int m_CaptureReward = 300;
     private int m_TeamKillPenalty = 100;
     private int m_TeamKnockdownPenalty = 50;
     private int m_SuicidePenalty = 100;
@@ -32,6 +34,8 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     private int m_HeadshotXP = 200;
     private int m_AssistXP = 50;
     private int m_ReviveXP = 50;
+    private int m_CaptureXP = 250;
+    private int m_CaptureInterval = 30;
     private float m_GlobalXPMultiplier = 1.0;
     private float m_GlobalMoneyMultiplier = 1.0;
     
@@ -53,6 +57,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         s_Instance = this;
         m_PlayerDataCache = new map<string, ref KOTH_Players>();
         m_PlayerKillstreaks = new map<string, int>();
+        m_PlayerLastCaptureReward = new map<string, float>();
         
         if (!SI_OnPlayerStatsChanged)
             SI_OnPlayerStatsChanged = new ScriptInvoker();
@@ -108,6 +113,9 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         m_ReviveReward = settings.MoneyPerRevive;
         m_AssistXP = settings.XPPerAssist;
         m_AssistReward = settings.MoneyPerAssist;
+        m_CaptureXP = settings.XPPerCapture;
+        m_CaptureReward = settings.MoneyPerCapture;
+        m_CaptureInterval = settings.XPCaptureInterval;
         m_HeadshotXP = settings.HeadShotBonusXP;
         m_HeadshotReward = settings.HeadShotMoneyBonus;
         m_TeamKillPenalty = settings.TeamKillMoneyPenalty;
@@ -120,6 +128,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         Print("  - Headshot: " + m_HeadshotXP + " XP, $" + m_HeadshotReward);
         Print("  - Assist: " + m_AssistXP + " XP, $" + m_AssistReward);
         Print("  - Revive: " + m_ReviveXP + " XP, $" + m_ReviveReward);
+        Print("  - Capture: " + m_CaptureXP + " XP, $" + m_CaptureReward + " (every " + m_CaptureInterval + "s)");
         Print("  - Team Kill Penalty: $" + m_TeamKillPenalty);
         Print("  - Suicide Penalty: $" + m_SuicidePenalty);
         Print("  - Global XP Multiplier: " + m_GlobalXPMultiplier + "x");
@@ -294,6 +303,40 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         }
         
         Print("[KOTH_PlayerRewardManager] Removed $" + moneyAmount + " from " + ident.GetName() + " (" + reason + ") - ATM: $" + atmData.GetMoney());
+    }
+    
+    void ProcessCaptureReward(PlayerBase player, bool isCapturing)
+    {
+        if (!GetGame().IsServer() || !player || !player.GetIdentity())
+            return;
+        
+        if (!isCapturing)
+            return;
+        
+        PlayerIdentity ident = player.GetIdentity();
+        string uid = ident.GetId();
+        
+        float currentTime = GetGame().GetTime() / 1000;
+        
+        if (m_PlayerLastCaptureReward.Contains(uid))
+        {
+            float lastRewardTime = m_PlayerLastCaptureReward.Get(uid);
+            float timeSinceLastReward = currentTime - lastRewardTime;
+            
+            if (timeSinceLastReward < m_CaptureInterval)
+            {
+                return;
+            }
+        }
+        
+        m_PlayerLastCaptureReward.Set(uid, currentTime);
+        
+        AddPlayerMoney(player, m_CaptureReward, "Zone Capture");
+        AddPlayerXP(player, m_CaptureXP, "Zone Capture");
+        
+        ExpansionNotification("Capture Reward", "+$" + m_CaptureReward + " | +" + m_CaptureXP + " XP (capturing zone)").Success(ident);
+        
+        Print("[KOTH_PlayerRewardManager] Capture reward given to " + ident.GetName());
     }
     
     void ProcessSuicide(PlayerBase player)

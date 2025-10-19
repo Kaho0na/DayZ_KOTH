@@ -9,6 +9,7 @@ class KOTH_Area : EffectArea
 {
     KOTH_AreaTrigger m_KOTH_Trigger;
     protected int m_UpdateRate = 1000;
+    protected int m_RewardUpdateRate = 1000;
     
     static KOTH_Area s_Instance;
     
@@ -51,6 +52,8 @@ class KOTH_Area : EffectArea
         if (GetGame().IsServer())
         {
             GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(UpdateZone, m_UpdateRate, true);
+            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(UpdateCaptureRewards, m_RewardUpdateRate, true);
+
         }
     }
     
@@ -93,6 +96,14 @@ class KOTH_Area : EffectArea
         if (m_KOTH_Trigger && m_KOTH_Trigger.HasPlayersInside())
         {
             Print("[KOTH_Area] Zone active - players inside: " + m_KOTH_Trigger.GetPlayerCount());
+        }
+    }
+
+    void UpdateCaptureRewards()
+    {
+        if (m_KOTH_Trigger)
+        {
+            m_KOTH_Trigger.ProcessCaptureRewards();
         }
     }
 }
@@ -343,4 +354,39 @@ class KOTH_AreaTrigger : CylinderTrigger
         }
         return count;
     }
+
+    void ProcessCaptureRewards()
+    {
+        if (!GetGame().IsServer())
+            return;
+        
+        KOTH_GameMode gameMode = KOTH_GameMode.GetInstance();
+        
+        if (!gameMode || !gameMode.IsRoundActive())
+            return;
+        
+        string capturingTeam = gameMode.GetCapturingTeam();
+        
+        if (capturingTeam == "" || capturingTeam == "Neutral")
+            return;
+        
+        KOTH_PlayerRewardManager rewardManager;
+        CF_Modules<KOTH_PlayerRewardManager>.Get(rewardManager);
+        
+        if (!rewardManager)
+            return;
+        
+        foreach (PlayerBase player : m_PlayersInside)
+        {
+            if (!player || !player.IsAlive() || !player.GetIdentity())
+                continue;
+            
+            string playerTeam = player.GetKOTHTeam();
+            if (playerTeam != capturingTeam)
+                continue;
+            
+            rewardManager.ProcessCaptureReward(player, true);
+        }
+    }
+
 }
