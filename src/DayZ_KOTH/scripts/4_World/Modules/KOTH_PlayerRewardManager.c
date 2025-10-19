@@ -23,9 +23,11 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     
     private int m_KillReward = 100;
     private int m_HeadshotReward = 200;
+    private int m_AssistReward = 50;
     private int m_TeamKillPenalty = 100;
     private int m_KillXP = 100;
     private int m_HeadshotXP = 200;
+    private int m_AssistXP = 50;
     
     static int KOTH_LEVEL_XP_REQUIREMENTS[100] = {
         0, 1000, 2100, 3200, 4400, 5700, 7000, 8400, 9900, 11500,
@@ -232,6 +234,38 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         atmData.Save();
         
         Print("[KOTH_PlayerRewardManager] Removed $" + moneyAmount + " from " + ident.GetName() + " (" + reason + ") - ATM: $" + atmData.GetMoney());
+    }
+    
+    void ProcessAssist(PlayerBase attacker, PlayerBase victim)
+    {
+        if (!GetGame().IsServer() || !attacker || !victim)
+            return;
+        
+        PlayerIdentity attackerIdent = attacker.GetIdentity();
+        if (!attackerIdent)
+        {
+            Print("[KOTH_PlayerRewardManager] Attacker has no identity - skipping assist reward");
+            return;
+        }
+        
+        string attackerUID = attackerIdent.GetId();
+        
+        AddPlayerMoney(attacker, m_AssistReward, "Enemy Assist");
+        AddPlayerXP(attacker, m_AssistXP, "Enemy Assist");
+        
+        string victimName = "enemy";
+        if (victim.GetIdentity())
+        {
+            victimName = victim.GetIdentity().GetName();
+        }
+        else
+        {
+            victimName = victim.GetType();
+        }
+        
+        ExpansionNotification("Assist Reward", "+$" + m_AssistReward + " | +" + m_AssistXP + " XP (knocked down " + victimName + ")").Success(attackerIdent);
+        
+        Print("[KOTH_PlayerRewardManager] Assist reward given to " + attackerIdent.GetName() + " for knocking down " + victimName);
     }
     
     void ProcessKill(PlayerBase killer, PlayerBase victim)
@@ -475,6 +509,18 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         return KOTH_LEVEL_XP_REQUIREMENTS[level];
     }
     
+    void SetAssistReward(int amount)
+    {
+        m_AssistReward = amount;
+        Print("[KOTH_PlayerRewardManager] Assist reward set to $" + amount);
+    }
+    
+    void SetAssistXP(int amount)
+    {
+        m_AssistXP = amount;
+        Print("[KOTH_PlayerRewardManager] Assist XP set to " + amount);
+    }
+    
     void SetKillReward(int amount)
     {
         m_KillReward = amount;
@@ -503,6 +549,16 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     {
         m_HeadshotXP = amount;
         Print("[KOTH_PlayerRewardManager] Headshot XP set to " + amount);
+    }
+    
+    int GetAssistReward()
+    {
+        return m_AssistReward;
+    }
+    
+    int GetAssistXP()
+    {
+        return m_AssistXP;
     }
     
     int GetKillReward()
