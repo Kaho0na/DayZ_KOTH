@@ -1,8 +1,8 @@
 /**
- * KOTH_PlayerRewardManager.c (WITH XP TABLE)
+ * KOTH_PlayerRewardManager.c (HEADSHOT + STATS TRACKING)
  *
  * King of the Hill by Kahoona
- * Centralized player reward and progression management with hardcoded XP table
+ * Added headshot detection, distance tracking, and killstreak system
  *
  * Place in: 4_World/Modules/KOTH_PlayerRewardManager.c
  */
@@ -18,11 +18,14 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     static ref ScriptInvoker SI_OnPlayerLevelUp = new ScriptInvoker();
     
     private ref map<string, ref KOTH_Players> m_PlayerDataCache;
+    private ref map<string, int> m_PlayerKillstreaks;
     private ref ExpansionMarketModule m_MarketModule;
     
     private int m_KillReward = 100;
+    private int m_HeadshotReward = 200;
     private int m_TeamKillPenalty = 100;
     private int m_KillXP = 100;
+    private int m_HeadshotXP = 200;
     
     static int KOTH_LEVEL_XP_REQUIREMENTS[100] = {
         0, 1000, 2100, 3200, 4400, 5700, 7000, 8400, 9900, 11500,
@@ -41,6 +44,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     {
         s_Instance = this;
         m_PlayerDataCache = new map<string, ref KOTH_Players>();
+        m_PlayerKillstreaks = new map<string, int>();
         
         if (!SI_OnPlayerStatsChanged)
             SI_OnPlayerStatsChanged = new ScriptInvoker();
@@ -65,7 +69,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
             GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(InitializeMarketModule, 2000, false);
         }
         
-        Print("[KOTH_PlayerRewardManager] Initialized with ScriptInvokers and combat rewards");
+        Print("[KOTH_PlayerRewardManager] Initialized with headshot detection and stat tracking");
     }
     
     void InitializeMarketModule()
@@ -270,21 +274,110 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         {
             RemovePlayerMoney(killer, m_TeamKillPenalty, "Team Kill Penalty");
             ExpansionNotification("Team Kill Penalty", "-$" + m_TeamKillPenalty + " removed from your account").Error(killerIdent);
+            ResetKillstreak(killerUID);
         }
         else
         {
-            AddPlayerMoney(killer, m_KillReward, "Enemy Kill");
-            AddPlayerXP(killer, m_KillXP, "Enemy Kill");
+            float distance = vector.Distance(killer.GetPosition(), victim.GetPosition());
+            int distanceInt = distance;
             
-            KOTH_Players playerData = GetPlayerData(killerUID);
-            if (playerData)
+            bool wasHeadshot = CheckIfHeadshot(victim);
+            
+            int moneyReward = m_KillReward;
+            int xpReward = m_KillXP;
+            string rewardType = "Enemy Kill";
+            
+            KOTH_Players data = GetPlayerData(killerUID);
+            if (!data)
+                return;
+            
+            data.TotalEnemiesKilled = data.TotalEnemiesKilled + 1;
+            
+            if (distanceInt > data.LongestKill)
             {
-                playerData.TotalEnemiesKilled = playerData.TotalEnemiesKilled + 1;
-                SavePlayerData(killerUID);
+                data.LongestKill = distanceInt;
+                Print("[KOTH_PlayerRewardManager] New longest kill record: " + distanceInt + "m for " + killerIdent.GetName());
             }
             
-            ExpansionNotification("Kill Reward", "+$" + m_KillReward + " | +" + m_KillXP + " XP").Success(killerIdent);
+            if (wasHeadshot)
+            {
+                moneyReward = m_HeadshotReward;
+                xpReward = m_HeadshotXP;
+                rewardType = "Headshot Kill";
+                
+                if (distanceInt > data.LongestHeadshot)
+                {
+                    data.LongestHeadshot = distanceInt;
+                    Print("[KOTH_PlayerRewardManager] New longest headshot record: " + distanceInt + "m for " + killerIdent.GetName());
+                }
+                
+                Print("[KOTH_PlayerRewardManager] HEADSHOT KILL detected for " + killerIdent.GetName() + " at " + distanceInt + "m");
+            }
+            
+            IncrementKillstreak(killerUID, data);
+            
+            SavePlayerData(killerUID);
+            
+            AddPlayerMoney(killer, moneyReward, rewardType);
+            AddPlayerXP(killer, xpReward, rewardType);
+            
+            if (wasHeadshot)
+            {
+                ExpansionNotification("HEADSHOT BONUS!", "+$" + moneyReward + " | +" + xpReward + " XP | " + distanceInt + "m").Success(killerIdent);
+            }
+            else
+            {
+                ExpansionNotification("Kill Reward", "+$" + moneyReward + " | +" + xpReward + " XP | " + distanceInt + "m").Success(killerIdent);
+            }
         }
+    }
+    
+    void IncrementKillstreak(string uid, KOTH_Players data)
+    {
+        int currentStreak = 0;
+        
+        if (m_PlayerKillstreaks.Contains(uid))
+        {
+            currentStreak = m_PlayerKillstreaks.Get(uid);
+        }
+        
+        currentStreak++;
+        m_PlayerKillstreaks.Set(uid, currentStreak);
+        
+        if (currentStreak > data.HighestKillstreak)
+        {
+            data.HighestKillstreak = currentStreak;
+            Print("[KOTH_PlayerRewardManager] New killstreak record: " + currentStreak + " for UID " + uid);
+        }
+        
+        Print("[KOTH_PlayerRewardManager] Current killstreak: " + currentStreak + " for UID " + uid);
+    }
+    
+    void ResetKillstreak(string uid)
+    {
+        if (m_PlayerKillstreaks.Contains(uid))
+        {
+            int streak = m_PlayerKillstreaks.Get(uid);
+            Print("[KOTH_PlayerRewardManager] Killstreak reset for UID " + uid + " (was " + streak + ")");
+            m_PlayerKillstreaks.Set(uid, 0);
+        }
+    }
+    
+    int GetCurrentKillstreak(string uid)
+    {
+        if (m_PlayerKillstreaks.Contains(uid))
+        {
+            return m_PlayerKillstreaks.Get(uid);
+        }
+        return 0;
+    }
+    
+    bool CheckIfHeadshot(PlayerBase victim)
+    {
+        if (!victim)
+            return false;
+        
+        return victim.WasHeadshotKill();
     }
     
     string GetExpansionAIFaction(PlayerBase ai)
@@ -356,9 +449,6 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     
     int CalculateLevel(int totalXP)
     {
-        // Original formula (kept for reference): 500.0 * Math.Pow(level, 1.35)
-        // Now using hardcoded table for performance and consistency
-        
         int level = 1;
         for (int i = 1; i < 100; i++)
         {
@@ -377,9 +467,6 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     
     int CalculateXPForLevel(int level)
     {
-        // Original formula (kept for reference): 500.0 * Math.Pow(level, 1.35), rounded to nearest 100
-        // Now using hardcoded table for performance and consistency
-        
         if (level < 0)
             level = 0;
         if (level > 99)
@@ -394,6 +481,12 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         Print("[KOTH_PlayerRewardManager] Kill reward set to $" + amount);
     }
     
+    void SetHeadshotReward(int amount)
+    {
+        m_HeadshotReward = amount;
+        Print("[KOTH_PlayerRewardManager] Headshot reward set to $" + amount);
+    }
+    
     void SetTeamKillPenalty(int amount)
     {
         m_TeamKillPenalty = amount;
@@ -406,9 +499,20 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         Print("[KOTH_PlayerRewardManager] Kill XP set to " + amount);
     }
     
+    void SetHeadshotXP(int amount)
+    {
+        m_HeadshotXP = amount;
+        Print("[KOTH_PlayerRewardManager] Headshot XP set to " + amount);
+    }
+    
     int GetKillReward()
     {
         return m_KillReward;
+    }
+    
+    int GetHeadshotReward()
+    {
+        return m_HeadshotReward;
     }
     
     int GetTeamKillPenalty()
@@ -419,6 +523,11 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     int GetKillXP()
     {
         return m_KillXP;
+    }
+    
+    int GetHeadshotXP()
+    {
+        return m_HeadshotXP;
     }
     
     static ScriptInvoker GetPlayerStatsChangedSI()

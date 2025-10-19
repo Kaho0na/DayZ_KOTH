@@ -1,8 +1,8 @@
 /**
- * KOTH_PlayerBase.c
+ * KOTH_PlayerBase.c (HEADSHOT TRACKING)
  *
  * King of the Hill by Kahoona
- * Unified PlayerBase modifications for KOTH system
+ * Track headshot kills by monitoring hit zones before death
  *
  * Place in: 4_World/Entities/KOTH_PlayerBase.c
  */
@@ -11,6 +11,7 @@ modded class PlayerBase
 {
     private EntityAI m_KOTHArmband;
     private string m_KOTHTeam = "";
+    private bool m_KOTHHeadshotKill = false;
     
     void SetKOTHArmband(EntityAI armband)
     {
@@ -32,17 +33,29 @@ modded class PlayerBase
         return m_KOTHTeam;
     }
     
-    override bool CanDropEntity(notnull EntityAI item)
+    bool WasHeadshotKill()
     {
-        if (item && (item.IsKindOf("Armband_Red") || item.IsKindOf("Armband_Blue")))
+        return m_KOTHHeadshotKill;
+    }
+    
+    override void EEHitBy(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
+    {
+        super.EEHitBy(damageResult, damageType, source, component, dmgZone, ammo, modelPos, speedCoef);
+        
+        if (!GetGame().IsServer())
+            return;
+        
+        if (dmgZone == "Head" || dmgZone == "Brain")
         {
-            if (m_KOTHTeam == "East" || m_KOTHTeam == "West")
+            float headHealth = GetHealth("", "Head");
+            float brainHealth = GetHealth("", "Brain");
+            
+            if (headHealth <= 0 || brainHealth <= 0)
             {
-                return false;
+                m_KOTHHeadshotKill = true;
+                Print("[KOTH_PlayerBase] Headshot detected on " + GetType() + " - Hit zone: " + dmgZone);
             }
         }
-        
-        return super.CanDropEntity(item);
     }
     
     override void EEKilled(Object killer)
@@ -76,5 +89,20 @@ modded class PlayerBase
         }
         
         rewardManager.ProcessKill(killerPlayer, this);
+        
+        m_KOTHHeadshotKill = false;
+    }
+    
+    override bool CanDropEntity(notnull EntityAI item)
+    {
+        if (item && (item.IsKindOf("Armband_Red") || item.IsKindOf("Armband_Blue")))
+        {
+            if (m_KOTHTeam == "East" || m_KOTHTeam == "West")
+            {
+                return false;
+            }
+        }
+        
+        return super.CanDropEntity(item);
     }
 }
