@@ -1,8 +1,8 @@
 /**
- * KOTH_PlayerBase.c (ASSIST + HEADSHOT TRACKING)
+ * KOTH_PlayerBase.c (ASSIST + REVIVE + HEADSHOT TRACKING)
  *
  * King of the Hill by Kahoona
- * Track headshot kills and assists (knockdowns)
+ * Track headshot kills, assists (knockdowns), and revives
  *
  * Place in: 4_World/Entities/KOTH_PlayerBase.c
  */
@@ -13,6 +13,7 @@ modded class PlayerBase
     private string m_KOTHTeam = "";
     private bool m_KOTHHeadshotKill = false;
     private PlayerBase m_KOTHLastAttacker;
+    private PlayerBase m_KOTHReviver;
     
     void SetKOTHArmband(EntityAI armband)
     {
@@ -42,6 +43,16 @@ modded class PlayerBase
     PlayerBase GetLastAttacker()
     {
         return m_KOTHLastAttacker;
+    }
+    
+    void SetReviver(PlayerBase reviver)
+    {
+        m_KOTHReviver = reviver;
+    }
+    
+    PlayerBase GetReviver()
+    {
+        return m_KOTHReviver;
     }
     
     override void EEHitBy(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
@@ -124,6 +135,50 @@ modded class PlayerBase
         m_KOTHLastAttacker = null;
     }
     
+    override void OnUnconsciousStop(int pCurrentCommandID)
+    {
+        super.OnUnconsciousStop(pCurrentCommandID);
+        
+        if (!GetGame().IsServer())
+            return;
+        
+        if (!m_KOTHReviver)
+            return;
+        
+        string revivedTeam;
+        if (GetIdentity())
+        {
+            revivedTeam = GetKOTHTeam();
+        }
+        else
+        {
+            KOTH_PlayerRewardManager rewardMgr;
+            CF_Modules<KOTH_PlayerRewardManager>.Get(rewardMgr);
+            if (rewardMgr)
+            {
+                revivedTeam = rewardMgr.GetExpansionAIFaction(this);
+            }
+        }
+        
+        string reviverTeam = m_KOTHReviver.GetKOTHTeam();
+        
+        if (revivedTeam == "" || reviverTeam == "" || revivedTeam == "Unknown")
+            return;
+        
+        if (revivedTeam != reviverTeam)
+            return;
+        
+        KOTH_PlayerRewardManager rewardManager;
+        CF_Modules<KOTH_PlayerRewardManager>.Get(rewardManager);
+        
+        if (rewardManager)
+        {
+            rewardManager.ProcessRevive(m_KOTHReviver, this);
+        }
+        
+        m_KOTHReviver = null;
+    }
+    
     override void EEKilled(Object killer)
     {
         super.EEKilled(killer);
@@ -158,6 +213,7 @@ modded class PlayerBase
         
         m_KOTHHeadshotKill = false;
         m_KOTHLastAttacker = null;
+        m_KOTHReviver = null;
     }
     
     override bool CanDropEntity(notnull EntityAI item)

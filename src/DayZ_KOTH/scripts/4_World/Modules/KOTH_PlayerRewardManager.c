@@ -24,10 +24,12 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     private int m_KillReward = 100;
     private int m_HeadshotReward = 200;
     private int m_AssistReward = 50;
+    private int m_ReviveReward = 50;
     private int m_TeamKillPenalty = 100;
     private int m_KillXP = 100;
     private int m_HeadshotXP = 200;
     private int m_AssistXP = 50;
+    private int m_ReviveXP = 50;
     
     static int KOTH_LEVEL_XP_REQUIREMENTS[100] = {
         0, 1000, 2100, 3200, 4400, 5700, 7000, 8400, 9900, 11500,
@@ -230,10 +232,52 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
             return;
         }
         
+        int currentBalance = atmData.GetMoney();
+        
+        if (currentBalance < moneyAmount)
+        {
+            Print("[KOTH_PlayerRewardManager] Insufficient funds for penalty - Current: $" + currentBalance + ", Penalty: $" + moneyAmount + " - No deduction");
+            ExpansionNotification("Team Kill Penalty", "Insufficient funds for penalty (Balance: $" + currentBalance + ")").Error(ident);
+            return;
+        }
+        
         atmData.RemoveMoney(moneyAmount);
         atmData.Save();
         
+        KOTH_Players data = GetPlayerData(uid);
+        if (data)
+        {
+            SyncPlayerStatsToClient(ident, data);
+        }
+        
         Print("[KOTH_PlayerRewardManager] Removed $" + moneyAmount + " from " + ident.GetName() + " (" + reason + ") - ATM: $" + atmData.GetMoney());
+    }
+    
+    void ProcessRevive(PlayerBase medic, PlayerBase patient)
+    {
+        if (!GetGame().IsServer() || !medic || !patient)
+            return;
+        
+        PlayerIdentity medicIdent = medic.GetIdentity();
+        if (!medicIdent)
+        {
+            Print("[KOTH_PlayerRewardManager] Medic has no identity - skipping revive reward");
+            return;
+        }
+        
+        string medicUID = medicIdent.GetId();
+        
+        AddPlayerXP(medic, m_ReviveXP, "Teammate Revive");
+        
+        string patientName = "teammate";
+        if (patient.GetIdentity())
+        {
+            patientName = patient.GetIdentity().GetName();
+        }
+        
+        ExpansionNotification("Revive Reward", "+" + m_ReviveXP + " XP (revived " + patientName + ")").Success(medicIdent);
+        
+        Print("[KOTH_PlayerRewardManager] Revive reward given to " + medicIdent.GetName() + " for reviving " + patientName);
     }
     
     void ProcessAssist(PlayerBase attacker, PlayerBase victim)
@@ -509,6 +553,18 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         return KOTH_LEVEL_XP_REQUIREMENTS[level];
     }
     
+    void SetReviveReward(int amount)
+    {
+        m_ReviveReward = amount;
+        Print("[KOTH_PlayerRewardManager] Revive reward set to $" + amount);
+    }
+    
+    void SetReviveXP(int amount)
+    {
+        m_ReviveXP = amount;
+        Print("[KOTH_PlayerRewardManager] Revive XP set to " + amount);
+    }
+    
     void SetAssistReward(int amount)
     {
         m_AssistReward = amount;
@@ -549,6 +605,16 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     {
         m_HeadshotXP = amount;
         Print("[KOTH_PlayerRewardManager] Headshot XP set to " + amount);
+    }
+    
+    int GetReviveReward()
+    {
+        return m_ReviveReward;
+    }
+    
+    int GetReviveXP()
+    {
+        return m_ReviveXP;
     }
     
     int GetAssistReward()
