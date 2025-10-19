@@ -1,8 +1,8 @@
 /**
- * KOTH_PlayerRewardManager.c (SIMPLIFIED COMBAT REWARDS)
+ * KOTH_PlayerRewardManager.c (WITH XP TABLE)
  *
  * King of the Hill by Kahoona
- * Centralized player reward and progression management with unified combat system
+ * Centralized player reward and progression management with hardcoded XP table
  *
  * Place in: 4_World/Modules/KOTH_PlayerRewardManager.c
  */
@@ -23,6 +23,19 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     private int m_KillReward = 100;
     private int m_TeamKillPenalty = 100;
     private int m_KillXP = 100;
+    
+    static int KOTH_LEVEL_XP_REQUIREMENTS[100] = {
+        0, 1000, 2100, 3200, 4400, 5700, 7000, 8400, 9900, 11500,
+        13200, 15000, 16900, 18900, 21000, 23300, 25700, 28200, 30900, 33800,
+        36800, 40000, 43400, 47000, 50800, 54800, 59100, 63600, 68400, 73500,
+        78900, 84600, 90700, 97200, 104000, 111300, 119000, 127100, 135700, 144900,
+        154600, 164900, 175800, 187400, 199700, 212700, 226500, 241100, 256600, 273000,
+        290400, 308800, 328300, 349000, 370900, 394200, 418900, 445000, 472700, 502100,
+        533200, 566200, 601200, 638300, 677600, 719200, 763300, 810100, 859700, 912300,
+        968000, 1027100, 1089700, 1156100, 1226500, 1301100, 1380200, 1464000, 1552800, 1647000,
+        1746800, 1852600, 1964700, 2083600, 2209600, 2343200, 2484800, 2634900, 2794000, 2962600,
+        3141300, 3330800, 3531600, 3744500, 3970200, 4209400, 4462900, 4731700, 5016600, 5318600
+    };
     
     void KOTH_PlayerRewardManager()
     {
@@ -301,13 +314,23 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         if (!GetGame().IsServer() || !ident || !data)
             return;
         
+        int atmMoney = 0;
+        if (m_MarketModule)
+        {
+            ref ExpansionMarketATM_Data atmData = m_MarketModule.GetPlayerATMData(ident.GetId());
+            if (atmData)
+            {
+                atmMoney = atmData.GetMoney();
+            }
+        }
+        
         auto rpc = Expansion_CreateRPC("RPC_UpdatePlayerStats");
         rpc.Write(data.TotalExperienceEarned);
-        rpc.Write(data.TotalMoneyinBank);
+        rpc.Write(atmMoney);
         rpc.Write(data.CurrentLevel);
         rpc.Expansion_Send(true, ident);
         
-        Print("[KOTH_PlayerRewardManager] Synced stats to client: XP=" + data.TotalExperienceEarned + ", Money=" + data.TotalMoneyinBank + ", Level=" + data.CurrentLevel);
+        Print("[KOTH_PlayerRewardManager] Synced stats to client: XP=" + data.TotalExperienceEarned + ", ATM Money=" + atmMoney + ", Level=" + data.CurrentLevel);
     }
     
     void RPC_UpdatePlayerStats(PlayerIdentity sender, Object target, ParamsReadContext ctx)
@@ -333,28 +356,36 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     
     int CalculateLevel(int totalXP)
     {
-        float baseMult = 1000.0;
-        float exponent = 1.5;
+        // Original formula (kept for reference): 500.0 * Math.Pow(level, 1.35)
+        // Now using hardcoded table for performance and consistency
         
         int level = 1;
-        while (level < 100)
+        for (int i = 1; i < 100; i++)
         {
-            float xpNeeded = baseMult * Math.Pow(level + 1, exponent);
-            if (totalXP < xpNeeded)
+            if (totalXP < KOTH_LEVEL_XP_REQUIREMENTS[i])
+            {
+                level = i;
                 break;
-            level++;
+            }
         }
+        
+        if (totalXP >= KOTH_LEVEL_XP_REQUIREMENTS[99])
+            level = 99;
         
         return level;
     }
     
     int CalculateXPForLevel(int level)
     {
-        float baseMult = 1000.0;
-        float exponent = 1.5;
+        // Original formula (kept for reference): 500.0 * Math.Pow(level, 1.35), rounded to nearest 100
+        // Now using hardcoded table for performance and consistency
         
-        float xpNeeded = baseMult * Math.Pow(level, exponent);
-        return xpNeeded;
+        if (level < 0)
+            level = 0;
+        if (level > 99)
+            level = 99;
+        
+        return KOTH_LEVEL_XP_REQUIREMENTS[level];
     }
     
     void SetKillReward(int amount)

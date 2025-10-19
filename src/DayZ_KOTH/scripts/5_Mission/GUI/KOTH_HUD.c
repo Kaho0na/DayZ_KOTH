@@ -1,7 +1,7 @@
 /**
- * KOTH_HUD.c (PHASE 4 - DEBUG LOGGING)
+ * KOTH_HUD.c (FIXED XP CALCULATION)
  *
- * Added extensive logging to trace event flow
+ * Fixed XP progress calculation to use correct level thresholds
  * Place in: 5_Mission/GUI/KOTH_HUD.c
  */
 
@@ -262,21 +262,11 @@ class KOTH_HUD: ExpansionScriptView
     
     void OnPlayerStatsChanged(int xp, int money, int level)
     {
-        int maxXP = CalculateXPForLevel(level + 1);
-        int currentLevelXP = CalculateXPForLevel(level);
+        int nextLevelXP = CalculateXPForLevel(level);
+        int currentLevelXP = CalculateXPForLevel(level - 1);
         
-        int xpProgress;
-        int xpNeeded;
-        if (level == 1)
-        {
-            xpProgress = xp;
-            xpNeeded = maxXP;
-        }
-        else
-        {
-            xpProgress = xp - currentLevelXP;
-            xpNeeded = maxXP - currentLevelXP;
-        }
+        int xpProgress = xp - currentLevelXP;
+        int xpNeeded = nextLevelXP - currentLevelXP;
         
         if (m_CachedLevel != level)
         {
@@ -343,12 +333,15 @@ class KOTH_HUD: ExpansionScriptView
     
     int CalculateXPForLevel(int level)
     {
-        float baseMult = 1000.0;
-        float levelFloat = level;
-        float exponent = 1.5;
+        KOTH_PlayerRewardManager rewardManager;
+        CF_Modules<KOTH_PlayerRewardManager>.Get(rewardManager);
         
-        float xpNeeded = baseMult * Math.Pow(levelFloat, exponent);
-        return xpNeeded;
+        if (rewardManager)
+        {
+            return rewardManager.CalculateXPForLevel(level);
+        }
+        
+        return 1000;
     }
     
     string FormatNumber(int number)
