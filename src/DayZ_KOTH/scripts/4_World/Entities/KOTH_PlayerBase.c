@@ -212,9 +212,6 @@ modded class PlayerBase
             }
         }
         
-        if (!killerPlayer)
-            return;
-        
         KOTH_PlayerRewardManager rewardManager;
         CF_Modules<KOTH_PlayerRewardManager>.Get(rewardManager);
         
@@ -224,7 +221,14 @@ modded class PlayerBase
             return;
         }
         
-        rewardManager.ProcessKill(killerPlayer, this);
+        if (killerPlayer == this)
+        {
+            rewardManager.ProcessSuicide(this);
+        }
+        else if (killerPlayer)
+        {
+            rewardManager.ProcessKill(killerPlayer, this);
+        }
         
         m_KOTHHeadshotKill = false;
         m_KOTHLastAttacker = null;

@@ -1,8 +1,8 @@
 /**
- * KOTH_Settings.c (SIMPLIFIED PRIORITY SETTINGS)
+ * KOTH_Settings.c (COMPLETE CONFIGURATION)
  *
  * King of the Hill by Kahoona
- * Removed clockwise and angle increment settings
+ * Configurable XP and money rewards with global multipliers
  * Place in: 3_Game/Settings/KOTH_Settings.c
  */
 
@@ -11,21 +11,22 @@ class KOTH_SettingsBase: ExpansionSettingBase
     string ModeName = "King of the Hill";
 
     int ScoreLimit = 100;
-    int CaptureTickSeconds = 1;
+    int CaptureTickSeconds = 5;
     int MinPlayersToInfluence = 1;
-    float PointsPerTickPerPlayer = 0.25;
+    int PointsPerTickPerPlayer = 1;
     float NeutralizeSpeedMultiplier = 1.0;
 
     bool EnablePriorityZoneMovement = true;
-    float PriorityZoneMovementInterval = 30.0;
+    float PriorityZoneMovementInterval = 120.0;
     float PriorityZoneBonusMultiplier = 2.0;
 
     int XPPerKill = 100;
     int XPPerRevive = 50;
     int XPPerAssist = 25;
     int XPPerCapture = 250;
-    int FriendlyFirePenaltyXP = -150;
-    int SuicidePenaltyXP = -100;
+    int XPCaptureInterval = 10;
+    int FriendlyFirePenaltyXP = 150;
+    int SuicidePenaltyXP = 100;
     int HeadShotBonusXP = 50;
 
     bool KillStreakBonusXPEnabled = true;
@@ -38,8 +39,8 @@ class KOTH_SettingsBase: ExpansionSettingBase
     int MoneyPerRevive = 50;
     int MoneyPerAssist = 25;
     int MoneyPerCapture = 300;
-    int TeamKillMoneyPenalty = -200;
-    int SuicideMoneyPenalty = -100;
+    int TeamKillMoneyPenalty = 200;
+    int SuicideMoneyPenalty = 100;
     int HeadShotMoneyBonus = 50;
 
     bool KillStreakMoneyBonusEnabled = true;
@@ -84,6 +85,7 @@ class KOTH_Settings: KOTH_SettingsBase
         if (!ctx.Read(s.XPPerRevive)) return false;
         if (!ctx.Read(s.XPPerAssist)) return false;
         if (!ctx.Read(s.XPPerCapture)) return false;
+        if (!ctx.Read(s.XPCaptureInterval)) return false;
         if (!ctx.Read(s.FriendlyFirePenaltyXP)) return false;
         if (!ctx.Read(s.SuicidePenaltyXP)) return false;
         if (!ctx.Read(s.HeadShotBonusXP)) return false;
@@ -134,6 +136,7 @@ class KOTH_Settings: KOTH_SettingsBase
         ctx.Write(XPPerRevive);
         ctx.Write(XPPerAssist);
         ctx.Write(XPPerCapture);
+        ctx.Write(XPCaptureInterval);
         ctx.Write(FriendlyFirePenaltyXP);
         ctx.Write(SuicidePenaltyXP);
         ctx.Write(HeadShotBonusXP);
@@ -206,6 +209,7 @@ class KOTH_Settings: KOTH_SettingsBase
         XPPerRevive = s.XPPerRevive;
         XPPerAssist = s.XPPerAssist;
         XPPerCapture = s.XPPerCapture;
+        XPCaptureInterval = s.XPCaptureInterval;
         FriendlyFirePenaltyXP = s.FriendlyFirePenaltyXP;
         SuicidePenaltyXP = s.SuicidePenaltyXP;
         HeadShotBonusXP = s.HeadShotBonusXP;
@@ -297,21 +301,22 @@ class KOTH_Settings: KOTH_SettingsBase
         
         ModeName = "King of the Hill";
         ScoreLimit = 100;
-        CaptureTickSeconds = 1;
+        CaptureTickSeconds = 5;
         MinPlayersToInfluence = 1;
-        PointsPerTickPerPlayer = 0.25;
+        PointsPerTickPerPlayer = 1;
         NeutralizeSpeedMultiplier = 1.0;
         
         EnablePriorityZoneMovement = true;
-        PriorityZoneMovementInterval = 30.0;
+        PriorityZoneMovementInterval = 120.0;
         PriorityZoneBonusMultiplier = 2.0;
         
         XPPerKill = 100;
         XPPerRevive = 50;
         XPPerAssist = 25;
         XPPerCapture = 250;
-        FriendlyFirePenaltyXP = -150;
-        SuicidePenaltyXP = -100;
+        XPCaptureInterval = 10;
+        FriendlyFirePenaltyXP = 150;
+        SuicidePenaltyXP = 100;
         HeadShotBonusXP = 50;
         KillStreakBonusXPEnabled = true;
         KillStreakThresholds = { 5, 10, 15 };
@@ -321,8 +326,8 @@ class KOTH_Settings: KOTH_SettingsBase
         MoneyPerRevive = 50;
         MoneyPerAssist = 25;
         MoneyPerCapture = 300;
-        TeamKillMoneyPenalty = -200;
-        SuicideMoneyPenalty = -100;
+        TeamKillMoneyPenalty = 200;
+        SuicideMoneyPenalty = 100;
         HeadShotMoneyBonus = 50;
         KillStreakMoneyBonusEnabled = true;
         KillStreakMoneyThresholds = { 5, 10, 15 };

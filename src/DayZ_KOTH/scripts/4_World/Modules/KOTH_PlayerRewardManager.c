@@ -27,10 +27,13 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     private int m_ReviveReward = 50;
     private int m_TeamKillPenalty = 100;
     private int m_TeamKnockdownPenalty = 50;
+    private int m_SuicidePenalty = 100;
     private int m_KillXP = 100;
     private int m_HeadshotXP = 200;
     private int m_AssistXP = 50;
     private int m_ReviveXP = 50;
+    private float m_GlobalXPMultiplier = 1.0;
+    private float m_GlobalMoneyMultiplier = 1.0;
     
     static int KOTH_LEVEL_XP_REQUIREMENTS[100] = {
         0, 1000, 2100, 3200, 4400, 5700, 7000, 8400, 9900, 11500,
@@ -85,7 +88,42 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
             return;
         }
         
+        LoadSettingsValues();
+        
         Print("[KOTH_PlayerRewardManager] Expansion Market Module connected");
+    }
+    
+    void LoadSettingsValues()
+    {
+        KOTH_Settings settings = GetExpansionSettings().GetDayZ_KOTH();
+        if (!settings)
+        {
+            Print("[KOTH_PlayerRewardManager] WARNING: Could not load settings, using defaults");
+            return;
+        }
+        
+        m_KillXP = settings.XPPerKill;
+        m_KillReward = settings.MoneyPerKill;
+        m_ReviveXP = settings.XPPerRevive;
+        m_ReviveReward = settings.MoneyPerRevive;
+        m_AssistXP = settings.XPPerAssist;
+        m_AssistReward = settings.MoneyPerAssist;
+        m_HeadshotXP = settings.HeadShotBonusXP;
+        m_HeadshotReward = settings.HeadShotMoneyBonus;
+        m_TeamKillPenalty = settings.TeamKillMoneyPenalty;
+        m_SuicidePenalty = settings.SuicideMoneyPenalty;
+        m_GlobalXPMultiplier = settings.GlobalXPMultiplier;
+        m_GlobalMoneyMultiplier = settings.GlobalMoneyMultiplier;
+        
+        Print("[KOTH_PlayerRewardManager] Loaded settings:");
+        Print("  - Kill: " + m_KillXP + " XP, $" + m_KillReward);
+        Print("  - Headshot: " + m_HeadshotXP + " XP, $" + m_HeadshotReward);
+        Print("  - Assist: " + m_AssistXP + " XP, $" + m_AssistReward);
+        Print("  - Revive: " + m_ReviveXP + " XP, $" + m_ReviveReward);
+        Print("  - Team Kill Penalty: $" + m_TeamKillPenalty);
+        Print("  - Suicide Penalty: $" + m_SuicidePenalty);
+        Print("  - Global XP Multiplier: " + m_GlobalXPMultiplier + "x");
+        Print("  - Global Money Multiplier: " + m_GlobalMoneyMultiplier + "x");
     }
     
     static KOTH_PlayerRewardManager GetInstance()
@@ -146,10 +184,12 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         if (!data)
             return;
         
+        int finalXP = xpAmount * m_GlobalXPMultiplier;
+        
         int oldXP = data.TotalExperienceEarned;
         int oldLevel = data.CurrentLevel;
         
-        data.TotalExperienceEarned += xpAmount;
+        data.TotalExperienceEarned += finalXP;
         
         int newLevel = CalculateLevel(data.TotalExperienceEarned);
         bool leveledUp = false;
@@ -163,9 +203,9 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         
         SavePlayerData(uid);
         
-        Print("[KOTH_PlayerRewardManager] Added " + xpAmount + " XP to " + player.GetIdentity().GetName() + " (" + reason + ") - Total: " + data.TotalExperienceEarned);
+        Print("[KOTH_PlayerRewardManager] Added " + finalXP + " XP to " + player.GetIdentity().GetName() + " (" + reason + ") - Total: " + data.TotalExperienceEarned);
         
-        SI_OnPlayerXPGained.Invoke(uid, xpAmount, reason);
+        SI_OnPlayerXPGained.Invoke(uid, finalXP, reason);
         
         if (leveledUp)
         {
@@ -200,14 +240,16 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         if (!data)
             return;
         
-        atmData.AddMoney(moneyAmount);
+        int finalMoney = moneyAmount * m_GlobalMoneyMultiplier;
+        
+        atmData.AddMoney(finalMoney);
         atmData.Save();
-        data.TotalMoneyinBank += moneyAmount;
+        data.TotalMoneyinBank += finalMoney;
         SavePlayerData(uid);
         
-        Print("[KOTH_PlayerRewardManager] Added $" + moneyAmount + " to " + ident.GetName() + " (" + reason + ") - ATM: $" + atmData.GetMoney() + " | Total: $" + data.TotalMoneyinBank);
+        Print("[KOTH_PlayerRewardManager] Added $" + finalMoney + " to " + ident.GetName() + " (" + reason + ") - ATM: $" + atmData.GetMoney() + " | Total: $" + data.TotalMoneyinBank);
         
-        SI_OnPlayerMoneyGained.Invoke(uid, moneyAmount, reason);
+        SI_OnPlayerMoneyGained.Invoke(uid, finalMoney, reason);
         
         SyncPlayerStatsToClient(ident, data);
     }
@@ -252,6 +294,29 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         }
         
         Print("[KOTH_PlayerRewardManager] Removed $" + moneyAmount + " from " + ident.GetName() + " (" + reason + ") - ATM: $" + atmData.GetMoney());
+    }
+    
+    void ProcessSuicide(PlayerBase player)
+    {
+        if (!GetGame().IsServer() || !player)
+            return;
+        
+        PlayerIdentity ident = player.GetIdentity();
+        if (!ident)
+        {
+            Print("[KOTH_PlayerRewardManager] Player has no identity - skipping suicide penalty");
+            return;
+        }
+        
+        string uid = ident.GetId();
+        
+        RemovePlayerMoney(player, m_SuicidePenalty, "Suicide Penalty");
+        
+        ExpansionNotification("Suicide Penalty", "-$" + m_SuicidePenalty).Error(ident);
+        
+        ResetKillstreak(uid);
+        
+        Print("[KOTH_PlayerRewardManager] Suicide penalty applied to " + ident.GetName());
     }
     
     void ProcessRevive(PlayerBase medic, PlayerBase patient)
