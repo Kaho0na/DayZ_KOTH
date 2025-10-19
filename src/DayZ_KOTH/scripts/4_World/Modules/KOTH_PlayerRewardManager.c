@@ -26,6 +26,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     private int m_AssistReward = 50;
     private int m_ReviveReward = 50;
     private int m_TeamKillPenalty = 100;
+    private int m_TeamKnockdownPenalty = 50;
     private int m_KillXP = 100;
     private int m_HeadshotXP = 200;
     private int m_AssistXP = 50;
@@ -266,7 +267,29 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         }
         
         string medicUID = medicIdent.GetId();
+        string patientUID;
         
+        if (patient.GetIdentity())
+        {
+            patientUID = patient.GetIdentity().GetId();
+        }
+        else
+        {
+            patientUID = patient.GetType();
+        }
+        
+        string lastRevivedUID = medic.GetLastRevivedPlayerUID();
+        
+        if (lastRevivedUID == patientUID)
+        {
+            ExpansionNotification("Revive Farming Detected", "Cannot revive the same player twice in a row").Error(medicIdent);
+            Print("[KOTH_PlayerRewardManager] Revive farming blocked - " + medicIdent.GetName() + " tried to revive " + patientUID + " consecutively");
+            return;
+        }
+        
+        medic.SetLastRevivedPlayerUID(patientUID);
+        
+        AddPlayerMoney(medic, m_ReviveReward, "Teammate Revive");
         AddPlayerXP(medic, m_ReviveXP, "Teammate Revive");
         
         string patientName = "teammate";
@@ -274,10 +297,43 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         {
             patientName = patient.GetIdentity().GetName();
         }
+        else
+        {
+            patientName = patient.GetType();
+        }
         
-        ExpansionNotification("Revive Reward", "+" + m_ReviveXP + " XP (revived " + patientName + ")").Success(medicIdent);
+        ExpansionNotification("Revive Reward", "+$" + m_ReviveReward + " | +" + m_ReviveXP + " XP (revived " + patientName + ")").Success(medicIdent);
         
         Print("[KOTH_PlayerRewardManager] Revive reward given to " + medicIdent.GetName() + " for reviving " + patientName);
+    }
+    
+    void ProcessTeamKnockdown(PlayerBase attacker, PlayerBase victim)
+    {
+        if (!GetGame().IsServer() || !attacker || !victim)
+            return;
+        
+        PlayerIdentity attackerIdent = attacker.GetIdentity();
+        if (!attackerIdent)
+        {
+            Print("[KOTH_PlayerRewardManager] Attacker has no identity - skipping team knockdown penalty");
+            return;
+        }
+        
+        RemovePlayerMoney(attacker, m_TeamKnockdownPenalty, "Team Knockdown Penalty");
+        
+        string victimName = "teammate";
+        if (victim.GetIdentity())
+        {
+            victimName = victim.GetIdentity().GetName();
+        }
+        else
+        {
+            victimName = victim.GetType();
+        }
+        
+        ExpansionNotification("Team Knockdown Penalty", "-$" + m_TeamKnockdownPenalty + " (knocked down " + victimName + ")").Error(attackerIdent);
+        
+        Print("[KOTH_PlayerRewardManager] Team knockdown penalty given to " + attackerIdent.GetName() + " for knocking down " + victimName);
     }
     
     void ProcessAssist(PlayerBase attacker, PlayerBase victim)
@@ -553,6 +609,12 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         return KOTH_LEVEL_XP_REQUIREMENTS[level];
     }
     
+    void SetTeamKnockdownPenalty(int amount)
+    {
+        m_TeamKnockdownPenalty = amount;
+        Print("[KOTH_PlayerRewardManager] Team knockdown penalty set to $" + amount);
+    }
+    
     void SetReviveReward(int amount)
     {
         m_ReviveReward = amount;
@@ -605,6 +667,11 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     {
         m_HeadshotXP = amount;
         Print("[KOTH_PlayerRewardManager] Headshot XP set to " + amount);
+    }
+    
+    int GetTeamKnockdownPenalty()
+    {
+        return m_TeamKnockdownPenalty;
     }
     
     int GetReviveReward()

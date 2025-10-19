@@ -2,7 +2,7 @@
  * KOTH_PlayerBase.c (ASSIST + REVIVE + HEADSHOT TRACKING)
  *
  * King of the Hill by Kahoona
- * Track headshot kills, assists (knockdowns), and revives
+ * Track headshot kills, assists (knockdowns), and revives with anti-farm
  *
  * Place in: 4_World/Entities/KOTH_PlayerBase.c
  */
@@ -14,6 +14,7 @@ modded class PlayerBase
     private bool m_KOTHHeadshotKill = false;
     private PlayerBase m_KOTHLastAttacker;
     private PlayerBase m_KOTHReviver;
+    private string m_KOTHLastRevivedPlayerUID = "";
     
     void SetKOTHArmband(EntityAI armband)
     {
@@ -53,6 +54,16 @@ modded class PlayerBase
     PlayerBase GetReviver()
     {
         return m_KOTHReviver;
+    }
+    
+    void SetLastRevivedPlayerUID(string uid)
+    {
+        m_KOTHLastRevivedPlayerUID = uid;
+    }
+    
+    string GetLastRevivedPlayerUID()
+    {
+        return m_KOTHLastRevivedPlayerUID;
     }
     
     override void EEHitBy(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
@@ -121,13 +132,17 @@ modded class PlayerBase
         if (attackerTeam == "" || victimTeam == "" || victimTeam == "Unknown")
             return;
         
-        if (attackerTeam == victimTeam)
-            return;
-        
         KOTH_PlayerRewardManager rewardManager;
         CF_Modules<KOTH_PlayerRewardManager>.Get(rewardManager);
         
-        if (rewardManager)
+        if (!rewardManager)
+            return;
+        
+        if (attackerTeam == victimTeam)
+        {
+            rewardManager.ProcessTeamKnockdown(m_KOTHLastAttacker, this);
+        }
+        else
         {
             rewardManager.ProcessAssist(m_KOTHLastAttacker, this);
         }
