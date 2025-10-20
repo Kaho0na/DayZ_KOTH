@@ -1,8 +1,8 @@
 /**
- * KOTH_PlayerRewardManager.c (HEADSHOT + STATS TRACKING)
+ * KOTH_PlayerRewardManager.c (INTEGRATED WITH STAT TRACKER)
  *
  * King of the Hill by Kahoona
- * Added headshot detection, distance tracking, and killstreak system
+ * Now integrated with KOTH_RoundStatsTracker for real-time stat tracking
  *
  * Place in: 4_World/Modules/KOTH_PlayerRewardManager.c
  */
@@ -21,6 +21,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     private ref map<string, int> m_PlayerKillstreaks;
     private ref map<string, float> m_PlayerLastCaptureReward;
     private ref ExpansionMarketModule m_MarketModule;
+    private ref KOTH_RoundStatsTracker m_StatsTracker;
     
     private int m_KillReward = 100;
     private int m_HeadshotReward = 200;
@@ -80,9 +81,10 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         if (GetGame().IsServer())
         {
             GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(InitializeMarketModule, 2000, false);
+            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(InitializeStatsTracker, 2500, false);
         }
         
-        Print("[KOTH_PlayerRewardManager] Initialized with headshot detection and stat tracking");
+        Print("[KOTH_PlayerRewardManager] Initialized with stat tracking integration");
     }
     
     void InitializeMarketModule()
@@ -95,7 +97,18 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         
         LoadSettingsValues();
         
-        Print("[KOTH_PlayerRewardManager] Expansion Market Module connected");
+        //Print("[KOTH_PlayerRewardManager] Expansion Market Module connected");
+    }
+    
+    void InitializeStatsTracker()
+    {
+        if (!CF_Modules<KOTH_RoundStatsTracker>.Get(m_StatsTracker))
+        {
+            Error("[KOTH_PlayerRewardManager] Failed to get KOTH_RoundStatsTracker!");
+            return;
+        }
+        
+        Print("[KOTH_PlayerRewardManager] Stats Tracker connected");
     }
     
     void LoadSettingsValues()
@@ -123,16 +136,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         m_GlobalXPMultiplier = settings.GlobalXPMultiplier;
         m_GlobalMoneyMultiplier = settings.GlobalMoneyMultiplier;
         
-        Print("[KOTH_PlayerRewardManager] Loaded settings:");
-        Print("  - Kill: " + m_KillXP + " XP, $" + m_KillReward);
-        Print("  - Headshot: " + m_HeadshotXP + " XP, $" + m_HeadshotReward);
-        Print("  - Assist: " + m_AssistXP + " XP, $" + m_AssistReward);
-        Print("  - Revive: " + m_ReviveXP + " XP, $" + m_ReviveReward);
-        Print("  - Capture: " + m_CaptureXP + " XP, $" + m_CaptureReward + " (every " + m_CaptureInterval + "s)");
-        Print("  - Team Kill Penalty: $" + m_TeamKillPenalty);
-        Print("  - Suicide Penalty: $" + m_SuicidePenalty);
-        Print("  - Global XP Multiplier: " + m_GlobalXPMultiplier + "x");
-        Print("  - Global Money Multiplier: " + m_GlobalMoneyMultiplier + "x");
+        Print("[KOTH_PlayerRewardManager] Loaded settings");
     }
     
     static KOTH_PlayerRewardManager GetInstance()
@@ -207,12 +211,15 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         {
             data.CurrentLevel = newLevel;
             leveledUp = true;
-            Print("[KOTH_PlayerRewardManager] Player " + player.GetIdentity().GetName() + " leveled up! Level " + oldLevel + " → " + newLevel);
+            //Print("[KOTH_PlayerRewardManager] Player " + player.GetIdentity().GetName() + " leveled up! Level " + oldLevel + " → " + newLevel);
         }
         
         SavePlayerData(uid);
         
-        Print("[KOTH_PlayerRewardManager] Added " + finalXP + " XP to " + player.GetIdentity().GetName() + " (" + reason + ") - Total: " + data.TotalExperienceEarned);
+        if (m_StatsTracker)
+        {
+            m_StatsTracker.RecordXPGained(uid, player.GetIdentity().GetName(), finalXP);
+        }
         
         SI_OnPlayerXPGained.Invoke(uid, finalXP, reason);
         
@@ -256,7 +263,10 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         data.TotalMoneyinBank += finalMoney;
         SavePlayerData(uid);
         
-        Print("[KOTH_PlayerRewardManager] Added $" + finalMoney + " to " + ident.GetName() + " (" + reason + ") - ATM: $" + atmData.GetMoney() + " | Total: $" + data.TotalMoneyinBank);
+        if (m_StatsTracker)
+        {
+            m_StatsTracker.RecordMoneyGained(uid, ident.GetName(), finalMoney);
+        }
         
         SI_OnPlayerMoneyGained.Invoke(uid, finalMoney, reason);
         
@@ -288,7 +298,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         
         if (currentBalance < moneyAmount)
         {
-            Print("[KOTH_PlayerRewardManager] Insufficient funds for penalty - Current: $" + currentBalance + ", Penalty: $" + moneyAmount + " - No deduction");
+            //Print("[KOTH_PlayerRewardManager] Insufficient funds for penalty - Current: $" + currentBalance + ", Penalty: $" + moneyAmount + " - No deduction");
             ExpansionNotification("Team Kill Penalty", "Insufficient funds for penalty (Balance: $" + currentBalance + ")").Error(ident);
             return;
         }
@@ -302,7 +312,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
             SyncPlayerStatsToClient(ident, data);
         }
         
-        Print("[KOTH_PlayerRewardManager] Removed $" + moneyAmount + " from " + ident.GetName() + " (" + reason + ") - ATM: $" + atmData.GetMoney());
+        //Print("[KOTH_PlayerRewardManager] Removed $" + moneyAmount + " from " + ident.GetName() + " (" + reason + ") - ATM: $" + atmData.GetMoney());
     }
     
     void ProcessCaptureReward(PlayerBase player, bool isCapturing)
@@ -335,8 +345,6 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         AddPlayerXP(player, m_CaptureXP, "Zone Capture");
         
         KOTH_NotificationModule.ShowNotificationAdvanced("Objective Offensive", "$" + m_CaptureReward.ToString(), ARGB(255, 255, 215, 0), m_CaptureXP.ToString() + "XP", ARGB(255, 144, 238, 144), ARGB(255, 0, 255, 0), 3.0, ident);
-        
-        Print("[KOTH_PlayerRewardManager] Capture reward given to " + ident.GetName());
     }
     
     void ProcessSuicide(PlayerBase player)
@@ -347,7 +355,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         PlayerIdentity ident = player.GetIdentity();
         if (!ident)
         {
-            Print("[KOTH_PlayerRewardManager] Player has no identity - skipping suicide penalty");
+            //Print("[KOTH_PlayerRewardManager] Player has no identity - skipping suicide penalty");
             return;
         }
         
@@ -358,8 +366,6 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         KOTH_NotificationModule.ShowNotificationAdvanced("Suicide Penalty", "-$" + m_SuicidePenalty.ToString(), ARGB(255, 255, 0, 0), "", ARGB(255, 255, 255, 255), ARGB(255, 128, 128, 128), 3.0, ident);
         
         ResetKillstreak(uid);
-        
-        Print("[KOTH_PlayerRewardManager] Suicide penalty applied to " + ident.GetName());
     }
     
     void ProcessRevive(PlayerBase medic, PlayerBase patient)
@@ -370,7 +376,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         PlayerIdentity medicIdent = medic.GetIdentity();
         if (!medicIdent)
         {
-            Print("[KOTH_PlayerRewardManager] Medic has no identity - skipping revive reward");
+            //Print("[KOTH_PlayerRewardManager] Medic has no identity - skipping revive reward");
             return;
         }
         
@@ -399,6 +405,12 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         AddPlayerMoney(medic, m_ReviveReward, "Teammate Revive");
         AddPlayerXP(medic, m_ReviveXP, "Teammate Revive");
         
+        if (m_StatsTracker)
+        {
+            string medicTeam = medic.GetKOTHTeam();
+            m_StatsTracker.RecordRevive(medicUID, medicIdent.GetName(), medicTeam);
+        }
+        
         string patientName = "teammate";
         if (patient.GetIdentity())
         {
@@ -410,8 +422,6 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         }
         
         KOTH_NotificationModule.ShowNotificationAdvanced("Team Player Revived", "$" + m_ReviveReward.ToString(), ARGB(255, 0, 255, 0), m_ReviveXP.ToString() + "XP", ARGB(255, 144, 238, 144), ARGB(255, 0, 128, 255), 3.0, medicIdent);
-        
-        Print("[KOTH_PlayerRewardManager] Revive reward given to " + medicIdent.GetName() + " for reviving " + patientName);
     }
     
     void ProcessTeamKnockdown(PlayerBase attacker, PlayerBase victim)
@@ -422,7 +432,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         PlayerIdentity attackerIdent = attacker.GetIdentity();
         if (!attackerIdent)
         {
-            Print("[KOTH_PlayerRewardManager] Attacker has no identity - skipping team knockdown penalty");
+            //Print("[KOTH_PlayerRewardManager] Attacker has no identity - skipping team knockdown penalty");
             return;
         }
         
@@ -439,8 +449,6 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         }
         
         KOTH_NotificationModule.ShowNotificationAdvanced("Team Attack Penalty", "-$" + m_TeamKnockdownPenalty.ToString(), ARGB(255, 255, 69, 0), "", ARGB(255, 255, 255, 255), ARGB(255, 255, 0, 0), 4.0, attackerIdent);
-        
-        Print("[KOTH_PlayerRewardManager] Team knockdown penalty given to " + attackerIdent.GetName() + " for knocking down " + victimName);
     }
     
     void ProcessAssist(PlayerBase attacker, PlayerBase victim)
@@ -451,7 +459,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         PlayerIdentity attackerIdent = attacker.GetIdentity();
         if (!attackerIdent)
         {
-            Print("[KOTH_PlayerRewardManager] Attacker has no identity - skipping assist reward");
+            //Print("[KOTH_PlayerRewardManager] Attacker has no identity - skipping assist reward");
             return;
         }
         
@@ -471,7 +479,6 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         }
         
         KOTH_NotificationModule.ShowNotificationAdvanced("Team Assist", "$" + m_AssistReward.ToString(), ARGB(255, 144, 238, 144), m_AssistXP.ToString() + "XP", ARGB(255, 173, 216, 230), ARGB(255, 0, 191, 255), 3.0, attackerIdent);
-        
     }
     
     void ProcessKill(PlayerBase killer, PlayerBase victim)
@@ -488,20 +495,26 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         }
         else
         {
-            Print("[KOTH_PlayerRewardManager] Killer has no identity - skipping reward");
+            //Print("[KOTH_PlayerRewardManager] Killer has no identity - skipping reward");
             return;
         }
         
         string killerTeam = killer.GetKOTHTeam();
         string victimTeam;
+        string victimUID;
+        string victimName;
         
         if (victim.GetIdentity())
         {
             victimTeam = victim.GetKOTHTeam();
+            victimUID = victim.GetIdentity().GetId();
+            victimName = victim.GetIdentity().GetName();
         }
         else
         {
             victimTeam = GetExpansionAIFaction(victim);
+            victimUID = victim.GetType();
+            victimName = victim.GetType();
         }
         
         if (killerTeam == "" || victimTeam == "" || victimTeam == "Unknown")
@@ -515,6 +528,11 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
             RemovePlayerMoney(killer, m_TeamKillPenalty, "Team Kill Penalty");
             KOTH_NotificationModule.ShowNotificationAdvanced("Teamkill Penalty", "-$" + m_TeamKillPenalty.ToString(), ARGB(255, 255, 0, 0), "", ARGB(255, 255, 255, 255), ARGB(255, 139, 0, 0), 4.0, killerIdent);
             ResetKillstreak(killerUID);
+            
+            if (m_StatsTracker)
+            {
+                m_StatsTracker.RecordTeamkill(killerUID, killerIdent.GetName(), killerTeam);
+            }
         }
         else
         {
@@ -536,7 +554,6 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
             if (distanceInt > data.LongestKill)
             {
                 data.LongestKill = distanceInt;
-                Print("[KOTH_PlayerRewardManager] New longest kill record: " + distanceInt + "m for " + killerIdent.GetName());
             }
             
             if (wasHeadshot)
@@ -548,15 +565,18 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
                 if (distanceInt > data.LongestHeadshot)
                 {
                     data.LongestHeadshot = distanceInt;
-                    Print("[KOTH_PlayerRewardManager] New longest headshot record: " + distanceInt + "m for " + killerIdent.GetName());
                 }
-                
-                Print("[KOTH_PlayerRewardManager] HEADSHOT KILL detected for " + killerIdent.GetName() + " at " + distanceInt + "m");
             }
             
             IncrementKillstreak(killerUID, data);
             
             SavePlayerData(killerUID);
+            
+            if (m_StatsTracker)
+            {
+                m_StatsTracker.RecordKill(killerUID, killerIdent.GetName(), killerTeam, wasHeadshot, distanceInt);
+                m_StatsTracker.RecordDeath(victimUID, victimName, victimTeam);
+            }
             
             AddPlayerMoney(killer, moneyReward, rewardType);
             AddPlayerXP(killer, xpReward, rewardType);
@@ -588,10 +608,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         if (currentStreak > data.HighestKillstreak)
         {
             data.HighestKillstreak = currentStreak;
-            Print("[KOTH_PlayerRewardManager] New killstreak record: " + currentStreak + " for UID " + uid);
         }
-        
-        Print("[KOTH_PlayerRewardManager] Current killstreak: " + currentStreak + " for UID " + uid);
     }
     
     void ResetKillstreak(string uid)
@@ -599,7 +616,6 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         if (m_PlayerKillstreaks.Contains(uid))
         {
             int streak = m_PlayerKillstreaks.Get(uid);
-            Print("[KOTH_PlayerRewardManager] Killstreak reset for UID " + uid + " (was " + streak + ")");
             m_PlayerKillstreaks.Set(uid, 0);
         }
     }
@@ -663,8 +679,6 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         rpc.Write(atmMoney);
         rpc.Write(data.CurrentLevel);
         rpc.Expansion_Send(true, ident);
-        
-        Print("[KOTH_PlayerRewardManager] Synced stats to client: XP=" + data.TotalExperienceEarned + ", ATM Money=" + atmMoney + ", Level=" + data.CurrentLevel);
     }
     
     void RPC_UpdatePlayerStats(PlayerIdentity sender, Object target, ParamsReadContext ctx)
@@ -682,8 +696,6 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
             return;
         if (!ctx.Read(level))
             return;
-        
-        Print("[KOTH_PlayerRewardManager] CLIENT received stats update - XP: " + xp + ", Money: " + money + ", Level: " + level);
         
         SI_OnPlayerStatsChanged.Invoke(xp, money, level);
     }
@@ -719,61 +731,51 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
     void SetTeamKnockdownPenalty(int amount)
     {
         m_TeamKnockdownPenalty = amount;
-        Print("[KOTH_PlayerRewardManager] Team knockdown penalty set to $" + amount);
     }
     
     void SetReviveReward(int amount)
     {
         m_ReviveReward = amount;
-        Print("[KOTH_PlayerRewardManager] Revive reward set to $" + amount);
     }
     
     void SetReviveXP(int amount)
     {
         m_ReviveXP = amount;
-        Print("[KOTH_PlayerRewardManager] Revive XP set to " + amount);
     }
     
     void SetAssistReward(int amount)
     {
         m_AssistReward = amount;
-        Print("[KOTH_PlayerRewardManager] Assist reward set to $" + amount);
     }
     
     void SetAssistXP(int amount)
     {
         m_AssistXP = amount;
-        Print("[KOTH_PlayerRewardManager] Assist XP set to " + amount);
     }
     
     void SetKillReward(int amount)
     {
         m_KillReward = amount;
-        Print("[KOTH_PlayerRewardManager] Kill reward set to $" + amount);
     }
     
     void SetHeadshotReward(int amount)
     {
         m_HeadshotReward = amount;
-        Print("[KOTH_PlayerRewardManager] Headshot reward set to $" + amount);
     }
     
     void SetTeamKillPenalty(int amount)
     {
         m_TeamKillPenalty = amount;
-        Print("[KOTH_PlayerRewardManager] Team kill penalty set to $" + amount);
     }
     
     void SetKillXP(int amount)
     {
         m_KillXP = amount;
-        Print("[KOTH_PlayerRewardManager] Kill XP set to " + amount);
     }
     
     void SetHeadshotXP(int amount)
     {
         m_HeadshotXP = amount;
-        Print("[KOTH_PlayerRewardManager] Headshot XP set to " + amount);
     }
     
     int GetTeamKnockdownPenalty()

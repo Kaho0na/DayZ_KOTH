@@ -18,7 +18,7 @@ class KOTH_PriArea : EffectArea
         m_Position = position;
         m_Position[1] = 0;
         
-        Print("[KOTH_PriArea] Initializing at " + m_Position + " with radius " + radius);
+        //Print("[KOTH_PriArea] Initializing at " + m_Position + " with radius " + radius);
         
         CreateTrigger(m_Position, m_Radius);
     }
@@ -29,7 +29,7 @@ class KOTH_PriArea : EffectArea
         {
             m_KOTH_PriTrigger.SetCollisionCylinder(radius, m_PositiveHeight);
             m_KOTH_PriTrigger.KOTH_Init(this);
-            Print("[KOTH_PriArea] Trigger created successfully");
+            //Print("[KOTH_PriArea] Trigger created successfully");
         }
         else
         {
@@ -78,7 +78,7 @@ class KOTH_PriAreaTrigger : CylinderTrigger
     void KOTH_Init(EffectArea area)
     {
         m_KOTH_EffectArea = area;
-        Print("[KOTH_PriAreaTrigger] Initialized");
+        //Print("[KOTH_PriAreaTrigger] Initialized");
     }
     
     override protected bool CanAddObjectAsInsider(Object object)
@@ -112,7 +112,7 @@ class KOTH_PriAreaTrigger : CylinderTrigger
                 {
                     m_PlayersInside.Insert(player);
                     string team = player.GetKOTHTeam();
-                    Print("[KOTH_PriAreaTrigger] Player entered PRIORITY: " + player.GetIdentity().GetName() + " (Team: " + team + ")");
+                    //Print("[KOTH_PriAreaTrigger] Player entered PRIORITY: " + player.GetIdentity().GetName() + " (Team: " + team + ")");
                     
                     player.MessageStatus("[KOTH PRIORITY] You entered the BONUS POINTS zone!");
                     
@@ -128,7 +128,7 @@ class KOTH_PriAreaTrigger : CylinderTrigger
                     m_AIInside.Insert(player);
                     
                     string aiFaction = GetExpansionAIFaction(player);
-                    Print("[KOTH_PriAreaTrigger] AI entered PRIORITY: " + player.GetType() + " (Faction: " + aiFaction + ")");
+                    //Print("[KOTH_PriAreaTrigger] AI entered PRIORITY: " + player.GetType() + " (Faction: " + aiFaction + ")");
                     
                     // PHASE 4: Notify GameMode of count change
                     NotifyGameModeCountChanged();
@@ -154,7 +154,7 @@ class KOTH_PriAreaTrigger : CylinderTrigger
                 if (playerIdx != -1)
                 {
                     m_PlayersInside.Remove(playerIdx);
-                    Print("[KOTH_PriAreaTrigger] Player left PRIORITY: " + player.GetIdentity().GetName());
+                    //Print("[KOTH_PriAreaTrigger] Player left PRIORITY: " + player.GetIdentity().GetName());
                     
                     player.MessageStatus("[KOTH PRIORITY] You left the bonus zone");
                     
@@ -168,7 +168,7 @@ class KOTH_PriAreaTrigger : CylinderTrigger
                 if (aiIdx != -1)
                 {
                     m_AIInside.Remove(aiIdx);
-                    Print("[KOTH_PriAreaTrigger] AI left PRIORITY: " + player.GetType());
+                    //Print("[KOTH_PriAreaTrigger] AI left PRIORITY: " + player.GetType());
                     
                     // PHASE 4: Notify GameMode of count change
                     NotifyGameModeCountChanged();

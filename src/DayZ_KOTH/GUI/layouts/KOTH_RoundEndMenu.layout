@@ -1,0 +1,784 @@
+FrameWidgetClass KOTH_RoundEndMenu {
+ ignorepointer 0
+ position 0 0
+ size 1 1
+ halign center_ref
+ valign center_ref
+ hexactpos 0
+ vexactpos 0
+ hexactsize 0
+ vexactsize 0
+ scriptclass "KOTH_RoundEndMenuController"
+ {
+  PanelWidgetClass BackgroundOverlay {
+   ignorepointer 1
+   position 0 0
+   size 1 1
+   halign center_ref
+   valign center_ref
+   hexactpos 0
+   vexactpos 0
+   hexactsize 0
+   vexactsize 0
+   priority 1
+   style blank
+   color 0 0 0
+   "alpha" 0.85
+  }
+  PanelWidgetClass ContentPanel {
+   ignorepointer 0
+   position 0 0
+   size 0.9 0.9
+   halign center_ref
+   valign center_ref
+   hexactpos 0
+   vexactpos 0
+   hexactsize 0
+   vexactsize 0
+   priority 10
+   style blank
+   {
+    TextWidgetClass WinnerTitle {
+     ignorepointer 1
+     position 0 0.05
+     size 1 0.1
+     halign center_ref
+     valign top_ref
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     text "TEAM EAST WINS!"
+     font "gui/fonts/sdf_MetronLight48"
+     "size" 64
+     "text halign" center
+     "text valign" center
+     scriptclass "ViewBinding"
+     {
+      ScriptParamsClass {
+       Binding_Name "WinnerTitle"
+      }
+     }
+    }
+    TextWidgetClass FinalScoreText {
+     ignorepointer 1
+     position 0 0.12
+     size 1 0.05
+     halign center_ref
+     valign top_ref
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     text "East: 100 | West: 87"
+     font "gui/fonts/sdf_MetronLight32"
+     "size" 32
+     "text halign" center
+     "text valign" center
+     scriptclass "ViewBinding"
+     {
+      ScriptParamsClass {
+       Binding_Name "FinalScoreText"
+      }
+     }
+    }
+    PanelWidgetClass TeamStatsPanel {
+     ignorepointer 1
+     position 0 0.2
+     size 0.8 0.25
+     halign center_ref
+     valign top_ref
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     style blank
+     {
+      TextWidgetClass TeamStatsHeader {
+       ignorepointer 1
+       position 0 0
+       size 1 0.15
+       halign center_ref
+       valign top_ref
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       text "TEAM STATISTICS"
+       font "gui/fonts/sdf_MetronLight32"
+       "size" 28
+       "text halign" center
+       "text valign" center
+      }
+      PanelWidgetClass EastTeamStats {
+       ignorepointer 1
+       position 0.05 0.2
+       size 0.4 0.75
+       halign left_ref
+       valign top_ref
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style EditorDlgBackground
+       {
+        TextWidgetClass EastTeamTitle {
+         ignorepointer 1
+         position 0 0.05
+         size 1 0.12
+         halign center_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "TEAM EAST"
+         font "gui/fonts/sdf_MetronLight24"
+         "size" 24
+         "text halign" center
+         "text valign" center
+         "color" 1 0 0
+        }
+        TextWidgetClass EastKillsText {
+         ignorepointer 1
+         position 0.1 0.2
+         size 0.8 0.1
+         halign left_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Kills: 0"
+         font "gui/fonts/sdf_MetronLight18"
+         "size" 18
+         "text halign" left
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "EastKills"
+          }
+         }
+        }
+        TextWidgetClass EastDeathsText {
+         ignorepointer 1
+         position 0.1 0.32
+         size 0.8 0.1
+         halign left_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Deaths: 0"
+         font "gui/fonts/sdf_MetronLight18"
+         "size" 18
+         "text halign" left
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "EastDeaths"
+          }
+         }
+        }
+        TextWidgetClass EastHeadshotsText {
+         ignorepointer 1
+         position 0.1 0.44
+         size 0.8 0.1
+         halign left_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Headshots: 0"
+         font "gui/fonts/sdf_MetronLight18"
+         "size" 18
+         "text halign" left
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "EastHeadshots"
+          }
+         }
+        }
+        TextWidgetClass EastRevivesText {
+         ignorepointer 1
+         position 0.1 0.56
+         size 0.8 0.1
+         halign left_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Revives: 0"
+         font "gui/fonts/sdf_MetronLight18"
+         "size" 18
+         "text halign" left
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "EastRevives"
+          }
+         }
+        }
+        TextWidgetClass EastXPText {
+         ignorepointer 1
+         position 0.1 0.68
+         size 0.8 0.1
+         halign left_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Total XP: 0"
+         font "gui/fonts/sdf_MetronLight18"
+         "size" 18
+         "text halign" left
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "EastXP"
+          }
+         }
+        }
+       }
+      }
+      PanelWidgetClass WestTeamStats {
+       ignorepointer 1
+       position 0.55 0.2
+       size 0.4 0.75
+       halign left_ref
+       valign top_ref
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style EditorDlgBackground
+       {
+        TextWidgetClass WestTeamTitle {
+         ignorepointer 1
+         position 0 0.05
+         size 1 0.12
+         halign center_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "TEAM WEST"
+         font "gui/fonts/sdf_MetronLight24"
+         "size" 24
+         "text halign" center
+         "text valign" center
+         "color" 0.25 0.5 1
+        }
+        TextWidgetClass WestKillsText {
+         ignorepointer 1
+         position 0.1 0.2
+         size 0.8 0.1
+         halign left_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Kills: 0"
+         font "gui/fonts/sdf_MetronLight18"
+         "size" 18
+         "text halign" left
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "WestKills"
+          }
+         }
+        }
+        TextWidgetClass WestDeathsText {
+         ignorepointer 1
+         position 0.1 0.32
+         size 0.8 0.1
+         halign left_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Deaths: 0"
+         font "gui/fonts/sdf_MetronLight18"
+         "size" 18
+         "text halign" left
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "WestDeaths"
+          }
+         }
+        }
+        TextWidgetClass WestHeadshotsText {
+         ignorepointer 1
+         position 0.1 0.44
+         size 0.8 0.1
+         halign left_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Headshots: 0"
+         font "gui/fonts/sdf_MetronLight18"
+         "size" 18
+         "text halign" left
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "WestHeadshots"
+          }
+         }
+        }
+        TextWidgetClass WestRevivesText {
+         ignorepointer 1
+         position 0.1 0.56
+         size 0.8 0.1
+         halign left_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Revives: 0"
+         font "gui/fonts/sdf_MetronLight18"
+         "size" 18
+         "text halign" left
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "WestRevives"
+          }
+         }
+        }
+        TextWidgetClass WestXPText {
+         ignorepointer 1
+         position 0.1 0.68
+         size 0.8 0.1
+         halign left_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Total XP: 0"
+         font "gui/fonts/sdf_MetronLight18"
+         "size" 18
+         "text halign" left
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "WestXP"
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+    PanelWidgetClass TopPerformersPanel {
+     ignorepointer 1
+     position 0 0.48
+     size 0.8 0.18
+     halign center_ref
+     valign top_ref
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     style blank
+     {
+      TextWidgetClass TopPerformersHeader {
+       ignorepointer 1
+       position 0 0
+       size 1 0.2
+       halign center_ref
+       valign top_ref
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       text "TOP PERFORMERS"
+       font "gui/fonts/sdf_MetronLight32"
+       "size" 28
+       "text halign" center
+       "text valign" center
+      }
+      PanelWidgetClass MVPPanel {
+       ignorepointer 1
+       position 0.05 0.25
+       size 0.28 0.7
+       halign left_ref
+       valign top_ref
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style EditorDlgBackground
+       {
+        TextWidgetClass MVPIcon {
+         ignorepointer 1
+         position 0 0.1
+         size 1 0.3
+         halign center_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "MVP"
+         font "gui/fonts/sdf_MetronLight32"
+         "size" 32
+         "text halign" center
+         "text valign" center
+         "color" 1 0.84 0
+        }
+        TextWidgetClass MVPText {
+         ignorepointer 1
+         position 0 0.45
+         size 1 0.2
+         halign center_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Most Kills"
+         font "gui/fonts/sdf_MetronLight18"
+         "size" 16
+         "text halign" center
+         "text valign" center
+         "color" 1 0.84 0
+        }
+        TextWidgetClass MVPPlayerName {
+         ignorepointer 1
+         position 0 0.65
+         size 1 0.15
+         halign center_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "N/A"
+         font "gui/fonts/sdf_MetronLight18"
+         "size" 16
+         "text halign" center
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "MVPPlayerName"
+          }
+         }
+        }
+        TextWidgetClass MVPStat {
+         ignorepointer 1
+         position 0 0.8
+         size 1 0.15
+         halign center_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "0 Kills"
+         font "gui/fonts/sdf_MetronLight18"
+         "size" 14
+         "text halign" center
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "MVPStat"
+          }
+         }
+        }
+       }
+      }
+      PanelWidgetClass SharpshooterPanel {
+       ignorepointer 1
+       position 0.36 0.25
+       size 0.28 0.7
+       halign left_ref
+       valign top_ref
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style EditorDlgBackground
+       {
+        TextWidgetClass SharpshooterIcon {
+         ignorepointer 1
+         position 0 0.1
+         size 1 0.3
+         halign center_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "SHARPSHOOTER"
+         font "gui/fonts/sdf_MetronLight32"
+         "size" 24
+         "text halign" center
+         "text valign" center
+         "color" 1 0.5 0
+        }
+        TextWidgetClass SharpshooterText {
+         ignorepointer 1
+         position 0 0.45
+         size 1 0.2
+         halign center_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Most Headshots"
+         font "gui/fonts/sdf_MetronLight18"
+         "size" 16
+         "text halign" center
+         "text valign" center
+         "color" 1 0.5 0
+        }
+        TextWidgetClass SharpshooterPlayerName {
+         ignorepointer 1
+         position 0 0.65
+         size 1 0.15
+         halign center_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "N/A"
+         font "gui/fonts/sdf_MetronLight18"
+         "size" 16
+         "text halign" center
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "SharpshooterPlayerName"
+          }
+         }
+        }
+        TextWidgetClass SharpshooterStat {
+         ignorepointer 1
+         position 0 0.8
+         size 1 0.15
+         halign center_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "0 Headshots"
+         font "gui/fonts/sdf_MetronLight18"
+         "size" 14
+         "text halign" center
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "SharpshooterStat"
+          }
+         }
+        }
+       }
+      }
+      PanelWidgetClass MedicPanel {
+       ignorepointer 1
+       position 0.67 0.25
+       size 0.28 0.7
+       halign left_ref
+       valign top_ref
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       style EditorDlgBackground
+       {
+        TextWidgetClass MedicIcon {
+         ignorepointer 1
+         position 0 0.1
+         size 1 0.3
+         halign center_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "TOP MEDIC"
+         font "gui/fonts/sdf_MetronLight32"
+         "size" 24
+         "text halign" center
+         "text valign" center
+         "color" 0 0.8 0.4
+        }
+        TextWidgetClass MedicText {
+         ignorepointer 1
+         position 0 0.45
+         size 1 0.2
+         halign center_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Most Revives"
+         font "gui/fonts/sdf_MetronLight18"
+         "size" 16
+         "text halign" center
+         "text valign" center
+         "color" 0 0.8 0.4
+        }
+        TextWidgetClass MedicPlayerName {
+         ignorepointer 1
+         position 0 0.65
+         size 1 0.15
+         halign center_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "N/A"
+         font "gui/fonts/sdf_MetronLight18"
+         "size" 16
+         "text halign" center
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "MedicPlayerName"
+          }
+         }
+        }
+        TextWidgetClass MedicStat {
+         ignorepointer 1
+         position 0 0.8
+         size 1 0.15
+         halign center_ref
+         valign top_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "0 Revives"
+         font "gui/fonts/sdf_MetronLight18"
+         "size" 14
+         "text halign" center
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "MedicStat"
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+    PanelWidgetClass VotingPanel {
+     ignorepointer 0
+     position 0 0.68
+     size 0.8 0.2
+     halign center_ref
+     valign top_ref
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     style blank
+     {
+      TextWidgetClass VotingHeader {
+       ignorepointer 1
+       position 0 0
+       size 1 0.15
+       halign center_ref
+       valign top_ref
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       text "VOTE FOR NEXT ZONE"
+       font "gui/fonts/sdf_MetronLight24"
+       "size" 24
+       "text halign" center
+       "text valign" center
+       scriptclass "ViewBinding"
+       {
+        ScriptParamsClass {
+         Binding_Name "VotingHeader"
+        }
+       }
+      }
+      GridSpacerWidgetClass ZoneVoteGrid {
+       ignorepointer 0
+       position 0 0.2
+       size 1 0.75
+       halign center_ref
+       valign top_ref
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       Padding 10
+       Margin 5
+       "Size To Content V" 0
+       "Size To Content H" 0
+       content_halign center
+       content_valign center
+       Rows 2
+       Columns 3
+      }
+     }
+    }
+    TextWidgetClass CountdownText {
+     ignorepointer 1
+     position 0 0.92
+     size 1 0.05
+     halign center_ref
+     valign top_ref
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     text "Next round starts in: 30 seconds"
+     font "gui/fonts/sdf_MetronLight24"
+     "size" 24
+     "text halign" center
+     "text valign" center
+     "color" 1 1 0
+     scriptclass "ViewBinding"
+     {
+      ScriptParamsClass {
+       Binding_Name "CountdownText"
+      }
+     }
+    }
+   }
+  }
+ }
+}

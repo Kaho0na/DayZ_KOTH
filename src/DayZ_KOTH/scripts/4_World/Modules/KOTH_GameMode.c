@@ -1,8 +1,8 @@
 /**
- * KOTH_GameMode.c (PHASE 4 - EVENT-DRIVEN ZONE COUNTS)
+ * KOTH_GameMode.c (INTEGRATED WITH STATS TRACKER)
  *
  * King of the Hill by Kahoona
- * Receives player counts from triggers, not polling
+ * Now tells stats tracker when rounds start/end
  *
  * Place in: 4_World/Modules/KOTH_GameMode.c
  */
@@ -33,13 +33,13 @@ class KOTH_GameMode: CF_ModuleWorld
     private int m_MinPlayersToInfluence = 1;
     private float m_PointsPerTickPerPlayer = 1.0;
     
-    // PHASE 4: Cached player counts (set by triggers)
     private int m_CurrentEastAO = 0;
     private int m_CurrentWestAO = 0;
     private int m_CurrentEastPriority = 0;
     private int m_CurrentWestPriority = 0;
     
     private ref KOTH_HUDDataSync m_HUDSync;
+    private ref KOTH_RoundStatsTracker m_StatsTracker;
     
     void KOTH_GameMode()
     {
@@ -81,6 +81,17 @@ class KOTH_GameMode: CF_ModuleWorld
             return;
         }
         
+        CF_Modules<KOTH_RoundStatsTracker>.Get(m_StatsTracker);
+        
+        if (!m_StatsTracker)
+        {
+            Error("[KOTH_GameMode] ERROR: Could not get KOTH_RoundStatsTracker module!");
+        }
+        else
+        {
+            Print("[KOTH_GameMode] Stats Tracker connected");
+        }
+        
         KOTH_Settings settings = GetExpansionSettings().GetDayZ_KOTH();
         if (settings)
         {
@@ -99,10 +110,6 @@ class KOTH_GameMode: CF_ModuleWorld
         return s_Instance;
     }
     
-    // ═══════════════════════════════════════════════════════════════
-    // PHASE 4: EVENT-DRIVEN PLAYER COUNT UPDATES
-    // ═══════════════════════════════════════════════════════════════
-    
     void OnAOZonePlayersChanged(int eastCount, int westCount)
     {
         if (!GetGame().IsServer())
@@ -111,7 +118,6 @@ class KOTH_GameMode: CF_ModuleWorld
         m_CurrentEastAO = eastCount;
         m_CurrentWestAO = westCount;
         
-        // Broadcast to clients immediately
         if (m_HUDSync)
         {
             m_HUDSync.SetPlayerCounts(m_CurrentEastAO, m_CurrentWestAO, m_CurrentEastPriority, m_CurrentWestPriority);
@@ -126,16 +132,11 @@ class KOTH_GameMode: CF_ModuleWorld
         m_CurrentEastPriority = eastCount;
         m_CurrentWestPriority = westCount;
         
-        // Broadcast to clients immediately
         if (m_HUDSync)
         {
             m_HUDSync.SetPlayerCounts(m_CurrentEastAO, m_CurrentWestAO, m_CurrentEastPriority, m_CurrentWestPriority);
         }
     }
-    
-    // ═══════════════════════════════════════════════════════════════
-    // ROUND MANAGEMENT
-    // ═══════════════════════════════════════════════════════════════
     
     void StartRound()
     {
@@ -157,6 +158,12 @@ class KOTH_GameMode: CF_ModuleWorld
             m_HUDSync.SetCaptureProgress(0.0, "None");
         }
         
+        if (m_StatsTracker)
+        {
+            m_StatsTracker.OnRoundStart();
+            Print("[KOTH_GameMode] Stats tracker notified of round start");
+        }
+        
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(UpdateCapture, 100, true);
         
         Print("[KOTH_GameMode] Round started - Score limit: " + m_ScoreLimit);
@@ -170,29 +177,49 @@ class KOTH_GameMode: CF_ModuleWorld
         if (!GetGame().IsServer() || m_RoundEnded)
             return;
         
+        Print("[KOTH_GameMode] ============================================");
+        Print("[KOTH_GameMode] >>>>>> EndRound CALLED <<<<<<");
+        Print("[KOTH_GameMode] Winner: " + winningTeam);
+        Print("[KOTH_GameMode] Final Scores - East: " + m_EastScore + " | West: " + m_WestScore);
+        Print("[KOTH_GameMode] ============================================");
+        
         m_RoundActive = false;
         m_RoundEnded = true;
         
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(UpdateCapture);
         
-        Print("[KOTH_GameMode] Round ended - Winner: " + winningTeam);
+        if (m_StatsTracker)
+        {
+            Print("[KOTH_GameMode] Setting team final scores in stats tracker...");
+            m_StatsTracker.SetTeamFinalScore("East", m_EastScore);
+            m_StatsTracker.SetTeamFinalScore("West", m_WestScore);
+            
+            Print("[KOTH_GameMode] Calling stats tracker OnRoundEnd...");
+            m_StatsTracker.OnRoundEnd();
+            Print("[KOTH_GameMode] ✅ Stats tracker OnRoundEnd completed");
+        }
+        else
+        {
+            Error("[KOTH_GameMode] ❌ Stats tracker not available!");
+        }
         
+        Print("[KOTH_GameMode] Broadcasting round end to clients...");
         BroadcastRoundEnd(winningTeam);
-        SI_OnRoundEnd.Invoke(winningTeam, m_EastScore, m_WestScore);
         
+        Print("[KOTH_GameMode] Invoking SI_OnRoundEnd...");
+        SI_OnRoundEnd.Invoke(winningTeam, m_EastScore, m_WestScore);
+        Print("[KOTH_GameMode] ✅ SI_OnRoundEnd invoked");
+        
+        Print("[KOTH_GameMode] Scheduling new round in 30 seconds...");
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(StartRound, 30000, false);
+        Print("[KOTH_GameMode] ============================================");
     }
-    
-    // ═══════════════════════════════════════════════════════════════
-    // CAPTURE TIMER (USES CACHED COUNTS)
-    // ═══════════════════════════════════════════════════════════════
     
     void UpdateCapture()
     {
         if (!GetGame().IsServer() || !m_RoundActive || !m_HUDSync)
             return;
         
-        // PHASE 4: Use cached values (set by trigger events)
         int eastAO = m_CurrentEastAO;
         int westAO = m_CurrentWestAO;
         int eastPriority = m_CurrentEastPriority;
@@ -292,10 +319,6 @@ class KOTH_GameMode: CF_ModuleWorld
         }
     }
     
-    // ═══════════════════════════════════════════════════════════════
-    // NOTIFICATIONS
-    // ═══════════════════════════════════════════════════════════════
-    
     void BroadcastRoundEnd(string winningTeam)
     {
         if (!GetGame().IsServer())
@@ -361,20 +384,12 @@ class KOTH_GameMode: CF_ModuleWorld
         }
     }
     
-    // ═══════════════════════════════════════════════════════════════
-    // GETTERS
-    // ═══════════════════════════════════════════════════════════════
-    
     int GetEastScore() { return m_EastScore; }
     int GetWestScore() { return m_WestScore; }
     bool IsRoundActive() { return m_RoundActive; }
     int GetScoreLimit() { return m_ScoreLimit; }
     float GetCaptureProgress() { return m_CaptureProgress; }
     string GetCapturingTeam() { return m_CapturingTeam; }
-    
-    // ═══════════════════════════════════════════════════════════════
-    // ADMIN COMMANDS
-    // ═══════════════════════════════════════════════════════════════
     
     void SetScoreLimit(int limit)
     {

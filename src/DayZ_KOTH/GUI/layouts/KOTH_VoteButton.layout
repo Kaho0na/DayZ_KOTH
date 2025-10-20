@@ -1,0 +1,69 @@
+PanelWidgetClass VoteButtonPanel {
+ ignorepointer 0
+ position 0 0
+ size 200 80
+ halign center_ref
+ valign center_ref
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ style EditorDlgBackground
+ {
+  ButtonWidgetClass VoteButton {
+   ignorepointer 0
+   position 5 5
+   size 190 70
+   halign left_ref
+   valign top_ref
+   hexactpos 1
+   vexactpos 1
+   hexactsize 1
+   vexactsize 1
+   style DayZDefaultButton
+   text ""
+   text_halign center
+   text_valign center
+   {
+    TextWidgetClass ZoneNameText {
+     ignorepointer 1
+     position 0 0.3
+     size 1 0.35
+     halign center_ref
+     valign top_ref
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     text "Zone Name"
+     font "gui/fonts/sdf_MetronLight18"
+     "size" 18
+     "text halign" center
+     "text valign" center
+     "exact text" 1
+     "bold" 1
+     "wrap" 0
+    }
+    TextWidgetClass VoteCountText {
+     ignorepointer 1
+     position 0 0.65
+     size 1 0.25
+     halign center_ref
+     valign top_ref
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     text "0 votes"
+     font "gui/fonts/sdf_MetronLight18"
+     "size" 14
+     "text halign" center
+     "text valign" center
+     "exact text" 1
+     "wrap" 0
+     "color" 0.7 0.7 0.7
+    }
+   }
+  }
+ }
+}

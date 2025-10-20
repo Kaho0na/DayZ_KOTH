@@ -1,8 +1,8 @@
 /**
- * KOTH_Settings.c (COMPLETE CONFIGURATION)
+ * KOTH_Settings.c (COMPLETE CONFIGURATION WITH ROUND END)
  *
  * King of the Hill by Kahoona
- * Configurable XP and money rewards with global multipliers
+ * Configurable XP and money rewards with global multipliers + round end bonuses
  * Place in: 3_Game/Settings/KOTH_Settings.c
  */
 
@@ -49,6 +49,22 @@ class KOTH_SettingsBase: ExpansionSettingBase
 
     float GlobalMoneyMultiplier = 1.0;
 
+    float EndScreenDisplaySeconds = 30;
+    float VoteTimeSeconds = 20;
+    int MaxPlayerLevel = 99;
+
+    int MVPBonusXP = 500;
+    int MVPBonusMoney = 500;
+    int SharpshooterBonusXP = 400;
+    int SharpshooterBonusMoney = 400;
+    int MedicBonusXP = 300;
+    int MedicBonusMoney = 300;
+
+    float WinningTeamXPMultiplier = 1.5;
+    float WinningTeamMoneyMultiplier = 1.5;
+    float LosingTeamXPMultiplier = 0.5;
+    float LosingTeamMoneyMultiplier = 0.5;
+
     int MaxTeamImbalance = 3;
     
     bool EnableZoneRotation = false;
@@ -61,7 +77,7 @@ class KOTH_SettingsBase: ExpansionSettingBase
 
 class KOTH_Settings: KOTH_SettingsBase
 {
-    static const int VERSION = 1;
+    static const int VERSION = 2;
     
     [NonSerialized()]
     private bool m_IsLoaded;
@@ -104,6 +120,23 @@ class KOTH_Settings: KOTH_SettingsBase
         if (!ctx.Read(s.KillStreakMoneyThresholds)) return false;
         if (!ctx.Read(s.KillStreakBonusMoney)) return false;
         if (!ctx.Read(s.GlobalMoneyMultiplier)) return false;
+        
+        if (!ctx.Read(s.EndScreenDisplaySeconds)) return false;
+        if (!ctx.Read(s.VoteTimeSeconds)) return false;
+        if (!ctx.Read(s.MaxPlayerLevel)) return false;
+        
+        if (!ctx.Read(s.MVPBonusXP)) return false;
+        if (!ctx.Read(s.MVPBonusMoney)) return false;
+        if (!ctx.Read(s.SharpshooterBonusXP)) return false;
+        if (!ctx.Read(s.SharpshooterBonusMoney)) return false;
+        if (!ctx.Read(s.MedicBonusXP)) return false;
+        if (!ctx.Read(s.MedicBonusMoney)) return false;
+        
+        if (!ctx.Read(s.WinningTeamXPMultiplier)) return false;
+        if (!ctx.Read(s.WinningTeamMoneyMultiplier)) return false;
+        if (!ctx.Read(s.LosingTeamXPMultiplier)) return false;
+        if (!ctx.Read(s.LosingTeamMoneyMultiplier)) return false;
+        
         if (!ctx.Read(s.MaxTeamImbalance)) return false;
         if (!ctx.Read(s.EnableZoneRotation)) return false;
         if (!ctx.Read(s.ZoneRotationInterval)) return false;
@@ -155,6 +188,23 @@ class KOTH_Settings: KOTH_SettingsBase
         ctx.Write(KillStreakMoneyThresholds);
         ctx.Write(KillStreakBonusMoney);
         ctx.Write(GlobalMoneyMultiplier);
+        
+        ctx.Write(EndScreenDisplaySeconds);
+        ctx.Write(VoteTimeSeconds);
+        ctx.Write(MaxPlayerLevel);
+        
+        ctx.Write(MVPBonusXP);
+        ctx.Write(MVPBonusMoney);
+        ctx.Write(SharpshooterBonusXP);
+        ctx.Write(SharpshooterBonusMoney);
+        ctx.Write(MedicBonusXP);
+        ctx.Write(MedicBonusMoney);
+        
+        ctx.Write(WinningTeamXPMultiplier);
+        ctx.Write(WinningTeamMoneyMultiplier);
+        ctx.Write(LosingTeamXPMultiplier);
+        ctx.Write(LosingTeamMoneyMultiplier);
+        
         ctx.Write(MaxTeamImbalance);
         ctx.Write(EnableZoneRotation);
         ctx.Write(ZoneRotationInterval);
@@ -228,6 +278,23 @@ class KOTH_Settings: KOTH_SettingsBase
         KillStreakMoneyThresholds = s.KillStreakMoneyThresholds;
         KillStreakBonusMoney = s.KillStreakBonusMoney;
         GlobalMoneyMultiplier = s.GlobalMoneyMultiplier;
+        
+        EndScreenDisplaySeconds = s.EndScreenDisplaySeconds;
+        VoteTimeSeconds = s.VoteTimeSeconds;
+        MaxPlayerLevel = s.MaxPlayerLevel;
+        
+        MVPBonusXP = s.MVPBonusXP;
+        MVPBonusMoney = s.MVPBonusMoney;
+        SharpshooterBonusXP = s.SharpshooterBonusXP;
+        SharpshooterBonusMoney = s.SharpshooterBonusMoney;
+        MedicBonusXP = s.MedicBonusXP;
+        MedicBonusMoney = s.MedicBonusMoney;
+        
+        WinningTeamXPMultiplier = s.WinningTeamXPMultiplier;
+        WinningTeamMoneyMultiplier = s.WinningTeamMoneyMultiplier;
+        LosingTeamXPMultiplier = s.LosingTeamXPMultiplier;
+        LosingTeamMoneyMultiplier = s.LosingTeamMoneyMultiplier;
+        
         MaxTeamImbalance = s.MaxTeamImbalance;
         EnableZoneRotation = s.EnableZoneRotation;
         ZoneRotationInterval = s.ZoneRotationInterval;
@@ -333,6 +400,23 @@ class KOTH_Settings: KOTH_SettingsBase
         KillStreakMoneyThresholds = { 5, 10, 15 };
         KillStreakBonusMoney = { 100, 200, 300 };
         GlobalMoneyMultiplier = 1.0;
+        
+        EndScreenDisplaySeconds = 30;
+        VoteTimeSeconds = 20;
+        MaxPlayerLevel = 99;
+        
+        MVPBonusXP = 500;
+        MVPBonusMoney = 500;
+        SharpshooterBonusXP = 400;
+        SharpshooterBonusMoney = 400;
+        MedicBonusXP = 300;
+        MedicBonusMoney = 300;
+        
+        WinningTeamXPMultiplier = 1.5;
+        WinningTeamMoneyMultiplier = 1.5;
+        LosingTeamXPMultiplier = 0.5;
+        LosingTeamMoneyMultiplier = 0.5;
+        
         MaxTeamImbalance = 3;
         EnableZoneRotation = false;
         ZoneRotationInterval = 1800.0;

@@ -15,7 +15,7 @@ class KOTH_NotificationModule: CF_ModuleWorld
     {
         super.OnInit();
         
-        Print("[KOTH_NotificationModule] OnInit - Server: " + GetGame().IsServer() + " Client: " + GetGame().IsClient());
+        //Print("[KOTH_NotificationModule] OnInit - Server: " + GetGame().IsServer() + " Client: " + GetGame().IsClient());
         
         EnableMissionStart();
         Expansion_EnableRPCManager();
@@ -26,15 +26,15 @@ class KOTH_NotificationModule: CF_ModuleWorld
     {
         super.OnMissionStart(sender, args);
         
-        Print("[KOTH_NotificationModule] OnMissionStart - Server: " + GetGame().IsServer());
+        //Print("[KOTH_NotificationModule] OnMissionStart - Server: " + GetGame().IsServer());
         
         if (GetGame().IsServer())
         {
-            Print("[KOTH_NotificationModule] Server-side - skipping widget creation");
+            //Print("[KOTH_NotificationModule] Server-side - skipping widget creation");
             return;
         }
         
-        Print("[KOTH_NotificationModule] Client - Initializing container");
+        //Print("[KOTH_NotificationModule] Client - Initializing container");
         InitializeContainer();
     }
 
@@ -52,15 +52,15 @@ class KOTH_NotificationModule: CF_ModuleWorld
 
     static void ShowNotificationAdvanced(string message, string money, int moneyColor, string xp, int xpColor, int accentColor, float displayTime = 3.0, PlayerIdentity sendTo = NULL)
     {
-        Print("[KOTH_NotificationModule] ShowNotificationAdvanced called - Server: " + IsMissionHost());
+        //Print("[KOTH_NotificationModule] ShowNotificationAdvanced called - Server: " + IsMissionHost());
         
         if (IsMissionHost())
         {
-            Print("[KOTH_NotificationModule] Sending RPC to clients: " + message);
+            //Print("[KOTH_NotificationModule] Sending RPC to clients: " + message);
             auto instance = GetInstance();
             if (!instance)
             {
-                Print("[KOTH_NotificationModule] ERROR: GetInstance returned NULL!");
+                //Print("[KOTH_NotificationModule] ERROR: GetInstance returned NULL!");
                 return;
             }
             auto rpc = instance.Expansion_CreateRPC("RPC_CompactNotification");
@@ -72,61 +72,61 @@ class KOTH_NotificationModule: CF_ModuleWorld
             rpc.Write(accentColor);
             rpc.Write(displayTime);
             rpc.Expansion_Send(true, sendTo);
-            Print("[KOTH_NotificationModule] RPC sent successfully");
+            //Print("[KOTH_NotificationModule] RPC sent successfully");
         }
         else
         {
-            Print("[KOTH_NotificationModule] Client-side direct call: " + message);
+            //Print("[KOTH_NotificationModule] Client-side direct call: " + message);
             GetInstance().CreateNotificationAdvanced(message, money, moneyColor, xp, xpColor, accentColor, displayTime);
         }
     }
 
     void RPC_CompactNotification(PlayerIdentity sender, Object target, ParamsReadContext ctx)
     {
-        Print("[KOTH_NotificationModule] RPC_CompactNotification received on client");
+        //Print("[KOTH_NotificationModule] RPC_CompactNotification received on client");
         string message;
         if (!ctx.Read(message))
         {
-            Print("[KOTH_NotificationModule] ERROR: Failed to read message");
+            //Print("[KOTH_NotificationModule] ERROR: Failed to read message");
             return;
         }
         string money;
         if (!ctx.Read(money))
         {
-            Print("[KOTH_NotificationModule] ERROR: Failed to read money");
+            //Print("[KOTH_NotificationModule] ERROR: Failed to read money");
             return;
         }
         int moneyColor;
         if (!ctx.Read(moneyColor))
         {
-            Print("[KOTH_NotificationModule] ERROR: Failed to read moneyColor");
+            //Print("[KOTH_NotificationModule] ERROR: Failed to read moneyColor");
             return;
         }
         string xp;
         if (!ctx.Read(xp))
         {
-            Print("[KOTH_NotificationModule] ERROR: Failed to read xp");
+            //Print("[KOTH_NotificationModule] ERROR: Failed to read xp");
             return;
         }
         int xpColor;
         if (!ctx.Read(xpColor))
         {
-            Print("[KOTH_NotificationModule] ERROR: Failed to read xpColor");
+            //Print("[KOTH_NotificationModule] ERROR: Failed to read xpColor");
             return;
         }
         int accentColor;
         if (!ctx.Read(accentColor))
         {
-            Print("[KOTH_NotificationModule] ERROR: Failed to read accentColor");
+            //Print("[KOTH_NotificationModule] ERROR: Failed to read accentColor");
             return;
         }
         float displayTime;
         if (!ctx.Read(displayTime))
         {
-            Print("[KOTH_NotificationModule] ERROR: Failed to read displayTime");
+            //Print("[KOTH_NotificationModule] ERROR: Failed to read displayTime");
             return;
         }
-        Print("[KOTH_NotificationModule] RPC data read successfully: " + message);
+        //Print("[KOTH_NotificationModule] RPC data read successfully: " + message);
         CreateNotificationAdvanced(message, money, moneyColor, xp, xpColor, accentColor, displayTime);
     }
 
@@ -139,17 +139,17 @@ class KOTH_NotificationModule: CF_ModuleWorld
     {
         if (!m_Container)
         {
-            Print("[KOTH_NotificationModule] Container not initialized, attempting lazy initialization");
+            //Print("[KOTH_NotificationModule] Container not initialized, attempting lazy initialization");
             InitializeContainer();
         }
         
         if (!m_Container)
         {
-            Print("[KOTH_NotificationModule] ERROR: Container still not initialized after lazy init!");
+            //Print("[KOTH_NotificationModule] ERROR: Container still not initialized after lazy init!");
             return;
         }
         
-        Print("[KOTH_NotificationModule] Showing: " + message);
+        //Print("[KOTH_NotificationModule] Showing: " + message);
         if (m_ActiveNotifications.Count() >= MAX_NOTIFICATIONS)
         {
             if (m_ActiveNotifications[0])
@@ -165,23 +165,23 @@ class KOTH_NotificationModule: CF_ModuleWorld
     
     void InitializeContainer()
     {
-        Print("[KOTH_NotificationModule] InitializeContainer - Creating widgets now");
+        //Print("[KOTH_NotificationModule] InitializeContainer - Creating widgets now");
         
         Widget rootWidget = GetGame().GetWorkspace().CreateWidgets("DayZ_KOTH/gui/layouts/compact_notification_container.layout");
         if (!rootWidget)
         {
-            Print("[KOTH_NotificationModule] ERROR: Failed to create container root widget!");
+            //Print("[KOTH_NotificationModule] ERROR: Failed to create container root widget!");
             return;
         }
-        Print("[KOTH_NotificationModule] Root widget created: " + rootWidget);
+        //Print("[KOTH_NotificationModule] Root widget created: " + rootWidget);
         
         m_Container = rootWidget.FindAnyWidget("CompactNotificationContainer");
         if (!m_Container)
         {
-            Print("[KOTH_NotificationModule] ERROR: CompactNotificationContainer widget not found!");
+            //Print("[KOTH_NotificationModule] ERROR: CompactNotificationContainer widget not found!");
             return;
         }
-        Print("[KOTH_NotificationModule] Container initialized successfully: " + m_Container);
+        //Print("[KOTH_NotificationModule] Container initialized successfully: " + m_Container);
     }
 
     void UpdatePositions()
@@ -231,13 +231,13 @@ class KOTH_CompactNotification: ScriptedWidgetEventHandler
     {
         if (!parent)
         {
-            Print("[KOTH_CompactNotification] ERROR: Parent widget is null!");
+            //Print("[KOTH_CompactNotification] ERROR: Parent widget is null!");
             return;
         }
         m_Root = GetGame().GetWorkspace().CreateWidgets("DayZ_KOTH/gui/layouts/compact_notification.layout", parent);
         if (!m_Root)
         {
-            Print("[KOTH_CompactNotification] ERROR: Failed to create notification widget!");
+            //Print("[KOTH_CompactNotification] ERROR: Failed to create notification widget!");
             return;
         }
         m_Root.SetHandler(this);
@@ -250,7 +250,7 @@ class KOTH_CompactNotification: ScriptedWidgetEventHandler
         m_XP = TextWidget.Cast(m_Root.FindAnyWidget("NotificationXP"));
         m_AccentBar = m_Root.FindAnyWidget("AccentBar");
         
-        Print("[KOTH_CompactNotification] Money color: " + moneyColor + " XP color: " + xpColor);
+        //Print("[KOTH_CompactNotification] Money color: " + moneyColor + " XP color: " + xpColor);
         
         if (m_Message)
         {

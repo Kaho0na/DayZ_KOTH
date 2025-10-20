@@ -44,7 +44,7 @@ class KOTH_Area : EffectArea
         m_Position = position;
         m_Position[1] = 0;
         
-        Print("[KOTH_Area] Initializing at " + m_Position + " with radius " + radius);
+        //Print("[KOTH_Area] Initializing at " + m_Position + " with radius " + radius);
         
         CreateTrigger(m_Position, m_Radius);
         
@@ -62,7 +62,7 @@ class KOTH_Area : EffectArea
         {
             m_KOTH_Trigger.SetCollisionCylinder(radius, m_PositiveHeight);
             m_KOTH_Trigger.KOTH_Init(this);
-            Print("[KOTH_Area] Trigger created successfully");
+            //Print("[KOTH_Area] Trigger created successfully");
         }
         else
         {
@@ -94,7 +94,7 @@ class KOTH_Area : EffectArea
     {
         if (m_KOTH_Trigger && m_KOTH_Trigger.HasPlayersInside())
         {
-            Print("[KOTH_Area] Zone active - players inside: " + m_KOTH_Trigger.GetPlayerCount());
+            //Print("[KOTH_Area] Zone active - players inside: " + m_KOTH_Trigger.GetPlayerCount());
         }
     }
 

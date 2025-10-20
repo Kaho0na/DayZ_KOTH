@@ -43,7 +43,7 @@ class KOTH_TeamMenu: ExpansionScriptViewMenu
             m_KOTHTeamMenuController = null;
     }
 
-    	override void OnShow()
+    override void OnShow()
 	{
 		super.OnShow();
 		
