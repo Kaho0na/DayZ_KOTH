@@ -4,7 +4,7 @@ class KOTH_NotificationModule: CF_ModuleWorld
     protected Widget m_Container;
     protected ref array<ref KOTH_CompactNotification> m_ActiveNotifications;
     protected const int MAX_NOTIFICATIONS = 5;
-    protected const float NOTIFICATION_SPACING = 10.0;
+    protected const float NOTIFICATION_SPACING = 6.0;
 
     void KOTH_NotificationModule()
     {
@@ -187,13 +187,19 @@ class KOTH_NotificationModule: CF_ModuleWorld
     void UpdatePositions()
     {
         int count = m_ActiveNotifications.Count();
-        int i;
-        for (i = 0; i < count; i++)
+        float accumulatedHeight = 0;
+        
+        for (int i = 0; i < count; i++)
         {
-            if (m_ActiveNotifications[i] && m_ActiveNotifications[i].m_Root)
+            int reverseIndex = count - 1 - i;
+            
+            if (m_ActiveNotifications[reverseIndex] && m_ActiveNotifications[reverseIndex].m_Root)
             {
-                float yPos = (count - 1 - i) * NOTIFICATION_SPACING;
-                m_ActiveNotifications[i].m_Root.SetPos(0, yPos);
+                m_ActiveNotifications[reverseIndex].m_Root.SetPos(0, accumulatedHeight);
+                
+                float widgetHeight;
+                m_ActiveNotifications[reverseIndex].m_Root.GetScreenSize(widgetHeight, widgetHeight);
+                accumulatedHeight += widgetHeight + 0.5;
             }
         }
     }
