@@ -4,7 +4,7 @@ class KOTH_NotificationModule: CF_ModuleWorld
     protected Widget m_Container;
     protected ref array<ref KOTH_CompactNotification> m_ActiveNotifications;
     protected const int MAX_NOTIFICATIONS = 5;
-    protected const float NOTIFICATION_SPACING = 28.0;
+    protected const float NOTIFICATION_SPACING = 10.0;
 
     void KOTH_NotificationModule()
     {

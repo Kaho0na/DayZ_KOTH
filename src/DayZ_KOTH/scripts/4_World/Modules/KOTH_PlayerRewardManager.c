@@ -334,7 +334,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         AddPlayerMoney(player, m_CaptureReward, "Zone Capture");
         AddPlayerXP(player, m_CaptureXP, "Zone Capture");
         
-        ExpansionNotification("Capture Reward", "+$" + m_CaptureReward + " | +" + m_CaptureXP + " XP (capturing zone)").Success(ident);
+        KOTH_NotificationModule.ShowNotificationAdvanced("Objective Offensive", "$" + m_CaptureReward.ToString(), ARGB(255, 255, 215, 0), m_CaptureXP.ToString() + "XP", ARGB(255, 144, 238, 144), ARGB(255, 0, 255, 0), 3.0, ident);
         
         Print("[KOTH_PlayerRewardManager] Capture reward given to " + ident.GetName());
     }
@@ -355,7 +355,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         
         RemovePlayerMoney(player, m_SuicidePenalty, "Suicide Penalty");
         
-        ExpansionNotification("Suicide Penalty", "-$" + m_SuicidePenalty).Error(ident);
+        KOTH_NotificationModule.ShowNotificationAdvanced("Suicide Penalty", "-$" + m_SuicidePenalty.ToString(), ARGB(255, 255, 0, 0), "", ARGB(255, 255, 255, 255), ARGB(255, 128, 128, 128), 3.0, ident);
         
         ResetKillstreak(uid);
         
@@ -391,7 +391,6 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         if (lastRevivedUID == patientUID)
         {
             ExpansionNotification("Revive Farming Detected", "Cannot revive the same player twice in a row").Error(medicIdent);
-            Print("[KOTH_PlayerRewardManager] Revive farming blocked - " + medicIdent.GetName() + " tried to revive " + patientUID + " consecutively");
             return;
         }
         
@@ -410,7 +409,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
             patientName = patient.GetType();
         }
         
-        ExpansionNotification("Revive Reward", "+$" + m_ReviveReward + " | +" + m_ReviveXP + " XP (revived " + patientName + ")").Success(medicIdent);
+        KOTH_NotificationModule.ShowNotificationAdvanced("Team Player Revived", "$" + m_ReviveReward.ToString(), ARGB(255, 0, 255, 0), m_ReviveXP.ToString() + "XP", ARGB(255, 144, 238, 144), ARGB(255, 0, 128, 255), 3.0, medicIdent);
         
         Print("[KOTH_PlayerRewardManager] Revive reward given to " + medicIdent.GetName() + " for reviving " + patientName);
     }
@@ -439,7 +438,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
             victimName = victim.GetType();
         }
         
-        ExpansionNotification("Team Knockdown Penalty", "-$" + m_TeamKnockdownPenalty + " (knocked down " + victimName + ")").Error(attackerIdent);
+        KOTH_NotificationModule.ShowNotificationAdvanced("Team Attack Penalty", "-$" + m_TeamKnockdownPenalty.ToString(), ARGB(255, 255, 69, 0), "", ARGB(255, 255, 255, 255), ARGB(255, 255, 0, 0), 4.0, attackerIdent);
         
         Print("[KOTH_PlayerRewardManager] Team knockdown penalty given to " + attackerIdent.GetName() + " for knocking down " + victimName);
     }
@@ -471,9 +470,8 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
             victimName = victim.GetType();
         }
         
-        ExpansionNotification("Assist Reward", "+$" + m_AssistReward + " | +" + m_AssistXP + " XP (knocked down " + victimName + ")").Success(attackerIdent);
+        KOTH_NotificationModule.ShowNotificationAdvanced("Team Assist", "$" + m_AssistReward.ToString(), ARGB(255, 144, 238, 144), m_AssistXP.ToString() + "XP", ARGB(255, 173, 216, 230), ARGB(255, 0, 191, 255), 3.0, attackerIdent);
         
-        Print("[KOTH_PlayerRewardManager] Assist reward given to " + attackerIdent.GetName() + " for knocking down " + victimName);
     }
     
     void ProcessKill(PlayerBase killer, PlayerBase victim)
@@ -515,7 +513,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         if (killerTeam == victimTeam)
         {
             RemovePlayerMoney(killer, m_TeamKillPenalty, "Team Kill Penalty");
-            ExpansionNotification("Team Kill Penalty", "-$" + m_TeamKillPenalty + " removed from your account").Error(killerIdent);
+            KOTH_NotificationModule.ShowNotificationAdvanced("Teamkill Penalty", "-$" + m_TeamKillPenalty.ToString(), ARGB(255, 255, 0, 0), "", ARGB(255, 255, 255, 255), ARGB(255, 139, 0, 0), 4.0, killerIdent);
             ResetKillstreak(killerUID);
         }
         else
@@ -543,8 +541,8 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
             
             if (wasHeadshot)
             {
-                moneyReward = m_HeadshotReward;
-                xpReward = m_HeadshotXP;
+                moneyReward = m_KillReward + m_HeadshotReward;
+                xpReward = m_KillXP + m_HeadshotXP;
                 rewardType = "Headshot Kill";
                 
                 if (distanceInt > data.LongestHeadshot)
@@ -565,11 +563,12 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
             
             if (wasHeadshot)
             {
-                ExpansionNotification("HEADSHOT BONUS!", "+$" + moneyReward + " | +" + xpReward + " XP | " + distanceInt + "m").Success(killerIdent);
+                KOTH_NotificationModule.ShowNotificationAdvanced("Enemy Killed (" + distanceInt.ToString() + "m)", "$" + moneyReward.ToString(), ARGB(255, 0, 255, 0), xpReward.ToString() + "XP", ARGB(255, 144, 238, 144), ARGB(255, 255, 255, 0), 3.0, killerIdent);
+                KOTH_NotificationModule.ShowNotificationAdvanced("BONUS HEADSHOT! (" + distanceInt.ToString() + "m)", "$" + moneyReward.ToString(), ARGB(255, 255, 215, 0), xpReward.ToString() + "XP", ARGB(255, 255, 165, 0), ARGB(255, 255, 140, 0), 3.0, killerIdent);
             }
             else
             {
-                ExpansionNotification("Kill Reward", "+$" + moneyReward + " | +" + xpReward + " XP | " + distanceInt + "m").Success(killerIdent);
+                KOTH_NotificationModule.ShowNotificationAdvanced("Enemy Killed (" + distanceInt.ToString() + "m)", "$" + moneyReward.ToString(), ARGB(255, 0, 255, 0), xpReward.ToString() + "XP", ARGB(255, 144, 238, 144), ARGB(255, 255, 255, 0), 3.0, killerIdent);
             }
         }
     }

@@ -9,7 +9,6 @@ class KOTH_Area : EffectArea
 {
     KOTH_AreaTrigger m_KOTH_Trigger;
     protected int m_UpdateRate = 1000;
-    protected int m_RewardUpdateRate = 1000;
     
     static KOTH_Area s_Instance;
     
@@ -52,7 +51,7 @@ class KOTH_Area : EffectArea
         if (GetGame().IsServer())
         {
             GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(UpdateZone, m_UpdateRate, true);
-            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(UpdateCaptureRewards, m_RewardUpdateRate, true);
+            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(UpdateCaptureRewards, m_UpdateRate, true);
 
         }
     }
