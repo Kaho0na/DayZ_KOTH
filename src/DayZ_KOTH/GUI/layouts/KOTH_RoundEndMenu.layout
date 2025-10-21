@@ -864,6 +864,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
          vexactpos 0
          hexactsize 0
          vexactsize 0
+         scriptclass "ViewBinding"
          Padding 3
          Margin 0
          "Size To Content H" 1
@@ -872,6 +873,12 @@ FrameWidgetClass KOTH_RoundEndMenu {
          content_valign center
          Columns 1
          Rows 100
+                                   {
+          ScriptParamsClass {
+          Binding_Name "ZoneEntries"
+          Binding_Type "viewarray"
+          }
+          }
         }
        }
       }

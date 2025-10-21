@@ -13,7 +13,9 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
     protected MissionGameplay m_Mission;
     protected KOTH_RoundStatsTracker m_RoundStatsTracker;
     protected KOTH_RoundEndModule m_RoundEndModule;
-    
+    protected ref array<ref KOTH_RoundEndZoneEntry> m_ZoneEntries;
+    protected bool m_PlayerHasVoted = false;
+
     protected Widget m_VotingPanel;
     protected GridSpacerWidget m_ZoneVoteGrid;
     
@@ -64,6 +66,8 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         m_ZoneVotes = new map<string, int>();
         m_PlayerVotedZone = "";
         m_CountdownTimer = 60;
+        m_ZoneEntries = new array<ref KOTH_RoundEndZoneEntry>();
+
 
         m_RoundEndModule = KOTH_RoundEndModule.GetInstance();
         if (!m_RoundEndModule)
@@ -414,55 +418,50 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
             return;
         }
         
-        Print("[KOTH_RoundEndMenu] Creating vote buttons for " + m_AvailableZones.Count() + " zones");
+        Print("[KOTH_RoundEndMenu] Creating vote entries for " + m_AvailableZones.Count() + " zones");
         
-        Widget child = m_ZoneVoteGrid.GetChildren();
-        while (child)
+        // Clear controller's collection
+        m_RoundEndMenuController.ZoneEntries.Clear();
+        
+        // Create new entries
+        for (int i = 0; i < m_AvailableZones.Count(); i++)
         {
-            Widget next = child.GetSibling();
-            delete child;
-            child = next;
+            string zoneName = m_AvailableZones.Get(i);
+            KOTH_RoundEndZoneEntry entry = new KOTH_RoundEndZoneEntry(i, zoneName);
+            
+            // ADD TO CONTROLLER COLLECTION (this binds to the grid)
+            m_RoundEndMenuController.ZoneEntries.Insert(entry);
+            
+            Print("[KOTH_RoundEndMenu] Created entry " + i + ": " + zoneName);
         }
         
-        int index = 0;
-        foreach (string zoneName : m_AvailableZones)
+        // Notify the grid to update
+        m_RoundEndMenuController.NotifyPropertyChanged("ZoneEntries");
+    }
+
+    void VoteForZone(int index, string zoneName)
+    {
+        if (m_PlayerHasVoted)
         {
-            Widget buttonPanel = GetGame().GetWorkspace().CreateWidgets("DayZ_KOTH/GUI/layouts/KOTH_VoteButton.layout", m_ZoneVoteGrid);
-            if (!buttonPanel)
-            {
-                Error("[KOTH_RoundEndMenu] Failed to create vote button panel!");
-                continue;
-            }
-            
-            buttonPanel.SetUserID(index);
-            
-            TextWidget zoneNameText = TextWidget.Cast(buttonPanel.FindAnyWidget("ZoneNameText"));
-            TextWidget voteCountText = TextWidget.Cast(buttonPanel.FindAnyWidget("VoteCountText"));
-            
-            if (zoneNameText)
-            {
-                zoneNameText.SetText(zoneName);
-                Print("[KOTH_RoundEndMenu] Button " + index + " zone name set: " + zoneName);
-            }
-            else
-            {
-                Error("[KOTH_RoundEndMenu] Could not find ZoneNameText widget!");
-            }
-            
-            if (voteCountText)
-            {
-                voteCountText.SetText("0 votes");
-            }
-            else
-            {
-                Error("[KOTH_RoundEndMenu] Could not find VoteCountText widget!");
-            }
-            
-            m_ZoneVotes.Set(zoneName, 0);
-            index++;
+            Print("[KOTH_RoundEndMenu] Player already voted, ignoring");
+            return;
         }
         
-        Print("[KOTH_RoundEndMenu] Created " + index + " vote buttons");
+        Print("[KOTH_RoundEndMenu] Player voted for: " + zoneName);
+        
+        m_PlayerHasVoted = true;
+        
+        // Lock ALL entries after voting
+        for (int i = 0; i < m_RoundEndMenuController.ZoneEntries.Count(); i++)
+        {
+            KOTH_RoundEndZoneEntry entry = m_RoundEndMenuController.ZoneEntries.Get(i);
+            entry.Lock();
+        }
+        
+        if (m_RoundEndModule)
+        {
+            m_RoundEndModule.SendVote(zoneName);
+        }
     }
     
     void OnVoteCountsUpdated(map<string, int> votes)
@@ -512,28 +511,16 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
     
     void UpdateVoteCounts(map<string, int> votes)
     {
-        if (!m_ZoneVoteGrid)
-            return;
-        
-        Widget child = m_ZoneVoteGrid.GetChildren();
-        int index = 0;
-        
-        while (child)
+        for (int i = 0; i < m_RoundEndMenuController.ZoneEntries.Count(); i++)
         {
-            if (index < m_AvailableZones.Count())
-            {
-                string zoneName = m_AvailableZones.Get(index);
-                TextWidget voteCountText = TextWidget.Cast(child.FindAnyWidget("VoteCountText"));
-                
-                if (voteCountText && votes.Contains(zoneName))
-                {
-                    int count = votes.Get(zoneName);
-                    voteCountText.SetText(count.ToString() + " votes");
-                }
-            }
+            KOTH_RoundEndZoneEntry entry = m_RoundEndMenuController.ZoneEntries.Get(i);
+            string zoneName = entry.GetZoneName();
             
-            child = child.GetSibling();
-            index++;
+            if (votes.Contains(zoneName))
+            {
+                int count = votes.Get(zoneName);
+                entry.UpdateVoteCount(count);
+            }
         }
     }
 
@@ -587,4 +574,5 @@ class KOTH_RoundEndMenuController: ExpansionViewController
     
     string VotingHeader;
     string CountdownText;
+    ref ObservableCollection<ref KOTH_RoundEndZoneEntry> ZoneEntries = new ObservableCollection<ref KOTH_RoundEndZoneEntry>(this);
 }
