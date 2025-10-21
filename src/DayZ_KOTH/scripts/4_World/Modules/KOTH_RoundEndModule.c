@@ -140,7 +140,7 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         {
             m_EndScreenDisplaySeconds = 10;
         }
-        
+
         m_VoteTimeSeconds = settings.VoteTimeSeconds;
         
         if (settings.ZoneSelectionMode == 2)
@@ -199,15 +199,15 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         Print("[KOTH_RoundEndModule] STEP 5: Showing round end screen...");
         ShowRoundEndScreenToAllClients(winningTeam);
         
-        float m_tempTeleportDelay = m_EndScreenDisplaySeconds - 3;
-        if(m_tempTeleportDelay > 1)
+        float teleportDelay = m_EndScreenDisplaySeconds - 3;
+        if(teleportDelay > 1)
         {
-            float teleportDelay = (m_EndScreenDisplaySeconds - 3) * 1000;
+            teleportDelay = teleportDelay * 1000;
             
         }
         else
         {
-            float teleportDelay = 1000;
+            teleportDelay = 1000;
         }
 
         float newRoundDelay = teleportDelay + 10000;
