@@ -1,8 +1,8 @@
 /**
- * KOTH_GameMode.c (INTEGRATED WITH STATS TRACKER)
+ * KOTH_GameMode.c (FIXED - NO AUTO RESTART)
  *
  * King of the Hill by Kahoona
- * Now tells stats tracker when rounds start/end
+ * Removed automatic round restart - KOTH_RoundEndModule handles the flow
  *
  * Place in: 4_World/Modules/KOTH_GameMode.c
  */
@@ -209,9 +209,7 @@ class KOTH_GameMode: CF_ModuleWorld
         Print("[KOTH_GameMode] Invoking SI_OnRoundEnd...");
         SI_OnRoundEnd.Invoke(winningTeam, m_EastScore, m_WestScore);
         Print("[KOTH_GameMode] ✅ SI_OnRoundEnd invoked");
-        
-        Print("[KOTH_GameMode] Scheduling new round in 30 seconds...");
-        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(StartRound, 30000, false);
+        Print("[KOTH_GameMode] Round end control passed to KOTH_RoundEndModule");
         Print("[KOTH_GameMode] ============================================");
     }
     
@@ -355,7 +353,7 @@ class KOTH_GameMode: CF_ModuleWorld
         message += "═══════════════════════════════\n";
         message += "Final Score:\n";
         message += "East: " + eastScore + " | West: " + westScore + "\n";
-        message += "\nNew round starting in 30 seconds...";
+        message += "\nNew round starting soon...";
         
         PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
         if (player)
@@ -384,12 +382,35 @@ class KOTH_GameMode: CF_ModuleWorld
         }
     }
     
-    int GetEastScore() { return m_EastScore; }
-    int GetWestScore() { return m_WestScore; }
-    bool IsRoundActive() { return m_RoundActive; }
-    int GetScoreLimit() { return m_ScoreLimit; }
-    float GetCaptureProgress() { return m_CaptureProgress; }
-    string GetCapturingTeam() { return m_CapturingTeam; }
+    int GetEastScore()
+    {
+        return m_EastScore;
+    }
+    
+    int GetWestScore()
+    {
+        return m_WestScore;
+    }
+    
+    bool IsRoundActive()
+    {
+        return m_RoundActive;
+    }
+    
+    int GetScoreLimit()
+    {
+        return m_ScoreLimit;
+    }
+    
+    float GetCaptureProgress()
+    {
+        return m_CaptureProgress;
+    }
+    
+    string GetCapturingTeam()
+    {
+        return m_CapturingTeam;
+    }
     
     void SetScoreLimit(int limit)
     {

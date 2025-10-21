@@ -113,11 +113,36 @@ class KOTH_AreaTrigger : CylinderTrigger
     protected EffectArea m_KOTH_EffectArea;
     protected ref array<PlayerBase> m_PlayersInside;
     protected ref array<PlayerBase> m_AIInside;
+    private bool m_IsActive = true;
+    
     
     void KOTH_AreaTrigger()
     {
         m_PlayersInside = new array<PlayerBase>();
         m_AIInside = new array<PlayerBase>();
+        
+
+    }
+
+    void SetActive(bool active)
+    {
+        m_IsActive = active;
+        
+        if (!active)
+        {
+            m_PlayersInside.Clear();
+            m_AIInside.Clear();
+            Print("[KOTH_AreaTrigger] Trigger deactivated and cleared");
+        }
+        else
+        {
+            Print("[KOTH_AreaTrigger] Trigger activated");
+        }
+    }
+
+    bool IsActive()
+    {
+        return m_IsActive;
     }
     
     void KOTH_Init(EffectArea area)
@@ -141,6 +166,9 @@ class KOTH_AreaTrigger : CylinderTrigger
     
     override void OnEnterServerEvent(TriggerInsider insider)
     {
+        if (!m_IsActive)
+            return;
+        
         super.OnEnterServerEvent(insider);
         
         if (!insider)
@@ -184,6 +212,9 @@ class KOTH_AreaTrigger : CylinderTrigger
     
     override void OnLeaveServerEvent(TriggerInsider insider)
     {
+        if (!m_IsActive)
+            return;
+        
         super.OnLeaveServerEvent(insider);
         
         if (!insider)

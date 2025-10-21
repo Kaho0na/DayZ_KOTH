@@ -1,8 +1,8 @@
 /**
- * KOTH_RoundEndModule.c (CORRECTED - EXPANSION MENU STANDARD)
+ * KOTH_RoundEndModule.c (FIXED ROUND END FLOW)
  *
  * King of the Hill by Kahoona
- * Orchestrates round end: stats, bonuses, voting, teleportation, AI cleanup
+ * Orchestrates round end: cleanup → stats → bonuses → menu → teleport → new round
  *
  * Place in: 4_World/Modules/KOTH_RoundEndModule.c
  */
@@ -28,12 +28,15 @@ class KOTH_RoundEndModule: CF_ModuleWorld
     private float m_VoteTimeSeconds;
     private bool m_VotingEnabled;
     
+    private bool m_RoundEndInProgress;
+    
     void KOTH_RoundEndModule()
     {
         s_Instance = this;
         m_ZoneVotes = new map<string, int>();
         m_AvailableZones = new array<string>();
         m_RoundEndMenuInvoker = new ScriptInvoker();
+        m_RoundEndInProgress = false;
         
         if (!SI_UpdateVoteCounts)
             SI_UpdateVoteCounts = new ScriptInvoker();
@@ -136,6 +139,16 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         m_VoteTimeSeconds = settings.VoteTimeSeconds;
         m_VotingEnabled = (settings.ZoneSelectionMode == 2);
         
+        if (m_VoteTimeSeconds > m_EndScreenDisplaySeconds)
+        {
+            m_VoteTimeSeconds = m_EndScreenDisplaySeconds;
+        }
+        
+        if (m_VoteTimeSeconds < 30)
+        {
+            m_VoteTimeSeconds = 30;
+        }
+        
         Print("[KOTH_RoundEndModule] Settings loaded - Display: " + m_EndScreenDisplaySeconds + "s, Vote: " + m_VoteTimeSeconds + "s, Voting: " + m_VotingEnabled);
     }
     
@@ -151,38 +164,101 @@ class KOTH_RoundEndModule: CF_ModuleWorld
     
     void OnRoundEnd(string winningTeam, int eastScore, int westScore)
     {
-        if (!GetGame().IsServer())
+        if (!GetGame().IsServer() || m_RoundEndInProgress)
             return;
         
+        m_RoundEndInProgress = true;
+        
         Print("[KOTH_RoundEndModule] ============================================");
-        Print("[KOTH_RoundEndModule] OnRoundEnd INVOKED");
+        Print("[KOTH_RoundEndModule] ROUND END SEQUENCE STARTED");
         Print("[KOTH_RoundEndModule] Winner: " + winningTeam);
         Print("[KOTH_RoundEndModule] Scores - East: " + eastScore + ", West: " + westScore);
         Print("[KOTH_RoundEndModule] ============================================");
         
-        Print("[KOTH_RoundEndModule] Step 1: Calculating and awarding bonuses...");
+        Print("[KOTH_RoundEndModule] STEP 1: Stopping zone triggers...");
+        StopZoneTriggers();
+        
+        Print("[KOTH_RoundEndModule] STEP 2: Cleaning up AIs...");
+        CleanupAIs();
+        
+        Print("[KOTH_RoundEndModule] STEP 3: Calculating and awarding bonuses...");
         CalculateAndAwardBonuses(winningTeam);
         
-        Print("[KOTH_RoundEndModule] Step 2: Preparing next zone...");
+        Print("[KOTH_RoundEndModule] STEP 4: Preparing next zone...");
         PrepareNextZone();
         
-        Print("[KOTH_RoundEndModule] Step 3: Showing round end screen to all clients...");
+        Print("[KOTH_RoundEndModule] STEP 5: Showing round end screen...");
         ShowRoundEndScreenToAllClients(winningTeam);
         
-        Print("[KOTH_RoundEndModule] Step 4: Scheduling AI cleanup in 5 seconds...");
-        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(CleanupAIs, 5000, false);
+        float menuDisplayTime = m_EndScreenDisplaySeconds * 1000;
         
-        float teleportDelay = m_EndScreenDisplaySeconds - 5.0;
-        if (teleportDelay < 1.0)
-            teleportDelay = 1.0;
+        Print("[KOTH_RoundEndModule] STEP 6: Scheduling teleport in " + m_EndScreenDisplaySeconds + "s...");
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(TeleportAllPlayers, menuDisplayTime, false);
         
-        Print("[KOTH_RoundEndModule] Step 5: Scheduling player teleportation in " + teleportDelay + " seconds...");
-        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(TeleportAllPlayers, teleportDelay * 1000, false);
+        float newRoundDelay = menuDisplayTime + 10000;
         
-        Print("[KOTH_RoundEndModule] All round end steps initiated");
+        Print("[KOTH_RoundEndModule] STEP 7: Scheduling new round in " + (m_EndScreenDisplaySeconds + 10) + "s...");
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(StartNewRound, newRoundDelay, false);
+        
+        Print("[KOTH_RoundEndModule] Round end sequence initiated");
         Print("[KOTH_RoundEndModule] ============================================");
     }
-
+    
+    void StopZoneTriggers()
+    {
+        KOTH_Area mainZone = KOTH_Area.GetInstance();
+        if (mainZone)
+        {
+            KOTH_AreaTrigger trigger = mainZone.GetMainTrigger();
+            if (trigger)
+            {
+                trigger.SetActive(false);
+                Print("[KOTH_RoundEndModule] Main zone trigger deactivated");
+            }
+        }
+        
+        KOTH_PriorityZoneManager.StopMovement();
+        Print("[KOTH_RoundEndModule] Priority zone movement stopped");
+        
+        if (m_GameMode)
+        {
+            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(m_GameMode.UpdateCapture);
+            Print("[KOTH_RoundEndModule] Capture update loop stopped");
+        }
+        
+        Print("[KOTH_RoundEndModule] All zone triggers stopped");
+    }
+    
+    void CleanupAIs()
+    {
+        if (!GetGame().IsServer())
+            return;
+        
+        Print("[KOTH_RoundEndModule] Cleaning up AI entities...");
+        
+        int aiCount = 0;
+        ref array<Man> entities = new array<Man>;
+        GetGame().GetPlayers(entities);
+        
+        for (int i = 0; i < entities.Count(); i++)
+        {
+            PlayerBase entity = PlayerBase.Cast(entities.Get(i));
+            if (!entity)
+                continue;
+            
+            if (!entity.GetIdentity())
+            {
+                eAIBase ai = eAIBase.Cast(entity);
+                if (ai)
+                {
+                    GetGame().ObjectDelete(ai);
+                    aiCount++;
+                }
+            }
+        }
+        
+        Print("[KOTH_RoundEndModule] Cleaned up " + aiCount + " AI entities");
+    }
     
     void CalculateAndAwardBonuses(string winningTeam)
     {
@@ -440,7 +516,9 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         float displayDuration;
         if (!ctx.Read(displayDuration))
             return;
-        
+
+        m_EndScreenDisplaySeconds = displayDuration;
+
         bool votingEnabled;
         if (!ctx.Read(votingEnabled))
             return;
@@ -479,12 +557,6 @@ class KOTH_RoundEndModule: CF_ModuleWorld
             return;
         }
 
-        if (GetDayZGame().GetExpansionGame().GetExpansionUIManager().GetMenu())
-        {
-            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(Exec_ShowRoundEndMenu, 500, false, zones, votingEnabled);
-            return;
-        }
-
         if (GetDayZGame().GetMissionState() != DayZGame.MISSION_STATE_GAME)
         {
             GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(Exec_ShowRoundEndMenu, 500, false, zones, votingEnabled);
@@ -504,7 +576,23 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         
         m_RoundEndMenuInvoker.Invoke(zones, votingEnabled);
         
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(CloseMenuAfterDuration, m_EndScreenDisplaySeconds * 1000, false);
+        
         Print("[KOTH_RoundEndModule] CLIENT: Round end menu created and invoked");
+    }
+    
+    void CloseMenuAfterDuration()
+    {
+        if (!GetGame().IsClient())
+            return;
+        
+        Print("[KOTH_RoundEndModule] CLIENT: Auto-closing menu after duration");
+        
+        ExpansionScriptViewMenuBase m_CurrentMenu = GetDayZGame().GetExpansionGame().GetExpansionUIManager().GetMenu();
+        if (m_CurrentMenu)
+        {
+            GetDayZGame().GetExpansionGame().GetExpansionUIManager().CloseMenu();
+        }
     }
     
     bool OpenRoundEndMenu()
@@ -610,42 +698,12 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         return SI_UpdateVoteCounts;
     }
     
-    void CleanupAIs()
-    {
-        if (!GetGame().IsServer())
-            return;
-        
-        Print("[KOTH_RoundEndModule] Cleaning up AI entities...");
-        
-        int aiCount = 0;
-        ref array<Man> entities = new array<Man>;
-        GetGame().GetPlayers(entities);
-        
-        for (int i = 0; i < entities.Count(); i++)
-        {
-            PlayerBase entity = PlayerBase.Cast(entities.Get(i));
-            if (!entity)
-                continue;
-            
-            if (!entity.GetIdentity())
-            {
-                eAIBase ai = eAIBase.Cast(entity);
-                if (ai)
-                {
-                    GetGame().ObjectDelete(ai);
-                    aiCount++;
-                }
-            }
-        }
-        
-        Print("[KOTH_RoundEndModule] Cleaned up " + aiCount + " AI entities");
-    }
-    
     void TeleportAllPlayers()
     {
         if (!GetGame().IsServer() || !m_ZoneManager)
             return;
         
+        Print("[KOTH_RoundEndModule] ============================================");
         Print("[KOTH_RoundEndModule] Teleporting all players to new spawn points...");
         
         string nextZone = DetermineNextZone();
@@ -686,12 +744,85 @@ class KOTH_RoundEndModule: CF_ModuleWorld
             
             if (spawnPos != "0 0 0")
             {
-                player.SetPosition(spawnPos);
+                KOTH_SpawnUtils.SpawnPlayerAtPosition(player, spawnPos);
                 Print("[KOTH_RoundEndModule] Teleported " + player.GetIdentity().GetName() + " to " + team + " spawn");
             }
         }
         
         Print("[KOTH_RoundEndModule] All players teleported");
+        Print("[KOTH_RoundEndModule] ============================================");
+    }
+    
+    void StartNewRound()
+    {
+        if (!GetGame().IsServer())
+            return;
+        
+        Print("[KOTH_RoundEndModule] ============================================");
+        Print("[KOTH_RoundEndModule] Starting new round...");
+        
+        ref array<Man> players = new array<Man>;
+        GetGame().GetPlayers(players);
+        
+        for (int i = 0; i < players.Count(); i++)
+        {
+            PlayerBase player = PlayerBase.Cast(players.Get(i));
+            if (player && player.GetIdentity())
+            {
+                ExpansionNotification("New Round Starting", "Get ready! Round begins in 10 seconds...").Info(player.GetIdentity());
+            }
+        }
+        
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(ActivateNewRound, 10000, false);
+        
+        Print("[KOTH_RoundEndModule] New round notification sent");
+        Print("[KOTH_RoundEndModule] ============================================");
+    }
+    
+    void ActivateNewRound()
+    {
+        if (!GetGame().IsServer())
+            return;
+        
+        Print("[KOTH_RoundEndModule] ============================================");
+        Print("[KOTH_RoundEndModule] Activating new round NOW");
+        
+        m_RoundEndInProgress = false;
+        
+        if (m_GameMode)
+        {
+            m_GameMode.StartRound();
+            Print("[KOTH_RoundEndModule] GameMode.StartRound() called");
+        }
+        
+        KOTH_Area mainZone = KOTH_Area.GetInstance();
+        if (mainZone)
+        {
+            KOTH_AreaTrigger trigger = mainZone.GetMainTrigger();
+            if (trigger)
+            {
+                trigger.SetActive(true);
+                Print("[KOTH_RoundEndModule] Main zone trigger activated");
+            }
+        }
+        
+        KOTH_PriorityZoneManager.StartMovement();
+        Print("[KOTH_RoundEndModule] Priority zone movement started");
+        
+        ref array<Man> players = new array<Man>;
+        GetGame().GetPlayers(players);
+        
+        for (int i = 0; i < players.Count(); i++)
+        {
+            PlayerBase player = PlayerBase.Cast(players.Get(i));
+            if (player && player.GetIdentity())
+            {
+                ExpansionNotification("Round Started!", "Fight for your team!").Success(player.GetIdentity());
+            }
+        }
+        
+        Print("[KOTH_RoundEndModule] New round fully activated");
+        Print("[KOTH_RoundEndModule] ============================================");
     }
     
     string DetermineNextZone()

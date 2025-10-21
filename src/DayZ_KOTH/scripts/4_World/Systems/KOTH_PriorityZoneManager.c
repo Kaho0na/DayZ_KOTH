@@ -1,8 +1,9 @@
 /**
- * KOTH_PriorityZoneManager.c (RANDOM TELEPORT)
+ * KOTH_PriorityZoneManager.c (WITH MOVEMENT CONTROL)
  *
  * King of the Hill by Kahoona
  * Priority zone teleports to random positions on the circle
+ * Added StopMovement/StartMovement for round end flow
  * Place in: 4_World/Systems/KOTH_PriorityZoneManager.c
  */
 
@@ -118,6 +119,30 @@ class KOTH_PriorityZoneManager
         
         BroadcastPriorityZoneUpdate();
         NotifyPlayersZoneChanged();
+    }
+    
+    static void StopMovement()
+    {
+        if (!GetGame().IsServer())
+            return;
+        
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(TeleportToRandomPosition);
+        
+        Print("[KOTH_PriorityZoneManager] Priority zone movement stopped");
+    }
+    
+    static void StartMovement()
+    {
+        if (!GetGame().IsServer())
+            return;
+        
+        if (!s_IsActive || !s_EnableMovement)
+            return;
+        
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).Remove(TeleportToRandomPosition);
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(TeleportToRandomPosition, s_MovementInterval * 1000, true);
+        
+        Print("[KOTH_PriorityZoneManager] Priority zone movement started");
     }
     
     static void BroadcastPriorityZoneUpdate()

@@ -114,7 +114,7 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
             }
         }
         
-        GetGame().GetCallQueue(CALL_CATEGORY_GUI).Remove(UpdateCountdown);
+        //GetGame().GetCallQueue(CALL_CATEGORY_GUI).Remove(UpdateCountdown);
         
         Print("[KOTH_RoundEndMenu] Destructor - Unsubscribed from invokers");
     }
@@ -126,11 +126,12 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         Print("[KOTH_RoundEndMenu] OnShow CALLED - Menu displaying");
         
         GetGame().GetInput().ChangeGameFocus(1);
+        GetGame().GetUIManager().ShowUICursor(true);
         SetFocus(GetLayoutRoot());
         PPEffects.SetBlurMenu(0.5);
         m_Mission.GetHud().ShowHud(false);
         m_Mission.GetHud().ShowQuickBar(false);
-        
+            
         m_VotingPanel = GetLayoutRoot().FindAnyWidget("VotingPanel");
         m_ZoneVoteGrid = GridSpacerWidget.Cast(GetLayoutRoot().FindAnyWidget("ZoneVoteGrid"));
         
@@ -141,12 +142,16 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
     {
         super.OnHide();
         
+        GetGame().GetInput().ChangeGameFocus(0);
         GetGame().GetInput().ResetGameFocus();
+        GetGame().GetUIManager().ShowUICursor(false);
         PPEffects.SetBlurMenu(0.0);
-        m_Mission.GetHud().ShowHud(true);
-        m_Mission.GetHud().ShowQuickBar(true);
         
-        GetGame().GetCallQueue(CALL_CATEGORY_GUI).Remove(UpdateCountdown);
+        if (m_Mission && m_Mission.GetHud())
+        {
+            m_Mission.GetHud().ShowHud(true);
+            m_Mission.GetHud().ShowQuickBar(true);
+        }
         
         Clear();
     }
@@ -183,7 +188,7 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         
         SetupVoting(zones, votingEnabled);
         
-        GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(UpdateCountdown, 1000, true);
+        //GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(UpdateCountdown, 1000, true);
         
         Print("[KOTH_RoundEndMenu] ============================================");
     }
