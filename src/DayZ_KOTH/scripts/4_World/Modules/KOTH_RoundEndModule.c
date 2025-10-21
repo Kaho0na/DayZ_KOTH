@@ -29,6 +29,7 @@ class KOTH_RoundEndModule: CF_ModuleWorld
     private bool m_VotingEnabled;
     
     private bool m_RoundEndInProgress;
+    private ref KOTH_HUDDataSync m_HUDSync;
     
     void KOTH_RoundEndModule()
     {
@@ -73,7 +74,14 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         CF_Modules<KOTH_RoundStatsTracker>.Get(m_StatsTracker);
         CF_Modules<KOTH_PlayerRewardManager>.Get(m_RewardManager);
         CF_Modules<KOTH_ZoneManager>.Get(m_ZoneManager);
+        CF_Modules<KOTH_HUDDataSync>.Get(m_HUDSync);
         
+        if (!m_HUDSync)
+        {
+            Error("[KOTH_RoundEndModule] ERROR: Could not get KOTH_HUDDataSync module!");
+            return;
+        }
+
         if (!m_GameMode)
         {
             Error("[KOTH_RoundEndModule] Failed to get KOTH_GameMode!");
@@ -198,23 +206,25 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         
         Print("[KOTH_RoundEndModule] STEP 5: Showing round end screen...");
         ShowRoundEndScreenToAllClients(winningTeam);
-        
-        float teleportDelay = m_EndScreenDisplaySeconds - 3;
-        if(teleportDelay > 1)
+
+        if (m_HUDSync)
         {
-            teleportDelay = teleportDelay * 1000;
-            
-        }
-        else
-        {
-            teleportDelay = 1000;
+            m_HUDSync.SetEastScore(0);
+            m_HUDSync.SetWestScore(0);
+            m_HUDSync.SetCaptureProgress(0.0, "None");
         }
 
-        float newRoundDelay = teleportDelay + 10000;
+        float teleportDelay = m_EndScreenDisplaySeconds - 3;
+        if (teleportDelay < 1)
+        {
+            teleportDelay = 1;
+        }
+        teleportDelay = teleportDelay * 1000;
+        float newRoundDelay = teleportDelay + 5000;
         Print("[KOTH_RoundEndModule] STEP 6: Scheduling teleport in 5s...");
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(TeleportAllPlayers, teleportDelay, false);
         
-        Print("[KOTH_RoundEndModule] STEP 7: Scheduling new round in 15s...");
+        Print("[KOTH_RoundEndModule] STEP 7: Scheduling new round..");
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(StartNewRound, newRoundDelay, false);
         
         Print("[KOTH_RoundEndModule] Round end sequence initiated");
@@ -824,7 +834,7 @@ class KOTH_RoundEndModule: CF_ModuleWorld
             PlayerBase player = PlayerBase.Cast(players.Get(i));
             if (player && player.GetIdentity())
             {
-                ExpansionNotification("New Round Starting", "Get ready! Round begins in 10 seconds...").Info(player.GetIdentity());
+                ExpansionNotification("New Round Starting", "Get ready! Round begins in 5 seconds...").Info(player.GetIdentity());
             }
         }
         
