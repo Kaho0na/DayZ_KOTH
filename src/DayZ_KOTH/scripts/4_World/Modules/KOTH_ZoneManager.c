@@ -161,6 +161,44 @@ class KOTH_ZoneManager: CF_ModuleWorld
         }
         
         Print("[KOTH_ZoneManager] Total zones discovered: " + m_AvailableZones.Count());
+        SortZonesByID();
+
+    }
+
+    void SortZonesByID()
+    {
+        if (m_AvailableZones.Count() <= 1)
+            return;
+        
+        Print("[KOTH_ZoneManager] Sorting zones by ZoneID...");
+        
+        map<int, string> zoneMap = new map<int, string>();
+        
+        foreach (string zoneName : m_AvailableZones)
+        {
+            KOTH_ZoneData tempZone = KOTH_Zones.LoadZone(zoneName);
+            if (tempZone)
+            {
+                zoneMap.Set(tempZone.GetZoneID(), zoneName);
+                Print("[KOTH_ZoneManager] Zone: " + zoneName + " has ID: " + tempZone.GetZoneID());
+            }
+        }
+        
+        m_AvailableZones.Clear();
+        
+        for (int id = 1; id <= zoneMap.Count(); id++)
+        {
+            if (zoneMap.Contains(id))
+            {
+                m_AvailableZones.Insert(zoneMap.Get(id));
+            }
+        }
+        
+        Print("[KOTH_ZoneManager] Zones sorted by ID. Order:");
+        foreach (string zone : m_AvailableZones)
+        {
+            Print("[KOTH_ZoneManager]   - " + zone);
+        }
     }
     
     bool LoadZone(string zoneName, bool despawnOldZone)
