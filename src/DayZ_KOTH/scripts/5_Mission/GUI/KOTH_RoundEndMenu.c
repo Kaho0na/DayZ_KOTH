@@ -22,7 +22,6 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
     protected string m_WinningTeam;
     
     protected float m_CountdownTimer;
-    protected float m_DisplayDuration;
     
     protected ref array<string> m_AvailableZones;
     protected ref map<string, int> m_ZoneVotes;
@@ -64,7 +63,8 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         m_AvailableZones = new array<string>();
         m_ZoneVotes = new map<string, int>();
         m_PlayerVotedZone = "";
-        
+        m_CountdownTimer = 60;
+
         m_RoundEndModule = KOTH_RoundEndModule.GetInstance();
         if (!m_RoundEndModule)
         {
@@ -121,7 +121,7 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
             }
         }
 
-        //GetGame().GetCallQueue(CALL_CATEGORY_GUI).Remove(UpdateCountdown);
+        GetGame().GetCallQueue(CALL_CATEGORY_GUI).Remove(UpdateCountdown);
         
         Print("[KOTH_RoundEndMenu] Destructor - Unsubscribed from invokers");
     }
@@ -167,11 +167,20 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         Print("[KOTH_RoundEndMenu] OnHide completed");
     }
     
-    void ShowMenuNow(array<string> zones, bool votingEnabled, string mvpName, int mvpKills, string sharpshooterName, int sharpshooterHeadshots, string medicName, int medicRevives)
+    void ShowMenuNow(array<string> zones, float m_EndScreenDisplaySeconds, bool votingEnabled, string mvpName, int mvpKills, string sharpshooterName, int sharpshooterHeadshots, string medicName, int medicRevives)
     {
         Print("[KOTH_RoundEndMenu] ============================================");
         Print("[KOTH_RoundEndMenu] ShowMenuNow INVOKED!");
-        
+
+        if (m_EndScreenDisplaySeconds)
+        {
+            m_CountdownTimer = m_EndScreenDisplaySeconds;
+        }
+        else
+        {
+            m_CountdownTimer = 60;
+        }
+
         if (!zones || zones.Count() == 0)
         {
             Error("[KOTH_RoundEndMenu] ShowMenuNow - No zones received!");
@@ -196,7 +205,7 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         
         SetupVoting(zones, votingEnabled);
 
-        //GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(UpdateCountdown, 1000, true);
+        GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(UpdateCountdown, 1000, true);
         
         Print("[KOTH_RoundEndMenu] ============================================");
     }
@@ -527,20 +536,21 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
             index++;
         }
     }
+
     void UpdateCountdown()
     {
         m_CountdownTimer = m_CountdownTimer - 1.0;
         
         if (m_CountdownTimer <= 0)
         {
-            CloseMenu();
             return;
         }
         
         int seconds = m_CountdownTimer;
         m_RoundEndMenuController.CountdownText = "Next round starts in: " + seconds.ToString() + " seconds";
         m_RoundEndMenuController.NotifyPropertyChanged("CountdownText");
-    }    
+    }
+
     void Clear()
     {
         m_AvailableZones.Clear();

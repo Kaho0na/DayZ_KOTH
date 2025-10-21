@@ -128,7 +128,7 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         KOTH_Settings settings = GetExpansionSettings().GetDayZ_KOTH();
         if (!settings)
         {
-            m_EndScreenDisplaySeconds = 90;
+            m_EndScreenDisplaySeconds = 60;
             m_VoteTimeSeconds = 30;
             m_VotingEnabled = false;
             Print("[KOTH_RoundEndModule] WARNING: Could not load settings, using defaults");
@@ -136,6 +136,11 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         }
         
         m_EndScreenDisplaySeconds = settings.EndScreenDisplaySeconds;
+        if(m_EndScreenDisplaySeconds < 5)
+        {
+            m_EndScreenDisplaySeconds = 10;
+        }
+        
         m_VoteTimeSeconds = settings.VoteTimeSeconds;
         
         if (settings.ZoneSelectionMode == 2)
@@ -194,9 +199,18 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         Print("[KOTH_RoundEndModule] STEP 5: Showing round end screen...");
         ShowRoundEndScreenToAllClients(winningTeam);
         
-        float teleportDelay = 5000;
+        float m_tempTeleportDelay = m_EndScreenDisplaySeconds - 3;
+        if(m_tempTeleportDelay > 1)
+        {
+            float teleportDelay = (m_EndScreenDisplaySeconds - 3) * 1000;
+            
+        }
+        else
+        {
+            float teleportDelay = 1000;
+        }
+
         float newRoundDelay = teleportDelay + 10000;
-        
         Print("[KOTH_RoundEndModule] STEP 6: Scheduling teleport in 5s...");
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(TeleportAllPlayers, teleportDelay, false);
         
@@ -239,30 +253,11 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         
         Print("[KOTH_RoundEndModule] Cleaning up AI entities...");
         
-        int aiCount = 0;
-        ref array<Man> entities = new array<Man>;
-        GetGame().GetPlayers(entities);
+        eAIGroup.Admin_ClearAllAI();
         
-        for (int i = 0; i < entities.Count(); i++)
-        {
-            PlayerBase entity = PlayerBase.Cast(entities.Get(i));
-            if (!entity)
-                continue;
-            
-            if (!entity.GetIdentity())
-            {
-                eAIBase ai = eAIBase.Cast(entity);
-                if (ai)
-                {
-                    GetGame().ObjectDelete(ai);
-                    aiCount++;
-                }
-            }
-        }
-        
-        Print("[KOTH_RoundEndModule] Cleaned up " + aiCount + " AI entities");
+        Print("[KOTH_RoundEndModule] All AI entities cleared via Expansion method");
     }
-    
+
     void CalculateAndAwardBonuses(string winningTeam)
     {
         if (!m_StatsTracker || !m_RewardManager)
@@ -608,22 +603,22 @@ class KOTH_RoundEndModule: CF_ModuleWorld
             return;
         
         Print("[KOTH_RoundEndModule] CLIENT: Scheduling menu display...");
-        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(Exec_ShowRoundEndMenu, 500, false, zones, votingEnabled, mvpName, mvpKills, sharpshooterName, sharpshooterHeadshots, medicName, medicRevives);
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(Exec_ShowRoundEndMenu, 500, false, zones, m_EndScreenDisplaySeconds, votingEnabled, mvpName, mvpKills, sharpshooterName, sharpshooterHeadshots, medicName, medicRevives);
     }
     
-    void Exec_ShowRoundEndMenu(array<string> zones, bool votingEnabled, string mvpName, int mvpKills, string sharpshooterName, int sharpshooterHeadshots, string medicName, int medicRevives)
+    void Exec_ShowRoundEndMenu(array<string> zones, float m_EndScreenDisplaySeconds, bool votingEnabled, string mvpName, int mvpKills, string sharpshooterName, int sharpshooterHeadshots, string medicName, int medicRevives)
     {
         Print("[KOTH_RoundEndModule] CLIENT: Exec_ShowRoundEndMenu called");
         
         if (GetDayZGame().IsLoading() || GetDayZGame().GetMissionState() != DayZGame.MISSION_STATE_GAME)
         {
-            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(Exec_ShowRoundEndMenu, 500, false, zones, votingEnabled, mvpName, mvpKills, sharpshooterName, sharpshooterHeadshots, medicName, medicRevives);
+            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(Exec_ShowRoundEndMenu, 500, false, zones, m_EndScreenDisplaySeconds, votingEnabled, mvpName, mvpKills, sharpshooterName, sharpshooterHeadshots, medicName, medicRevives);
             return;
         }
 
         if (!GetGame().GetMission() || !GetGame().GetMission().GetHud())
         {
-            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(Exec_ShowRoundEndMenu, 500, false, zones, votingEnabled, mvpName, mvpKills, sharpshooterName, sharpshooterHeadshots, medicName, medicRevives);
+            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(Exec_ShowRoundEndMenu, 500, false, zones,  m_EndScreenDisplaySeconds, votingEnabled, mvpName, mvpKills, sharpshooterName, sharpshooterHeadshots, medicName, medicRevives);
             return;
         }
 
@@ -638,7 +633,7 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         if (!OpenRoundEndMenu())
             return;
         
-        m_RoundEndMenuInvoker.Invoke(zones, votingEnabled, mvpName, mvpKills, sharpshooterName, sharpshooterHeadshots, medicName, medicRevives);
+        m_RoundEndMenuInvoker.Invoke(zones, m_EndScreenDisplaySeconds, votingEnabled, mvpName, mvpKills, sharpshooterName, sharpshooterHeadshots, medicName, medicRevives);
         
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(CloseMenuAfterDuration, m_EndScreenDisplaySeconds * 1000, false);
         
