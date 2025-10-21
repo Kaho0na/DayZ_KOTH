@@ -253,10 +253,12 @@ class KOTH_RoundStatsTracker: CF_ModuleWorld
     {
         if (!GetGame().IsServer() || !m_RoundActive)
             return;
-        
+        Print("[KOTH_RoundStatsTracker] RecordKill called - Killer: " + killerName + ", Team: " + killerTeam + ", Headshot: " + wasHeadshot + ", Distance: " + distance);
         KOTH_RoundPlayerStats killerStats = GetOrCreatePlayerStats(killerUID, killerName);
         
         killerStats.Kills = killerStats.Kills + 1;
+        Print("[KOTH_RoundStatsTracker] " + killerName + " now has " + killerStats.Kills + " kills");
+
         
         if (wasHeadshot)
         {
@@ -488,6 +490,8 @@ class KOTH_RoundStatsTracker: CF_ModuleWorld
         
         foreach (string uid, KOTH_RoundPlayerStats stats : m_PlayerStats)
         {
+
+            
             if (stats.Kills > highestKills)
             {
                 highestKills = stats.Kills;
@@ -505,6 +509,8 @@ class KOTH_RoundStatsTracker: CF_ModuleWorld
         
         foreach (string uid, KOTH_RoundPlayerStats stats : m_PlayerStats)
         {
+
+            
             if (stats.Headshots > highestHeadshots)
             {
                 highestHeadshots = stats.Headshots;
@@ -514,6 +520,7 @@ class KOTH_RoundStatsTracker: CF_ModuleWorld
         
         return sharpshooter;
     }
+
     
     KOTH_RoundPlayerStats GetTopMedic()
     {
@@ -522,6 +529,8 @@ class KOTH_RoundStatsTracker: CF_ModuleWorld
         
         foreach (string uid, KOTH_RoundPlayerStats stats : m_PlayerStats)
         {
+
+            
             if (stats.Revives > highestRevives)
             {
                 highestRevives = stats.Revives;

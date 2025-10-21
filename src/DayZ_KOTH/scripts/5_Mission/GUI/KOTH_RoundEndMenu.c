@@ -1,8 +1,8 @@
 /**
- * KOTH_RoundEndMenu.c (STRING FIX)
+ * KOTH_RoundEndMenu.c (RECEIVES TOP PERFORMERS FROM SERVER)
  *
  * King of the Hill by Kahoona
- * Round end menu with ViewBinding controller pattern
+ * Client receives and displays server-calculated top performers
  *
  * Place in: 5_Mission/GUI/KOTH_RoundEndMenu.c
  */
@@ -27,6 +27,13 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
     protected ref array<string> m_AvailableZones;
     protected ref map<string, int> m_ZoneVotes;
     protected string m_PlayerVotedZone;
+    
+    protected string m_MVPName;
+    protected int m_MVPKills;
+    protected string m_SharpshooterName;
+    protected int m_SharpshooterHeadshots;
+    protected string m_MedicName;
+    protected int m_MedicRevives;
     
     override string GetLayoutFile()
     {
@@ -113,7 +120,7 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
                 m_GetUpdateVoteCountsSI.Remove(OnVoteCountsUpdated);
             }
         }
-        
+
         //GetGame().GetCallQueue(CALL_CATEGORY_GUI).Remove(UpdateCountdown);
         
         Print("[KOTH_RoundEndMenu] Destructor - Unsubscribed from invokers");
@@ -131,7 +138,7 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         PPEffects.SetBlurMenu(0.5);
         m_Mission.GetHud().ShowHud(false);
         m_Mission.GetHud().ShowQuickBar(false);
-            
+        
         m_VotingPanel = GetLayoutRoot().FindAnyWidget("VotingPanel");
         m_ZoneVoteGrid = GridSpacerWidget.Cast(GetLayoutRoot().FindAnyWidget("ZoneVoteGrid"));
         
@@ -141,6 +148,8 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
     override void OnHide()
     {
         super.OnHide();
+        
+        Print("[KOTH_RoundEndMenu] OnHide CALLED - Restoring input");
         
         GetGame().GetInput().ChangeGameFocus(0);
         GetGame().GetInput().ResetGameFocus();
@@ -154,9 +163,11 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         }
         
         Clear();
+        
+        Print("[KOTH_RoundEndMenu] OnHide completed");
     }
     
-    void ShowMenuNow(array<string> zones, bool votingEnabled)
+    void ShowMenuNow(array<string> zones, bool votingEnabled, string mvpName, int mvpKills, string sharpshooterName, int sharpshooterHeadshots, string medicName, int medicRevives)
     {
         Print("[KOTH_RoundEndMenu] ============================================");
         Print("[KOTH_RoundEndMenu] ShowMenuNow INVOKED!");
@@ -169,25 +180,22 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         
         Print("[KOTH_RoundEndMenu]   - Zones: " + zones.Count());
         Print("[KOTH_RoundEndMenu]   - Voting Enabled: " + votingEnabled);
+        Print("[KOTH_RoundEndMenu]   - MVP: " + mvpName + " (" + mvpKills + " kills)");
+        Print("[KOTH_RoundEndMenu]   - Sharpshooter: " + sharpshooterName + " (" + sharpshooterHeadshots + " headshots)");
+        Print("[KOTH_RoundEndMenu]   - Medic: " + medicName + " (" + medicRevives + " revives)");
         
         m_AvailableZones = zones;
-        
-        KOTH_Settings settings = GetExpansionSettings().GetDayZ_KOTH();
-        if (settings)
-        {
-            m_DisplayDuration = settings.EndScreenDisplaySeconds;
-        }
-        else
-        {
-            m_DisplayDuration = 30;
-        }
-        
-        m_CountdownTimer = m_DisplayDuration;
+        m_MVPName = mvpName;
+        m_MVPKills = mvpKills;
+        m_SharpshooterName = sharpshooterName;
+        m_SharpshooterHeadshots = sharpshooterHeadshots;
+        m_MedicName = medicName;
+        m_MedicRevives = medicRevives;
         
         LoadRoundData();
         
         SetupVoting(zones, votingEnabled);
-        
+
         //GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(UpdateCountdown, 1000, true);
         
         Print("[KOTH_RoundEndMenu] ============================================");
@@ -302,19 +310,13 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
     
     void UpdateTopPerformers()
     {
-        KOTH_RoundStatsTracker tracker = KOTH_RoundStatsTracker.GetInstance();
-        if (!tracker)
-        {
-            Error("[KOTH_RoundEndMenu] Tracker is NULL in UpdateTopPerformers!");
-            return;
-        }
+        Print("[KOTH_RoundEndMenu] UpdateTopPerformers called - using server data");
         
-        KOTH_RoundPlayerStats mvp = tracker.GetMVP();
-        if (mvp)
+        if (m_MVPName != "")
         {
-            m_RoundEndMenuController.MVPPlayerName = mvp.PlayerName;
-            m_RoundEndMenuController.MVPStat = mvp.Kills.ToString() + " Kills";
-            Print("[KOTH_RoundEndMenu] MVP: " + mvp.PlayerName);
+            m_RoundEndMenuController.MVPPlayerName = m_MVPName;
+            m_RoundEndMenuController.MVPStat = m_MVPKills.ToString() + " Kills";
+            Print("[KOTH_RoundEndMenu] MVP: " + m_MVPName + " with " + m_MVPKills + " kills");
         }
         else
         {
@@ -325,12 +327,11 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         m_RoundEndMenuController.NotifyPropertyChanged("MVPPlayerName");
         m_RoundEndMenuController.NotifyPropertyChanged("MVPStat");
         
-        KOTH_RoundPlayerStats sharpshooter = tracker.GetSharpshooter();
-        if (sharpshooter)
+        if (m_SharpshooterName != "")
         {
-            m_RoundEndMenuController.SharpshooterPlayerName = sharpshooter.PlayerName;
-            m_RoundEndMenuController.SharpshooterStat = sharpshooter.Headshots.ToString() + " Headshots";
-            Print("[KOTH_RoundEndMenu] Sharpshooter: " + sharpshooter.PlayerName);
+            m_RoundEndMenuController.SharpshooterPlayerName = m_SharpshooterName;
+            m_RoundEndMenuController.SharpshooterStat = m_SharpshooterHeadshots.ToString() + " Headshots";
+            Print("[KOTH_RoundEndMenu] Sharpshooter: " + m_SharpshooterName + " with " + m_SharpshooterHeadshots + " headshots");
         }
         else
         {
@@ -341,12 +342,11 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         m_RoundEndMenuController.NotifyPropertyChanged("SharpshooterPlayerName");
         m_RoundEndMenuController.NotifyPropertyChanged("SharpshooterStat");
         
-        KOTH_RoundPlayerStats medic = tracker.GetTopMedic();
-        if (medic)
+        if (m_MedicName != "")
         {
-            m_RoundEndMenuController.MedicPlayerName = medic.PlayerName;
-            m_RoundEndMenuController.MedicStat = medic.Revives.ToString() + " Revives";
-            Print("[KOTH_RoundEndMenu] Top Medic: " + medic.PlayerName);
+            m_RoundEndMenuController.MedicPlayerName = m_MedicName;
+            m_RoundEndMenuController.MedicStat = m_MedicRevives.ToString() + " Revives";
+            Print("[KOTH_RoundEndMenu] Top Medic: " + m_MedicName + " with " + m_MedicRevives + " revives");
         }
         else
         {
@@ -357,7 +357,7 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         m_RoundEndMenuController.NotifyPropertyChanged("MedicPlayerName");
         m_RoundEndMenuController.NotifyPropertyChanged("MedicStat");
         
-        Print("[KOTH_RoundEndMenu] Top performers updated");
+        Print("[KOTH_RoundEndMenu] Top performers updated from server data");
     }
     
     void SetupVoting(array<string> zones, bool votingEnabled)
@@ -527,7 +527,6 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
             index++;
         }
     }
-    
     void UpdateCountdown()
     {
         m_CountdownTimer = m_CountdownTimer - 1.0;
@@ -541,13 +540,7 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         int seconds = m_CountdownTimer;
         m_RoundEndMenuController.CountdownText = "Next round starts in: " + seconds.ToString() + " seconds";
         m_RoundEndMenuController.NotifyPropertyChanged("CountdownText");
-    }
-    
-    void CloseMenu()
-    {
-        Hide();
-    }
-    
+    }    
     void Clear()
     {
         m_AvailableZones.Clear();
