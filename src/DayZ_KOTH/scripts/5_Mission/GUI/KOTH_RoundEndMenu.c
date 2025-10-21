@@ -1,5 +1,5 @@
 /**
- * KOTH_RoundEndMenu.c (CORRECTED - PERSISTENT MODULE REFERENCE)
+ * KOTH_RoundEndMenu.c (STRING FIX)
  *
  * King of the Hill by Kahoona
  * Round end menu with ViewBinding controller pattern
@@ -43,6 +43,15 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         Print("[KOTH_RoundEndMenu] Constructor - Starting...");
         
         m_RoundEndMenuController = KOTH_RoundEndMenuController.Cast(GetController());
+        if (m_RoundEndMenuController)
+        {
+            Print("[KOTH_RoundEndMenu] Controller cast SUCCESS");
+        }
+        else
+        {
+            Error("[KOTH_RoundEndMenu] Controller cast FAILED!");
+        }
+        
         Class.CastTo(m_Mission, MissionGameplay.Cast(GetGame().GetMission()));
         
         m_AvailableZones = new array<string>();
@@ -79,67 +88,30 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         }
 
         m_RoundStatsTracker = KOTH_RoundStatsTracker.GetInstance();
-        if (m_RoundStatsTracker)
-        {
-            ScriptInvoker m_GetRoundStatsAvailableSIInsert = m_RoundStatsTracker.GetRoundStatsAvailableSI();
-            if (m_GetRoundStatsAvailableSIInsert)
-            {
-                m_GetRoundStatsAvailableSIInsert.Insert(OnStatsReady);
-                Print("[KOTH_RoundEndMenu] Subscribed m_GetRoundStatsAvailableSIInsert to menu invoker");
-            }
-            else
-            {
-                Error("[KOTH_RoundEndMenu] Menu invoker m_GetRoundStatsAvailableSIInsert is NULL!");
-            }
-            Print("[KOTH_RoundEndMenu] Constructor - Subscribed to stats tracker");
-        }
-        else
+        if (!m_RoundStatsTracker)
         {
             Error("[KOTH_RoundEndMenu] Constructor - Failed to get stats tracker instance!");
             return;
         }
-        Print("[KOTH_RoundEndMenu] Constructor - Subscribed to module invokers");
+        
+        Print("[KOTH_RoundEndMenu] Constructor - Complete");
     }
     
     void ~KOTH_RoundEndMenu()
     {
-        if (m_RoundStatsTracker)
-        {
-            ScriptInvoker m_GetRoundStatsAvailableSIRemove = m_RoundStatsTracker.GetRoundStatsAvailableSI();
-            if (m_GetRoundStatsAvailableSIRemove)
-            {
-                m_GetRoundStatsAvailableSIRemove.Remove(OnStatsReady);
-                Print("[KOTH_RoundEndMenu] Subscribed m_GetRoundStatsAvailableSIRemove to menu invoker");
-            }
-            else
-            {
-                Error("[KOTH_RoundEndMenu] Menu invoker m_GetRoundStatsAvailableSIRemove is NULL!");
-            }
-        }
-
         if (m_RoundEndModule)
         {
             ScriptInvoker m_GetRoundEndMenuSIRemove = m_RoundEndModule.GetRoundEndMenuSI();
             if (m_GetRoundEndMenuSIRemove)
             {
                 m_GetRoundEndMenuSIRemove.Remove(ShowMenuNow);
-                Print("[KOTH_RoundEndMenu] Subscribed m_GetRoundEndMenuSIRemove to menu invoker");
             }
-            else
+            
+            ScriptInvoker m_GetUpdateVoteCountsSI = m_RoundEndModule.GetUpdateVoteCountsSI();
+            if (m_GetUpdateVoteCountsSI)
             {
-                Error("[KOTH_RoundEndMenu] Menu invoker m_GetRoundEndMenuSIRemove is NULL!");
+                m_GetUpdateVoteCountsSI.Remove(OnVoteCountsUpdated);
             }
-        }
-        
-        ScriptInvoker m_GetUpdateVoteCountsSI = m_RoundEndModule.GetUpdateVoteCountsSI();
-        if (m_GetUpdateVoteCountsSI)
-        {
-            m_GetUpdateVoteCountsSI.Remove(OnVoteCountsUpdated);
-            Print("[KOTH_RoundEndMenu] Subscribed m_GetUpdateVoteCountsSI to menu invoker");
-        }
-        else
-        {
-            Error("[KOTH_RoundEndMenu] Menu invoker m_GetUpdateVoteCountsSI is NULL!");
         }
         
         GetGame().GetCallQueue(CALL_CATEGORY_GUI).Remove(UpdateCountdown);
@@ -195,41 +167,6 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         
         m_AvailableZones = zones;
         
-        SetupVoting(zones, votingEnabled);
-        
-        GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(UpdateCountdown, 1000, true);
-        
-        Print("[KOTH_RoundEndMenu] ============================================");
-    }
-
-    void OnStatsReady(KOTH_RoundTeamStats eastStats, KOTH_RoundTeamStats westStats)
-    {
-        Print("[KOTH_RoundEndMenu] OnStatsReady - Stats are now available");
-        LoadRoundData();
-    }
-    
-    void LoadRoundData()
-    {
-        Print("[KOTH_RoundEndMenu] LoadRoundData CALLED");
-            
-        m_EastStats = m_RoundStatsTracker.GetTeamStats("East");
-        m_WestStats = m_RoundStatsTracker.GetTeamStats("West");
-        
-        if (!m_EastStats || !m_WestStats)
-        {
-            Error("[KOTH_RoundEndMenu] ERROR: Could not get team stats!");
-            return;
-        }
-        
-        if (m_EastStats.FinalScore > m_WestStats.FinalScore)
-        {
-            m_WinningTeam = "East";
-        }
-        else
-        {
-            m_WinningTeam = "West";
-        }
-        
         KOTH_Settings settings = GetExpansionSettings().GetDayZ_KOTH();
         if (settings)
         {
@@ -242,6 +179,53 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         
         m_CountdownTimer = m_DisplayDuration;
         
+        LoadRoundData();
+        
+        SetupVoting(zones, votingEnabled);
+        
+        GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(UpdateCountdown, 1000, true);
+        
+        Print("[KOTH_RoundEndMenu] ============================================");
+    }
+    
+    void LoadRoundData()
+    {
+        Print("[KOTH_RoundEndMenu] LoadRoundData CALLED");
+        
+        if (!m_RoundStatsTracker)
+        {
+            Error("[KOTH_RoundEndMenu] Stats tracker is NULL!");
+            return;
+        }
+        
+        m_EastStats = m_RoundStatsTracker.GetTeamStats("East");
+        m_WestStats = m_RoundStatsTracker.GetTeamStats("West");
+        
+        if (!m_EastStats)
+        {
+            Error("[KOTH_RoundEndMenu] ERROR: Could not get East team stats!");
+            return;
+        }
+        
+        if (!m_WestStats)
+        {
+            Error("[KOTH_RoundEndMenu] ERROR: Could not get West team stats!");
+            return;
+        }
+        
+        Print("[KOTH_RoundEndMenu] East Score: " + m_EastStats.FinalScore + ", West Score: " + m_WestStats.FinalScore);
+        
+        if (m_EastStats.FinalScore > m_WestStats.FinalScore)
+        {
+            m_WinningTeam = "East";
+        }
+        else
+        {
+            m_WinningTeam = "West";
+        }
+        
+        Print("[KOTH_RoundEndMenu] Winning team: " + m_WinningTeam);
+        
         UpdateDisplay();
     }
     
@@ -249,61 +233,89 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
     {
         Print("[KOTH_RoundEndMenu] UpdateDisplay called");
         
-        m_RoundEndMenuController.WinnerTitle = "TEAM " + m_WinningTeam.ToUpper() + " WINS!";
+        if (!m_RoundEndMenuController)
+        {
+            Error("[KOTH_RoundEndMenu] Controller is NULL!");
+            return;
+        }
+        
+        Print("[KOTH_RoundEndMenu] Setting WinnerTitle...");
+        
+        string winnerText;
+        if (m_WinningTeam == "East")
+        {
+            winnerText = "TEAM EAST WINS!";
+        }
+        else
+        {
+            winnerText = "TEAM WEST WINS!";
+        }
+        
+        m_RoundEndMenuController.WinnerTitle = winnerText;
         m_RoundEndMenuController.NotifyPropertyChanged("WinnerTitle");
+        Print("[KOTH_RoundEndMenu] WinnerTitle set to: " + m_RoundEndMenuController.WinnerTitle);
         
-        m_RoundEndMenuController.FinalScoreText = "East: " + m_EastStats.FinalScore + "  |  West: " + m_WestStats.FinalScore;
+        string scoreText = "East: " + m_EastStats.FinalScore.ToString() + "  |  West: " + m_WestStats.FinalScore.ToString();
+        m_RoundEndMenuController.FinalScoreText = scoreText;
         m_RoundEndMenuController.NotifyPropertyChanged("FinalScoreText");
+        Print("[KOTH_RoundEndMenu] FinalScoreText set to: " + m_RoundEndMenuController.FinalScoreText);
         
-        m_RoundEndMenuController.EastKills = "Kills: " + m_EastStats.TotalKills;
+        m_RoundEndMenuController.EastKills = "Kills: " + m_EastStats.TotalKills.ToString();
         m_RoundEndMenuController.NotifyPropertyChanged("EastKills");
         
-        m_RoundEndMenuController.EastDeaths = "Deaths: " + m_EastStats.TotalDeaths;
+        m_RoundEndMenuController.EastDeaths = "Deaths: " + m_EastStats.TotalDeaths.ToString();
         m_RoundEndMenuController.NotifyPropertyChanged("EastDeaths");
         
-        m_RoundEndMenuController.EastHeadshots = "Headshots: " + m_EastStats.TotalHeadshots;
+        m_RoundEndMenuController.EastHeadshots = "Headshots: " + m_EastStats.TotalHeadshots.ToString();
         m_RoundEndMenuController.NotifyPropertyChanged("EastHeadshots");
         
-        m_RoundEndMenuController.EastRevives = "Revives: " + m_EastStats.TotalRevives;
+        m_RoundEndMenuController.EastRevives = "Revives: " + m_EastStats.TotalRevives.ToString();
         m_RoundEndMenuController.NotifyPropertyChanged("EastRevives");
         
-        m_RoundEndMenuController.EastXP = "Total XP: " + m_EastStats.TotalXPEarned;
+        m_RoundEndMenuController.EastXP = "Total XP: " + m_EastStats.TotalXPEarned.ToString();
         m_RoundEndMenuController.NotifyPropertyChanged("EastXP");
         
-        m_RoundEndMenuController.WestKills = "Kills: " + m_WestStats.TotalKills;
+        m_RoundEndMenuController.WestKills = "Kills: " + m_WestStats.TotalKills.ToString();
         m_RoundEndMenuController.NotifyPropertyChanged("WestKills");
         
-        m_RoundEndMenuController.WestDeaths = "Deaths: " + m_WestStats.TotalDeaths;
+        m_RoundEndMenuController.WestDeaths = "Deaths: " + m_WestStats.TotalDeaths.ToString();
         m_RoundEndMenuController.NotifyPropertyChanged("WestDeaths");
         
-        m_RoundEndMenuController.WestHeadshots = "Headshots: " + m_WestStats.TotalHeadshots;
+        m_RoundEndMenuController.WestHeadshots = "Headshots: " + m_WestStats.TotalHeadshots.ToString();
         m_RoundEndMenuController.NotifyPropertyChanged("WestHeadshots");
         
-        m_RoundEndMenuController.WestRevives = "Revives: " + m_WestStats.TotalRevives;
+        m_RoundEndMenuController.WestRevives = "Revives: " + m_WestStats.TotalRevives.ToString();
         m_RoundEndMenuController.NotifyPropertyChanged("WestRevives");
         
-        m_RoundEndMenuController.WestXP = "Total XP: " + m_WestStats.TotalXPEarned;
+        m_RoundEndMenuController.WestXP = "Total XP: " + m_WestStats.TotalXPEarned.ToString();
         m_RoundEndMenuController.NotifyPropertyChanged("WestXP");
         
         UpdateTopPerformers();
+        
+        Print("[KOTH_RoundEndMenu] All display data updated");
     }
     
     void UpdateTopPerformers()
     {
         KOTH_RoundStatsTracker tracker = KOTH_RoundStatsTracker.GetInstance();
         if (!tracker)
+        {
+            Error("[KOTH_RoundEndMenu] Tracker is NULL in UpdateTopPerformers!");
             return;
+        }
         
         KOTH_RoundPlayerStats mvp = tracker.GetMVP();
         if (mvp)
         {
             m_RoundEndMenuController.MVPPlayerName = mvp.PlayerName;
             m_RoundEndMenuController.MVPStat = mvp.Kills.ToString() + " Kills";
+            Print("[KOTH_RoundEndMenu] MVP: " + mvp.PlayerName);
         }
         else
         {
             m_RoundEndMenuController.MVPPlayerName = "N/A";
             m_RoundEndMenuController.MVPStat = "";
+            Print("[KOTH_RoundEndMenu] No MVP data");
         }
         m_RoundEndMenuController.NotifyPropertyChanged("MVPPlayerName");
         m_RoundEndMenuController.NotifyPropertyChanged("MVPStat");
@@ -313,11 +325,13 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         {
             m_RoundEndMenuController.SharpshooterPlayerName = sharpshooter.PlayerName;
             m_RoundEndMenuController.SharpshooterStat = sharpshooter.Headshots.ToString() + " Headshots";
+            Print("[KOTH_RoundEndMenu] Sharpshooter: " + sharpshooter.PlayerName);
         }
         else
         {
             m_RoundEndMenuController.SharpshooterPlayerName = "N/A";
             m_RoundEndMenuController.SharpshooterStat = "";
+            Print("[KOTH_RoundEndMenu] No Sharpshooter data");
         }
         m_RoundEndMenuController.NotifyPropertyChanged("SharpshooterPlayerName");
         m_RoundEndMenuController.NotifyPropertyChanged("SharpshooterStat");
@@ -327,11 +341,13 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         {
             m_RoundEndMenuController.MedicPlayerName = medic.PlayerName;
             m_RoundEndMenuController.MedicStat = medic.Revives.ToString() + " Revives";
+            Print("[KOTH_RoundEndMenu] Top Medic: " + medic.PlayerName);
         }
         else
         {
             m_RoundEndMenuController.MedicPlayerName = "N/A";
             m_RoundEndMenuController.MedicStat = "";
+            Print("[KOTH_RoundEndMenu] No Medic data");
         }
         m_RoundEndMenuController.NotifyPropertyChanged("MedicPlayerName");
         m_RoundEndMenuController.NotifyPropertyChanged("MedicStat");
@@ -348,22 +364,30 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         if (!votingEnabled || zones.Count() == 0)
         {
             if (m_VotingPanel)
+            {
                 m_VotingPanel.Show(false);
+                Print("[KOTH_RoundEndMenu] Voting panel hidden");
+            }
             
             if (zones.Count() > 0)
             {
                 m_RoundEndMenuController.VotingHeader = "NEXT ZONE: " + zones.Get(0);
                 m_RoundEndMenuController.NotifyPropertyChanged("VotingHeader");
+                Print("[KOTH_RoundEndMenu] Next zone header set: " + zones.Get(0));
             }
             
             return;
         }
         
         if (m_VotingPanel)
+        {
             m_VotingPanel.Show(true);
+            Print("[KOTH_RoundEndMenu] Voting panel shown");
+        }
         
         m_RoundEndMenuController.VotingHeader = "VOTE FOR NEXT ZONE";
         m_RoundEndMenuController.NotifyPropertyChanged("VotingHeader");
+        Print("[KOTH_RoundEndMenu] Voting header set");
         
         CreateVoteButtons();
     }
@@ -402,10 +426,23 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
             TextWidget voteCountText = TextWidget.Cast(buttonPanel.FindAnyWidget("VoteCountText"));
             
             if (zoneNameText)
+            {
                 zoneNameText.SetText(zoneName);
+                Print("[KOTH_RoundEndMenu] Button " + index + " zone name set: " + zoneName);
+            }
+            else
+            {
+                Error("[KOTH_RoundEndMenu] Could not find ZoneNameText widget!");
+            }
             
             if (voteCountText)
+            {
                 voteCountText.SetText("0 votes");
+            }
+            else
+            {
+                Error("[KOTH_RoundEndMenu] Could not find VoteCountText widget!");
+            }
             
             m_ZoneVotes.Set(zoneName, 0);
             index++;

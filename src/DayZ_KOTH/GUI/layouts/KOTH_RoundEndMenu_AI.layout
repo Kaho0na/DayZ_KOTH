@@ -41,9 +41,8 @@ FrameWidgetClass KOTH_RoundEndMenu {
      "size to text v" 1
      "text halign" center
      "text valign" center
-    scriptclass "ViewBinding"
-
-          {
+     scriptclass "ViewBinding"
+     {
       ScriptParamsClass {
        Binding_Name "WinnerTitle"
       }
@@ -68,7 +67,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
      "size to text v" 1
      "text halign" center
      "text valign" center
-          scriptclass "ViewBinding"
+     scriptclass "ViewBinding"
      {
       ScriptParamsClass {
        Binding_Name "FinalScoreText"
@@ -133,101 +132,28 @@ FrameWidgetClass KOTH_RoundEndMenu {
        vexactsize 0
        style EditorPanel
        {
-        TextWidgetClass EastDeaths {
+        TextWidgetClass EastTeamLabel {
          ignorepointer 1
-         position 0.3 0.25
-         size 0.8 0.12
+         position 0 0.05
+         size 1 0.15
+         halign center_ref
          hexactpos 0
          vexactpos 0
          hexactsize 0
          vexactsize 0
-         text "Deaths: 0"
-         font "gui/fonts/sdf_MetronLight24"
+         text "TEAM EAST"
+         font "gui/fonts/sdf_MetronLight32"
          "exact text" 1
-         "exact text size" 20
+         "exact text size" 24
          "size to text h" 1
          "size to text v" 1
-         "text halign" left
+         "text halign" center
          "text valign" center
-        scriptclass "ViewBinding"
-         {
-          ScriptParamsClass {
-           Binding_Name "EastDeaths"
-          }
-         }
-        }
-        TextWidgetClass EastHeadshots {
-         ignorepointer 1
-         position 0.3 0.4
-         size 0.8 0.12
-         hexactpos 0
-         vexactpos 0
-         hexactsize 0
-         vexactsize 0
-         text "Headshots: 0"
-         font "gui/fonts/sdf_MetronLight24"
-         "exact text" 1
-         "exact text size" 20
-         "size to text h" 1
-         "size to text v" 1
-         "text halign" left
-         "text valign" center
-        scriptclass "ViewBinding"
-         {
-          ScriptParamsClass {
-           Binding_Name "EastHeadshots"
-          }
-         }
-        }
-        TextWidgetClass EastRevives {
-         ignorepointer 1
-         position 0.3 0.55
-         size 0.8 0.12
-         hexactpos 0
-         vexactpos 0
-         hexactsize 0
-         vexactsize 0
-         text "Revives: 0"
-         font "gui/fonts/sdf_MetronLight24"
-         "exact text" 1
-         "exact text size" 20
-         "size to text h" 1
-         "size to text v" 1
-         "text halign" left
-         "text valign" center
-        scriptclass "ViewBinding"
-         {
-          ScriptParamsClass {
-           Binding_Name "EastRevives"
-          }
-         }
-        }
-        TextWidgetClass EastXP {
-         ignorepointer 1
-         position 0.3 0.7
-         size 0.8 0.12
-         hexactpos 0
-         vexactpos 0
-         hexactsize 0
-         vexactsize 0
-         text "Total XP: 0"
-         font "gui/fonts/sdf_MetronLight24"
-         "exact text" 1
-         "exact text size" 20
-         "size to text h" 1
-         "size to text v" 1
-         "text halign" left
-         "text valign" center
-        scriptclass "ViewBinding"
-         {
-          ScriptParamsClass {
-           Binding_Name "EastXP"
-          }
-         }
+         "color" 1 0 0
         }
         TextWidgetClass EastKills {
          ignorepointer 1
-         position 0.3 0.1
+         position 0.1 0.25
          size 0.8 0.12
          hexactpos 0
          vexactpos 0
@@ -241,21 +167,104 @@ FrameWidgetClass KOTH_RoundEndMenu {
          "size to text v" 1
          "text halign" left
          "text valign" center
-        scriptclass "ViewBinding"
+         scriptclass "ViewBinding"
          {
           ScriptParamsClass {
            Binding_Name "EastKills"
           }
          }
         }
-        ImageWidgetClass EastIcon {
+        TextWidgetClass EastDeaths {
          ignorepointer 1
-         position 15 15
-         size 150 150
-         hexactpos 1
-         vexactpos 1
-         hexactsize 1
-         vexactsize 1
+         position 0.1 0.4
+         size 0.8 0.12
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Deaths: 0"
+         font "gui/fonts/sdf_MetronLight24"
+         "exact text" 1
+         "exact text size" 20
+         "size to text h" 1
+         "size to text v" 1
+         "text halign" left
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "EastDeaths"
+          }
+         }
+        }
+        TextWidgetClass EastHeadshots {
+         ignorepointer 1
+         position 0.1 0.55
+         size 0.8 0.12
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Headshots: 0"
+         font "gui/fonts/sdf_MetronLight24"
+         "exact text" 1
+         "exact text size" 20
+         "size to text h" 1
+         "size to text v" 1
+         "text halign" left
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "EastHeadshots"
+          }
+         }
+        }
+        TextWidgetClass EastRevives {
+         ignorepointer 1
+         position 0.1 0.7
+         size 0.8 0.12
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Revives: 0"
+         font "gui/fonts/sdf_MetronLight24"
+         "exact text" 1
+         "exact text size" 20
+         "size to text h" 1
+         "size to text v" 1
+         "text halign" left
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "EastRevives"
+          }
+         }
+        }
+        TextWidgetClass EastXP {
+         ignorepointer 1
+         position 0.1 0.85
+         size 0.8 0.12
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Total XP: 0"
+         font "gui/fonts/sdf_MetronLight24"
+         "exact text" 1
+         "exact text size" 20
+         "size to text h" 1
+         "size to text v" 1
+         "text halign" left
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "EastXP"
+          }
+         }
         }
        }
       }
@@ -269,9 +278,51 @@ FrameWidgetClass KOTH_RoundEndMenu {
        vexactsize 0
        style EditorPanel
        {
+        TextWidgetClass WestTeamLabel {
+         ignorepointer 1
+         position 0 0.05
+         size 1 0.15
+         halign center_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "TEAM WEST"
+         font "gui/fonts/sdf_MetronLight32"
+         "exact text" 1
+         "exact text size" 24
+         "size to text h" 1
+         "size to text v" 1
+         "text halign" center
+         "text valign" center
+         "color" 0.25 0.5 1
+        }
+        TextWidgetClass WestKills {
+         ignorepointer 1
+         position 0.1 0.25
+         size 0.8 0.12
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "Kills: 0"
+         font "gui/fonts/sdf_MetronLight24"
+         "exact text" 1
+         "exact text size" 20
+         "size to text h" 1
+         "size to text v" 1
+         "text halign" left
+         "text valign" center
+         scriptclass "ViewBinding"
+         {
+          ScriptParamsClass {
+           Binding_Name "WestKills"
+          }
+         }
+        }
         TextWidgetClass WestDeaths {
          ignorepointer 1
-         position 0.3 0.25
+         position 0.1 0.4
          size 0.8 0.12
          hexactpos 0
          vexactpos 0
@@ -294,7 +345,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
         }
         TextWidgetClass WestHeadshots {
          ignorepointer 1
-         position 0.3 0.4
+         position 0.1 0.55
          size 0.8 0.12
          hexactpos 0
          vexactpos 0
@@ -317,7 +368,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
         }
         TextWidgetClass WestRevives {
          ignorepointer 1
-         position 0.3 0.55
+         position 0.1 0.7
          size 0.8 0.12
          hexactpos 0
          vexactpos 0
@@ -340,13 +391,12 @@ FrameWidgetClass KOTH_RoundEndMenu {
         }
         TextWidgetClass WestXP {
          ignorepointer 1
-         position 0.3 0.7
+         position 0.1 0.85
          size 0.8 0.12
          hexactpos 0
          vexactpos 0
          hexactsize 0
          vexactsize 0
-         scriptclass "ViewBinding"
          text "Total XP: 0"
          font "gui/fonts/sdf_MetronLight24"
          "exact text" 1
@@ -361,38 +411,6 @@ FrameWidgetClass KOTH_RoundEndMenu {
            Binding_Name "WestXP"
           }
          }
-        }
-        TextWidgetClass WestKills {
-         ignorepointer 1
-         position 0.3 0.1
-         size 0.8 0.12
-         hexactpos 0
-         vexactpos 0
-         hexactsize 0
-         vexactsize 0
-         text "Kills: 0"
-         font "gui/fonts/sdf_MetronLight24"
-         "exact text" 1
-         "exact text size" 20
-         "size to text h" 1
-         "size to text v" 1
-         "text halign" left
-         "text valign" center
-        scriptclass "ViewBinding"
-         {
-          ScriptParamsClass {
-           Binding_Name "WestKills"
-          }
-         }
-        }
-        ImageWidgetClass WestIcon {
-         ignorepointer 1
-         position 15 15
-         size 150 150
-         hexactpos 1
-         vexactpos 1
-         hexactsize 1
-         vexactsize 1
         }
        }
       }
@@ -456,22 +474,39 @@ FrameWidgetClass KOTH_RoundEndMenu {
        vexactsize 0
        style EditorPanel
        {
-        TextWidgetClass MVPPlayerName {
+        TextWidgetClass MVPTitle {
          ignorepointer 1
-         color 1 0.8431 0 1
-         position 0 0.15
+         position 0 0.1
          size 1 0.2
          halign center_ref
          hexactpos 0
          vexactpos 0
          hexactsize 0
          vexactsize 0
-         scriptclass "ViewBinding"
-         text "MVP PLAYER NAME HERE"
+         text "MVP"
+         font "gui/fonts/sdf_MetronLight32"
+         "exact text" 1
+         "exact text size" 24
+         "size to text h" 1
+         "size to text v" 1
+         "text halign" center
+         "text valign" center
+         "color" 1 0.84 0
+        }
+        TextWidgetClass MVPPlayerName {
+         ignorepointer 1
+         position 0 0.4
+         size 1 0.2
+         halign center_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "N/A"
          font "gui/fonts/sdf_MetronLight24"
          "exact text" 1
          "exact text size" 20
-         "size to text h" 0
+         "size to text h" 1
          "size to text v" 1
          "text halign" center
          "text valign" center
@@ -484,7 +519,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
         }
         TextWidgetClass MVPStat {
          ignorepointer 1
-         position 0 0.5
+         position 0 0.7
          size 1 0.2
          halign center_ref
          hexactpos 0
@@ -499,7 +534,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
          "size to text v" 1
          "text halign" center
          "text valign" center
-        scriptclass "ViewBinding"
+         scriptclass "ViewBinding"
          {
           ScriptParamsClass {
            Binding_Name "MVPStat"
@@ -518,26 +553,43 @@ FrameWidgetClass KOTH_RoundEndMenu {
        vexactsize 0
        style EditorPanel
        {
-        TextWidgetClass SharpshooterPlayerName {
+        TextWidgetClass SharpshooterTitle {
          ignorepointer 1
-         color 1 0.502 0 1
-         position 0 0.15
+         position 0 0.1
          size 1 0.2
          halign center_ref
          hexactpos 0
          vexactpos 0
          hexactsize 0
          vexactsize 0
-         scaled 1
-         text "SHARPSHOOTER PLAYER NAME HERE"
-         font "gui/fonts/sdf_MetronLight24"
+         text "SHARPSHOOTER"
+         font "gui/fonts/sdf_MetronLight32"
          "exact text" 1
-         "exact text size" 20
-         "size to text h" 0
+         "exact text size" 22
+         "size to text h" 1
          "size to text v" 1
          "text halign" center
          "text valign" center
-        scriptclass "ViewBinding"
+         "color" 1 0.5 0
+        }
+        TextWidgetClass SharpshooterPlayerName {
+         ignorepointer 1
+         position 0 0.4
+         size 1 0.2
+         halign center_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "N/A"
+         font "gui/fonts/sdf_MetronLight24"
+         "exact text" 1
+         "exact text size" 20
+         "size to text h" 1
+         "size to text v" 1
+         "text halign" center
+         "text valign" center
+         scriptclass "ViewBinding"
          {
           ScriptParamsClass {
            Binding_Name "SharpshooterPlayerName"
@@ -546,7 +598,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
         }
         TextWidgetClass SharpshooterStat {
          ignorepointer 1
-         position 0 0.5
+         position 0 0.7
          size 1 0.2
          halign center_ref
          hexactpos 0
@@ -561,7 +613,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
          "size to text v" 1
          "text halign" center
          "text valign" center
-        scriptclass "ViewBinding"
+         scriptclass "ViewBinding"
          {
           ScriptParamsClass {
            Binding_Name "SharpshooterStat"
@@ -580,25 +632,43 @@ FrameWidgetClass KOTH_RoundEndMenu {
        vexactsize 0
        style EditorPanel
        {
-        TextWidgetClass MedicLabel {
+        TextWidgetClass MedicTitle {
          ignorepointer 1
-         color 0 0.8 0.4 1
-         position 0 0.15
+         position 0 0.1
          size 1 0.2
          halign center_ref
          hexactpos 0
          vexactpos 0
          hexactsize 0
          vexactsize 0
-         text "MEDIC PLAYER NAME HERE"
-         font "gui/fonts/sdf_MetronLight24"
+         text "TOP MEDIC"
+         font "gui/fonts/sdf_MetronLight32"
          "exact text" 1
-         "exact text size" 20
-         "size to text h" 0
+         "exact text size" 24
+         "size to text h" 1
          "size to text v" 1
          "text halign" center
          "text valign" center
-                  scriptclass "ViewBinding"
+         "color" 0 0.8 0.4
+        }
+        TextWidgetClass MedicPlayerName {
+         ignorepointer 1
+         position 0 0.4
+         size 1 0.2
+         halign center_ref
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         text "N/A"
+         font "gui/fonts/sdf_MetronLight24"
+         "exact text" 1
+         "exact text size" 20
+         "size to text h" 1
+         "size to text v" 1
+         "text halign" center
+         "text valign" center
+         scriptclass "ViewBinding"
          {
           ScriptParamsClass {
            Binding_Name "MedicPlayerName"
@@ -607,7 +677,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
         }
         TextWidgetClass MedicStat {
          ignorepointer 1
-         position 0 0.5
+         position 0 0.7
          size 1 0.2
          halign center_ref
          hexactpos 0
@@ -622,7 +692,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
          "size to text v" 1
          "text halign" center
          "text valign" center
-                  scriptclass "ViewBinding"
+         scriptclass "ViewBinding"
          {
           ScriptParamsClass {
            Binding_Name "MedicStat"
@@ -633,97 +703,18 @@ FrameWidgetClass KOTH_RoundEndMenu {
       }
      }
     }
-    PanelWidgetClass Divide3 {
-     ignorepointer 1
-     color 0.6353 0.6353 0.6353 1
-     position 0 0.56
-     size 0.99 0.005
-     halign center_ref
-     hexactpos 0
-     vexactpos 0
-     hexactsize 0
-     vexactsize 0
-     style rover_sim_colorable
-    }
-    PanelWidgetClass PlayersPanel {
-     ignorepointer 1
-     position 0 0.58
-     size 0.95 0.35
-     halign center_ref
-     hexactpos 0
-     vexactpos 0
-     hexactsize 0
-     vexactsize 0
-     style blank
-     {
-      TextWidgetClass PlayerPanelTitle {
-       ignorepointer 1
-       position 0 0.02
-       size 0.4 0.12
-       halign center_ref
-       hexactpos 0
-       vexactpos 0
-       hexactsize 0
-       vexactsize 0
-       scriptclass "ViewBinding"
-       text "PLAYER SCOREBOARD"
-       font "gui/fonts/sdf_MetronLight32"
-       "outline size" 1
-       "outline color" 0 0 0 1
-       "exact text" 1
-       "exact text size" 24
-       "size to text h" 1
-       "size to text v" 1
-       "text halign" center
-       "text valign" center
-      }
-      ScrollWidgetClass ScrollerPlayers {
-       ignorepointer 0
-       position 0 0.11
-       size 0.97 0.87
-       halign center_ref
-       hexactpos 0
-       vexactpos 0
-       hexactsize 0
-       vexactsize 0
-       "Scrollbar V" 1
-       {
-        GridSpacerWidgetClass PlayerScoreboardGrid {
-         ignorepointer 1
-         position 0 0.02
-         size 0.97 0.93
-         halign center_ref
-         hexactpos 0
-         vexactpos 0
-         hexactsize 0
-         vexactsize 0
-         Padding 3
-         Margin 0
-         "Size To Content H" 1
-         "Size To Content V" 1
-         content_halign center
-         content_valign center
-         Columns 1
-         Rows 100
-        }
-       }
-      }
-     }
-    }
     TextWidgetClass CountdownText {
      ignorepointer 1
-     color 1 1 0 1
      position 0 0.03
-     size 0.6 0.1
+     size 0.6 0.05
      halign center_ref
      valign bottom_ref
      hexactpos 0
      vexactpos 0
      hexactsize 0
      vexactsize 0
-     scaled 1
      text "Next round starts in: 30 seconds"
-     font "gui/fonts/metron-bold"
+     font "gui/fonts/sdf_MetronLight32"
      "outline size" 1
      "outline color" 0 0 0 1
      "exact text" 1
@@ -732,7 +723,8 @@ FrameWidgetClass KOTH_RoundEndMenu {
      "size to text v" 1
      "text halign" center
      "text valign" center
-          scriptclass "ViewBinding"
+     "color" 1 1 0
+     scriptclass "ViewBinding"
      {
       ScriptParamsClass {
        Binding_Name "CountdownText"
@@ -753,43 +745,21 @@ FrameWidgetClass KOTH_RoundEndMenu {
    vexactsize 0
    style editor_quad_dark
    {
-    TextWidgetClass NexRoundTitle {
+    TextWidgetClass NextRoundTitle {
      ignorepointer 1
      position 0 0.01
-     size 0.6 0.06
+     size 0.9 0.06
      halign center_ref
      hexactpos 0
      vexactpos 0
      hexactsize 0
      vexactsize 0
-     scriptclass "ViewBinding"
      text "NEXT MAP"
      font "gui/fonts/sdf_MetronLight48"
      "outline size" 1
      "outline color" 0 0 0 1
      "exact text" 1
-     "exact text size" 42
-     "size to text h" 1
-     "size to text v" 1
-     "text halign" center
-     "text valign" center
-    }
-    TextWidgetClass ZoneSelectionMode {
-     ignorepointer 1
-     position 0 0.07
-     size 0.4 0.04
-     halign center_ref
-     hexactpos 0
-     vexactpos 0
-     hexactsize 0
-     vexactsize 0
-     scriptclass "ViewBinding"
-     text "Random/Vote/Seq"
-     font "gui/fonts/sdf_MetronLight32"
-     "outline size" 1
-     "outline color" 0 0 0 1
-     "exact text" 1
-     "exact text size" 28
+     "exact text size" 36
      "size to text h" 1
      "size to text v" 1
      "text halign" center
@@ -798,7 +768,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
     PanelWidgetClass DivideVote {
      ignorepointer 1
      color 0.6353 0.6353 0.6353 1
-     position 0 0.12
+     position 0 0.08
      size 0.99 0.005
      halign center_ref
      hexactpos 0
@@ -809,8 +779,8 @@ FrameWidgetClass KOTH_RoundEndMenu {
     }
     PanelWidgetClass VotingPanel {
      ignorepointer 1
-     position 0 0.14
-     size 0.95 0.84
+     position 0 0.1
+     size 0.95 0.88
      halign center_ref
      hexactpos 0
      vexactpos 0
@@ -821,7 +791,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
       TextWidgetClass VotingHeader {
        ignorepointer 1
        position 0 0.02
-       size 0.4 0.12
+       size 0.9 0.08
        halign center_ref
        hexactpos 0
        vexactpos 0
@@ -832,12 +802,12 @@ FrameWidgetClass KOTH_RoundEndMenu {
        "outline size" 1
        "outline color" 0 0 0 1
        "exact text" 1
-       "exact text size" 24
+       "exact text size" 22
        "size to text h" 1
        "size to text v" 1
        "text halign" center
        "text valign" center
-              scriptclass "ViewBinding"
+       scriptclass "ViewBinding"
        {
         ScriptParamsClass {
          Binding_Name "VotingHeader"
@@ -846,8 +816,8 @@ FrameWidgetClass KOTH_RoundEndMenu {
       }
       ScrollWidgetClass ScrollerVotes {
        ignorepointer 0
-       position 0 0.07
-       size 0.97 0.92
+       position 0 0.12
+       size 0.97 0.86
        halign center_ref
        hexactpos 0
        vexactpos 0
