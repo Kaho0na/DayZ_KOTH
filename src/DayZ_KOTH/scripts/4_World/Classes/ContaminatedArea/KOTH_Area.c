@@ -132,6 +132,7 @@ class KOTH_AreaTrigger : CylinderTrigger
         {
             m_PlayersInside.Clear();
             m_AIInside.Clear();
+            NotifyGameModeCountChanged();
             Print("[KOTH_AreaTrigger] Trigger deactivated and cleared");
         }
         else
