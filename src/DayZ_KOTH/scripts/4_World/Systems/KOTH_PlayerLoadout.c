@@ -19,14 +19,38 @@ class KOTH_PlayerLoadout
         ClearPlayerInventory(player);
         
         SetPlayerStats(player);
-        
+        eAIGroup playerGroup = player.GetGroup();
+        if (!playerGroup)
+            playerGroup = eAIGroup.GetGroupByLeader(player);
+        eAIFaction m_WestFaction = eAIFaction.Create("West");
+        eAIFaction m_EastFaction = eAIFaction.Create("East");
+
         if (team == "East")
         {
             SetEastLoadout(player);
+            // Set Expansion AI faction
+            if (playerGroup)
+            {
+                if (m_EastFaction)
+                {
+                    playerGroup.SetFaction(m_EastFaction);
+                    Print("[KOTH_PlayerLoadout] Set player to East faction");
+                }
+            }
         }
         else if (team == "West")
         {
             SetWestLoadout(player);
+            // Set Expansion AI faction
+            if (playerGroup)
+            {
+
+                if (m_WestFaction)
+                {
+                    playerGroup.SetFaction(m_WestFaction);
+                    Print("[KOTH_PlayerLoadout] Set player to West faction");
+                }
+            }
         }
         
         Print("[KOTH_PlayerLoadout] Applied " + team + " loadout to player: " + player.GetIdentity().GetName());
