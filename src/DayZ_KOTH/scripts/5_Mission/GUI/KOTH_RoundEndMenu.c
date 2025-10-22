@@ -267,53 +267,45 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         
         Print("[KOTH_RoundEndMenu] Setting WinnerTitle...");
         
-        string winnerText;
-        int titleColor;
+        int redColor = ARGB(255, 255, 0, 0); // Red;
+        int greenColor = ARGB(255, 0, 255, 0); // Green;
 
-        PlayerBase localPlayer = PlayerBase.Cast(GetGame().GetPlayer());
-        string playerTeam = "";
+        TextWidget eastTitleWidget = TextWidget.Cast(GetLayoutRoot().FindAnyWidget("EastRoundTitle"));
+        TextWidget westTitleWidget = TextWidget.Cast(GetLayoutRoot().FindAnyWidget("WestRoundTitle"));
 
-        if (localPlayer)
+        if (m_WinningTeam == "East")
         {
-            eAIGroup playerGroup = localPlayer.GetGroup();
-            if (!playerGroup)
-                playerGroup = eAIGroup.GetGroupByLeader(localPlayer);
-            
-            if (playerGroup)
+            m_RoundEndMenuController.EastRoundTitle = "VICTORY!";
+            m_RoundEndMenuController.NotifyPropertyChanged("EastRoundTitle");
+            m_RoundEndMenuController.WestRoundTitle = "DEFEAT!";
+            m_RoundEndMenuController.NotifyPropertyChanged("WestRoundTitle");
+            if (eastTitleWidget && westTitleWidget)
             {
-                eAIFaction faction = playerGroup.GetFaction();
-                if (faction)
-                {
-                    playerTeam = faction.GetName();
-                    Print("[KOTH_RoundEndMenu] Player faction: " + playerTeam);
-                }
+                eastTitleWidget.SetColor(greenColor); //east wins
+                westTitleWidget.SetColor(redColor); //west loses
             }
-        }
 
-        if (playerTeam == m_WinningTeam)
-        {
-            winnerText = "VICTORY!";
-            titleColor = ARGB(255, 0, 255, 0);
         }
         else
         {
-            winnerText = "DEFEAT!";
-            titleColor = ARGB(255, 255, 0, 0);
+            m_RoundEndMenuController.EastRoundTitle = "DEFEAT!";
+            m_RoundEndMenuController.NotifyPropertyChanged("EastRoundTitle");
+            m_RoundEndMenuController.WestRoundTitle = "VICTORY!";
+            m_RoundEndMenuController.NotifyPropertyChanged("WestRoundTitle");
+            if (eastTitleWidget && westTitleWidget)
+            {
+                eastTitleWidget.SetColor(redColor); //east loses
+                westTitleWidget.SetColor(greenColor); //west wins
+            }
         }
 
-        m_RoundEndMenuController.WinnerTitle = winnerText;
-        m_RoundEndMenuController.NotifyPropertyChanged("WinnerTitle");
+        string eastScore = m_EastStats.FinalScore.ToString();
+        string westScore = m_WestStats.FinalScore.ToString();
 
-        TextWidget winnerTitleWidget = TextWidget.Cast(GetLayoutRoot().FindAnyWidget("WinnerTitle"));
-        if (winnerTitleWidget)
-        {
-            winnerTitleWidget.SetColor(titleColor);
-        }
-        
-        string scoreText = "East: " + m_EastStats.FinalScore.ToString() + "  |  West: " + m_WestStats.FinalScore.ToString();
-        m_RoundEndMenuController.FinalScoreText = scoreText;
-        m_RoundEndMenuController.NotifyPropertyChanged("FinalScoreText");
-        Print("[KOTH_RoundEndMenu] FinalScoreText set to: " + m_RoundEndMenuController.FinalScoreText);
+        m_RoundEndMenuController.FinalScoreEast = eastScore;
+        m_RoundEndMenuController.NotifyPropertyChanged("FinalScoreEast");
+        m_RoundEndMenuController.FinalScoreWest = westScore;
+        m_RoundEndMenuController.NotifyPropertyChanged("FinalScoreWest");
         
         m_RoundEndMenuController.EastKills = "Kills: " + m_EastStats.TotalKills.ToString();
         m_RoundEndMenuController.NotifyPropertyChanged("EastKills");
@@ -577,8 +569,11 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
 
 class KOTH_RoundEndMenuController: ExpansionViewController
 {
-    string WinnerTitle;
-    string FinalScoreText;
+    string FinalScoreEast;
+    string FinalScoreWest;
+
+    string EastRoundTitle;
+    string WestRoundTitle;
     
     string EastKills;
     string EastDeaths;

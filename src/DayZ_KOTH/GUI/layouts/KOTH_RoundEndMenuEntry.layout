@@ -36,7 +36,7 @@ FrameWidgetClass VoteEntryRoot {
      hexactsize 0
      vexactsize 0
      text "Zone Name"
-     font "gui/fonts/sdf_MetronLight32"
+     font "gui/fonts/metron"
      "exact text" 1
      "exact text size" 24
      "size to text h" 0
@@ -61,7 +61,7 @@ FrameWidgetClass VoteEntryRoot {
      hexactsize 0
      vexactsize 0
      text "0 votes"
-     font "gui/fonts/sdf_MetronLight32"
+     font "gui/fonts/metron"
      "exact text" 1
      "exact text size" 20
      "size to text h" 0
