@@ -488,14 +488,17 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         
         PlayerIdentity killerIdent = killer.GetIdentity();
         string killerUID;
+        string killerName;
         
         if (killerIdent)
         {
             killerUID = killerIdent.GetId();
+            killerName = killerIdent.GetName();
         }
         else
         {
-            //Print("[KOTH_PlayerRewardManager] Killer has no identity - skipping reward");
+            killerUID = killer.GetType();
+            killerName = killer.GetType();
             return;
         }
         
@@ -574,7 +577,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
             
             if (m_StatsTracker)
             {
-                m_StatsTracker.RecordKill(killerUID, killerIdent.GetName(), killerTeam, wasHeadshot, distanceInt);
+                m_StatsTracker.RecordKill(killerUID, killerName, killerTeam, wasHeadshot, distanceInt);
                 m_StatsTracker.RecordDeath(victimUID, victimName, victimTeam);
             }
             

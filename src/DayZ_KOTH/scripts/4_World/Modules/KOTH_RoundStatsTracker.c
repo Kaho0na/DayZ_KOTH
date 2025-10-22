@@ -692,12 +692,10 @@ class KOTH_RoundStatsTracker: CF_ModuleWorld
         if (!ctx.Read(level))
             return null;
         
-        float joinTime;
-        if (!ctx.Read(joinTime))
-            return null;
+        // CREATE THE OBJECT FIRST with temporary joinTime
+        KOTH_RoundPlayerStats playerStats = new KOTH_RoundPlayerStats(uid, name, level, 0);
         
-        KOTH_RoundPlayerStats playerStats = new KOTH_RoundPlayerStats(uid, name, level, joinTime);
-        
+        // NOW READ IN THE SAME ORDER AS WRITE
         if (!ctx.Read(playerStats.Kills))
             return null;
         if (!ctx.Read(playerStats.Deaths))
@@ -715,6 +713,8 @@ class KOTH_RoundStatsTracker: CF_ModuleWorld
         if (!ctx.Read(playerStats.XPEarned))
             return null;
         if (!ctx.Read(playerStats.MoneyEarned))
+            return null;
+        if (!ctx.Read(playerStats.JoinTime))
             return null;
         if (!ctx.Read(playerStats.TotalPlayTime))
             return null;

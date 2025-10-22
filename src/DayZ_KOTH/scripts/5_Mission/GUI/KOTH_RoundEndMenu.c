@@ -339,6 +339,9 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         
         UpdateTopPerformers();
         
+        PopulatePlayerScoreboard();
+        Print("[KOTH_RoundEndMenu] Display updated");
+
         Print("[KOTH_RoundEndMenu] All display data updated");
     }
     
@@ -394,6 +397,7 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         Print("[KOTH_RoundEndMenu] Top performers updated from server data");
     }
     
+    //setup voting panel and buttons
     void SetupVoting(array<string> zones, bool votingEnabled)
     {
         Print("[KOTH_RoundEndMenu] SetupVoting called with " + zones.Count() + " zones, voting: " + votingEnabled);
@@ -544,7 +548,8 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
             }
         }
     }
-
+    //voting ends here
+    //countdown timer update
     void UpdateCountdown()
     {
         m_CountdownTimer = m_CountdownTimer - 1.0;
@@ -558,6 +563,160 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         m_RoundEndMenuController.CountdownText = "Next round starts in: " + seconds.ToString() + " seconds";
         m_RoundEndMenuController.NotifyPropertyChanged("CountdownText");
     }
+
+    //populate scoreboard with player stats starts here
+    // UPDATED PopulatePlayerScoreboard METHOD WITH HEADER:
+
+    void PopulatePlayerScoreboard()
+    {
+        Print("[KOTH_RoundEndMenu] PopulatePlayerScoreboard called");
+        
+        if (!m_RoundStatsTracker)
+        {
+            Error("[KOTH_RoundEndMenu] Stats tracker not available for scoreboard");
+            return;
+        }
+        
+        m_RoundEndMenuController.PlayerEntries.Clear();
+        
+        map<string, ref KOTH_RoundPlayerStats> allPlayersMap = m_RoundStatsTracker.GetAllPlayerStats();
+        
+        if (!allPlayersMap || allPlayersMap.Count() == 0)
+        {
+            Print("[KOTH_RoundEndMenu] No player data to display");
+            return;
+        }
+        
+        array<ref KOTH_RoundPlayerStats> allPlayers = new array<ref KOTH_RoundPlayerStats>();
+        
+        foreach (string uid, KOTH_RoundPlayerStats stats : allPlayersMap)
+        {
+            allPlayers.Insert(stats);
+        }
+        
+        Print("[KOTH_RoundEndMenu] Populating scoreboard with " + allPlayers.Count() + " players");
+        
+        SortPlayersByScore(allPlayers);
+        
+        KOTH_RoundEndPlayerEntry headerEntry = new KOTH_RoundEndPlayerEntry(-1, null);
+        KOTH_RoundEndPlayerEntryController headerController = KOTH_RoundEndPlayerEntryController.Cast(headerEntry.GetController());
+        if (headerController)
+        {
+            headerController.PlayerName = "PLAYER";
+            headerController.PlayerLevel = "LVL";
+            headerController.PlayerKills = "KILLS";
+            headerController.PlayerDeaths = "DEATHS";
+            headerController.PlayerKD = "K/D";
+            headerController.PlayerHeadshots = "HS";
+            headerController.PlayerRevives = "REV";
+            headerController.PlayerXP = "XP";
+            headerController.PlayerMoney = "MONEY";
+            
+            headerController.NotifyPropertyChanged("PlayerName");
+            headerController.NotifyPropertyChanged("PlayerLevel");
+            headerController.NotifyPropertyChanged("PlayerKills");
+            headerController.NotifyPropertyChanged("PlayerDeaths");
+            headerController.NotifyPropertyChanged("PlayerKD");
+            headerController.NotifyPropertyChanged("PlayerHeadshots");
+            headerController.NotifyPropertyChanged("PlayerRevives");
+            headerController.NotifyPropertyChanged("PlayerXP");
+            headerController.NotifyPropertyChanged("PlayerMoney");
+        }
+        m_RoundEndMenuController.PlayerEntries.Insert(headerEntry);
+        
+        for (int i = 0; i < allPlayers.Count(); i++)
+        {
+            KOTH_RoundPlayerStats playerStats = allPlayers.Get(i);
+            KOTH_RoundEndPlayerEntry entry = new KOTH_RoundEndPlayerEntry(i, playerStats);
+            // ADD THIS DEBUG:
+Print("[DEBUG] Player: " + playerStats.PlayerName);
+Print("[DEBUG]   Kills: " + playerStats.Kills);
+Print("[DEBUG]   Deaths: " + playerStats.Deaths);
+Print("[DEBUG]   KD: " + playerStats.KDRatio);
+Print("[DEBUG]   UID: " + playerStats.PlayerUID);
+            KOTH_RoundEndPlayerEntryController controller = KOTH_RoundEndPlayerEntryController.Cast(entry.GetController());
+            if (controller && playerStats)
+            {
+                controller.PlayerName = playerStats.PlayerName;
+                controller.PlayerLevel = playerStats.CurrentLevel.ToString();
+                controller.PlayerKills = playerStats.Kills.ToString();
+                controller.PlayerDeaths = playerStats.Deaths.ToString();
+                
+                string kdStr = playerStats.KDRatio.ToString();
+                int dotIndex = kdStr.IndexOf(".");
+                if (dotIndex != -1)
+                {
+                    if (kdStr.Length() > dotIndex + 3)
+                        kdStr = kdStr.Substring(0, dotIndex + 3);
+                }
+                controller.PlayerKD = kdStr;
+                
+                controller.PlayerHeadshots = playerStats.Headshots.ToString();
+                controller.PlayerRevives = playerStats.Revives.ToString();
+                controller.PlayerXP = playerStats.XPEarned.ToString();
+                controller.PlayerMoney = playerStats.MoneyEarned.ToString();
+                
+                controller.NotifyPropertyChanged("PlayerName");
+                controller.NotifyPropertyChanged("PlayerLevel");
+                controller.NotifyPropertyChanged("PlayerKills");
+                controller.NotifyPropertyChanged("PlayerDeaths");
+                controller.NotifyPropertyChanged("PlayerKD");
+                controller.NotifyPropertyChanged("PlayerHeadshots");
+                controller.NotifyPropertyChanged("PlayerRevives");
+                controller.NotifyPropertyChanged("PlayerXP");
+                controller.NotifyPropertyChanged("PlayerMoney");
+            }
+            
+            m_RoundEndMenuController.PlayerEntries.Insert(entry);
+
+            Print("[KOTH_RoundEndMenu] Created player entry " + i + ": " + playerStats.PlayerName);
+        }
+        
+        m_RoundEndMenuController.NotifyPropertyChanged("PlayerEntries");
+        
+        Print("[KOTH_RoundEndMenu] Scoreboard populated successfully with " + m_RoundEndMenuController.PlayerEntries.Count() + " total entries");
+    }
+
+
+    void SortPlayersByScore(array<ref KOTH_RoundPlayerStats> players)
+    {
+        if (!players)
+            return;
+        
+        for (int i = 0; i < players.Count() - 1; i++)
+        {
+            for (int j = 0; j < players.Count() - i - 1; j++)
+            {
+                KOTH_RoundPlayerStats player1 = players.Get(j);
+                KOTH_RoundPlayerStats player2 = players.Get(j + 1);
+                
+                int score1 = CalculatePlayerScore(player1);
+                int score2 = CalculatePlayerScore(player2);
+                
+                if (score2 > score1)
+                {
+                    players.Set(j, player2);
+                    players.Set(j + 1, player1);
+                }
+            }
+        }
+    }
+
+    int CalculatePlayerScore(KOTH_RoundPlayerStats stats)
+    {
+        if (!stats)
+            return 0;
+        
+        int score = 0;
+        score = score + (stats.Kills * 100);
+        score = score + (stats.Headshots * 50);
+        score = score + (stats.Revives * 25);
+        score = score - (stats.Deaths * 10);
+        score = score + stats.XPEarned;
+        
+        return score;
+    }
+    //populate scoreboard with player stats ends here
 
     void Clear()
     {
@@ -599,4 +758,6 @@ class KOTH_RoundEndMenuController: ExpansionViewController
     string VotingHeader;
     string CountdownText;
     ref ObservableCollection<ref KOTH_RoundEndZoneEntry> ZoneEntries = new ObservableCollection<ref KOTH_RoundEndZoneEntry>(this);
+    ref ObservableCollection<ref KOTH_RoundEndPlayerEntry> PlayerEntries = new ObservableCollection<ref KOTH_RoundEndPlayerEntry>(this);  // ADD THIS LINE
+
 }
