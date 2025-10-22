@@ -32,7 +32,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
      hexactsize 0
      vexactsize 0
      text "TEAM EAST WINS!"
-     font "gui/fonts/sdf_MetronLight48"
+     font "gui/fonts/metron"
      "outline size" 1
      "outline color" 0 0 0 1
      "exact text" 1
@@ -41,7 +41,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
      "size to text v" 1
      "text halign" center
      "text valign" center
-    scriptclass "ViewBinding"
+     scriptclass "ViewBinding"
 
           {
       ScriptParamsClass {
@@ -59,7 +59,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
      hexactsize 0
      vexactsize 0
      text "East: 100 | West: 87"
-     font "gui/fonts/sdf_MetronLight32"
+     font "gui/fonts/metron"
      "outline size" 1
      "outline color" 0 0 0 1
      "exact text" 1
@@ -97,7 +97,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
      hexactsize 0
      vexactsize 0
      text "TEAM STATISTICS"
-     font "gui/fonts/sdf_MetronLight32"
+     font "gui/fonts/metron"
      "outline size" 1
      "outline color" 0 0 0 1
      "exact text" 1
@@ -142,7 +142,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
          hexactsize 0
          vexactsize 0
          text "Deaths: 0"
-         font "gui/fonts/sdf_MetronLight24"
+         font "gui/fonts/metron"
          "exact text" 1
          "exact text size" 20
          "size to text h" 1
@@ -165,7 +165,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
          hexactsize 0
          vexactsize 0
          text "Headshots: 0"
-         font "gui/fonts/sdf_MetronLight24"
+         font "gui/fonts/metron"
          "exact text" 1
          "exact text size" 20
          "size to text h" 1
@@ -188,7 +188,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
          hexactsize 0
          vexactsize 0
          text "Revives: 0"
-         font "gui/fonts/sdf_MetronLight24"
+         font "gui/fonts/metron"
          "exact text" 1
          "exact text size" 20
          "size to text h" 1
@@ -211,7 +211,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
          hexactsize 0
          vexactsize 0
          text "Total XP: 0"
-         font "gui/fonts/sdf_MetronLight24"
+         font "gui/fonts/metron"
          "exact text" 1
          "exact text size" 20
          "size to text h" 1
@@ -234,7 +234,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
          hexactsize 0
          vexactsize 0
          text "Kills: 0"
-         font "gui/fonts/sdf_MetronLight24"
+         font "gui/fonts/metron"
          "exact text" 1
          "exact text size" 20
          "size to text h" 1
@@ -278,7 +278,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
          hexactsize 0
          vexactsize 0
          text "Deaths: 0"
-         font "gui/fonts/sdf_MetronLight24"
+         font "gui/fonts/metron"
          "exact text" 1
          "exact text size" 20
          "size to text h" 1
@@ -301,7 +301,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
          hexactsize 0
          vexactsize 0
          text "Headshots: 0"
-         font "gui/fonts/sdf_MetronLight24"
+         font "gui/fonts/metron"
          "exact text" 1
          "exact text size" 20
          "size to text h" 1
@@ -324,7 +324,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
          hexactsize 0
          vexactsize 0
          text "Revives: 0"
-         font "gui/fonts/sdf_MetronLight24"
+         font "gui/fonts/metron"
          "exact text" 1
          "exact text size" 20
          "size to text h" 1
@@ -346,9 +346,8 @@ FrameWidgetClass KOTH_RoundEndMenu {
          vexactpos 0
          hexactsize 0
          vexactsize 0
-         scriptclass "ViewBinding"
          text "Total XP: 0"
-         font "gui/fonts/sdf_MetronLight24"
+         font "gui/fonts/metron"
          "exact text" 1
          "exact text size" 20
          "size to text h" 1
@@ -371,7 +370,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
          hexactsize 0
          vexactsize 0
          text "Kills: 0"
-         font "gui/fonts/sdf_MetronLight24"
+         font "gui/fonts/metron"
          "exact text" 1
          "exact text size" 20
          "size to text h" 1
@@ -420,7 +419,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
      hexactsize 0
      vexactsize 0
      text "TOP PERFORMERS"
-     font "gui/fonts/sdf_MetronLight32"
+     font "gui/fonts/metron"
      "outline size" 1
      "outline color" 0 0 0 1
      "exact text" 1
@@ -466,9 +465,8 @@ FrameWidgetClass KOTH_RoundEndMenu {
          vexactpos 0
          hexactsize 0
          vexactsize 0
-         scriptclass "ViewBinding"
          text "MVP PLAYER NAME HERE"
-         font "gui/fonts/sdf_MetronLight24"
+         font "gui/fonts/metron"
          "exact text" 1
          "exact text size" 20
          "size to text h" 0
@@ -492,7 +490,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
          hexactsize 0
          vexactsize 0
          text "0 Kills"
-         font "gui/fonts/sdf_MetronLight24"
+         font "gui/fonts/metron"
          "exact text" 1
          "exact text size" 18
          "size to text h" 1
@@ -530,7 +528,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
          vexactsize 0
          scaled 1
          text "SHARPSHOOTER PLAYER NAME HERE"
-         font "gui/fonts/sdf_MetronLight24"
+         font "gui/fonts/metron"
          "exact text" 1
          "exact text size" 20
          "size to text h" 0
@@ -554,14 +552,14 @@ FrameWidgetClass KOTH_RoundEndMenu {
          hexactsize 0
          vexactsize 0
          text "0 Headshots"
-         font "gui/fonts/sdf_MetronLight24"
+         font "gui/fonts/metron"
          "exact text" 1
          "exact text size" 18
          "size to text h" 1
          "size to text v" 1
          "text halign" center
          "text valign" center
-        scriptclass "ViewBinding"
+         scriptclass "ViewBinding"
          {
           ScriptParamsClass {
            Binding_Name "SharpshooterStat"
@@ -591,14 +589,14 @@ FrameWidgetClass KOTH_RoundEndMenu {
          hexactsize 0
          vexactsize 0
          text "MEDIC PLAYER NAME HERE"
-         font "gui/fonts/sdf_MetronLight24"
+         font "gui/fonts/metron"
          "exact text" 1
          "exact text size" 20
          "size to text h" 0
          "size to text v" 1
          "text halign" center
          "text valign" center
-                  scriptclass "ViewBinding"
+          scriptclass "ViewBinding"
          {
           ScriptParamsClass {
            Binding_Name "MedicPlayerName"
@@ -615,14 +613,14 @@ FrameWidgetClass KOTH_RoundEndMenu {
          hexactsize 0
          vexactsize 0
          text "0 Revives"
-         font "gui/fonts/sdf_MetronLight24"
+         font "gui/fonts/metron"
          "exact text" 1
          "exact text size" 18
          "size to text h" 1
          "size to text v" 1
          "text halign" center
          "text valign" center
-                  scriptclass "ViewBinding"
+          scriptclass "ViewBinding"
          {
           ScriptParamsClass {
            Binding_Name "MedicStat"
@@ -667,7 +665,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
        vexactsize 0
        scriptclass "ViewBinding"
        text "PLAYER SCOREBOARD"
-       font "gui/fonts/sdf_MetronLight32"
+       font "gui/fonts/metron"
        "outline size" 1
        "outline color" 0 0 0 1
        "exact text" 1
@@ -723,7 +721,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
      vexactsize 0
      scaled 1
      text "Next round starts in: 30 seconds"
-     font "gui/fonts/metron-bold"
+     font "gui/fonts/metron"
      "outline size" 1
      "outline color" 0 0 0 1
      "exact text" 1
@@ -764,7 +762,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
      vexactsize 0
      scriptclass "ViewBinding"
      text "NEXT MAP"
-     font "gui/fonts/sdf_MetronLight48"
+     font "gui/fonts/metron"
      "outline size" 1
      "outline color" 0 0 0 1
      "exact text" 1
@@ -785,7 +783,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
      vexactsize 0
      scriptclass "ViewBinding"
      text "Random/Vote/Seq"
-     font "gui/fonts/sdf_MetronLight32"
+     font "gui/fonts/metron"
      "outline size" 1
      "outline color" 0 0 0 1
      "exact text" 1
@@ -828,7 +826,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
        hexactsize 0
        vexactsize 0
        text "VOTE FOR NEXT ZONE"
-       font "gui/fonts/sdf_MetronLight32"
+       font "gui/fonts/metron"
        "outline size" 1
        "outline color" 0 0 0 1
        "exact text" 1
@@ -873,7 +871,7 @@ FrameWidgetClass KOTH_RoundEndMenu {
          content_valign center
          Columns 1
          Rows 100
-                                   {
+         {
           ScriptParamsClass {
           Binding_Name "ZoneEntries"
           Binding_Type "viewarray"

@@ -791,14 +791,14 @@ class KOTH_RoundEndModule: CF_ModuleWorld
             if (!player || !player.GetIdentity())
                 continue;
             
-            string team = player.GetKOTHTeam();
+            string m_PlayerTeam = player.GetKOTHTeam();
             vector spawnPos;
             
-            if (team == "East")
+            if (m_PlayerTeam == "East")
             {
                 spawnPos = m_ZoneManager.GetEastSpawnPosition();
             }
-            else if (team == "West")
+            else if (m_PlayerTeam == "West")
             {
                 spawnPos = m_ZoneManager.GetWestSpawnPosition();
             }
@@ -810,7 +810,7 @@ class KOTH_RoundEndModule: CF_ModuleWorld
             if (spawnPos != "0 0 0")
             {
                 KOTH_SpawnUtils.SpawnPlayerAtPosition(player, spawnPos);
-                Print("[KOTH_RoundEndModule] Teleported " + player.GetIdentity().GetName() + " to " + team + " spawn");
+                Print("[KOTH_RoundEndModule] Teleported " + player.GetIdentity().GetName() + " to " + m_PlayerTeam + " spawn");
             }
         }
         

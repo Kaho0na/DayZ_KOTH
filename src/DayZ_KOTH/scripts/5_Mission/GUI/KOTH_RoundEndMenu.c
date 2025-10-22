@@ -268,18 +268,47 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         Print("[KOTH_RoundEndMenu] Setting WinnerTitle...");
         
         string winnerText;
-        if (m_WinningTeam == "East")
+        int titleColor;
+
+        PlayerBase localPlayer = PlayerBase.Cast(GetGame().GetPlayer());
+        string playerTeam = "";
+
+        if (localPlayer)
         {
-            winnerText = "TEAM EAST WINS!";
+            eAIGroup playerGroup = localPlayer.GetGroup();
+            if (!playerGroup)
+                playerGroup = eAIGroup.GetGroupByLeader(localPlayer);
+            
+            if (playerGroup)
+            {
+                eAIFaction faction = playerGroup.GetFaction();
+                if (faction)
+                {
+                    playerTeam = faction.GetName();
+                    Print("[KOTH_RoundEndMenu] Player faction: " + playerTeam);
+                }
+            }
+        }
+
+        if (playerTeam == m_WinningTeam)
+        {
+            winnerText = "VICTORY!";
+            titleColor = ARGB(255, 0, 255, 0);
         }
         else
         {
-            winnerText = "TEAM WEST WINS!";
+            winnerText = "DEFEAT!";
+            titleColor = ARGB(255, 255, 0, 0);
         }
-        
+
         m_RoundEndMenuController.WinnerTitle = winnerText;
         m_RoundEndMenuController.NotifyPropertyChanged("WinnerTitle");
-        Print("[KOTH_RoundEndMenu] WinnerTitle set to: " + m_RoundEndMenuController.WinnerTitle);
+
+        TextWidget winnerTitleWidget = TextWidget.Cast(GetLayoutRoot().FindAnyWidget("WinnerTitle"));
+        if (winnerTitleWidget)
+        {
+            winnerTitleWidget.SetColor(titleColor);
+        }
         
         string scoreText = "East: " + m_EastStats.FinalScore.ToString() + "  |  West: " + m_WestStats.FinalScore.ToString();
         m_RoundEndMenuController.FinalScoreText = scoreText;
