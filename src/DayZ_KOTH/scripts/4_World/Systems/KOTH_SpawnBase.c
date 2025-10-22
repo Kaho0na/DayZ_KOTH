@@ -1,5 +1,3 @@
-
-
 // KOTH_SpawnBase.c — spawns East/West spawn compounds from in-code definition (no XML)
 
 // Simple piece definition: class name (or p3d path), relative offsets, and yaw (deg)
@@ -65,26 +63,26 @@ static ref array<ref KOTHSpawnPiece> KOTH_SPAWN_COMPOUND = {
 class KOTH_SpawnBase
 {
 	static ref array<Object> s_Spawned = new array<Object>();
+	static ref array<ref ExpansionZone> s_SafeZones = new array<ref ExpansionZone>();
 
-	static void SpawnBaseAt(vector center, string side)
+	static void SpawnBaseAt(vector center, string side, float safeZoneRadius)
 	{
 		if (!GetGame().IsServer())
 			return;
 
-		float baseYOffset = -2.0;  // drop entire base to terrain
+		float baseYOffset = -2.0;
 
 		foreach (KOTHSpawnPiece p: KOTH_SPAWN_COMPOUND)
 		{
 			string objType = p.type;
 
-			// ─── Faction flag logic ───────────────────────────────
 			if (p.type == "bldr_prop_Flag_Bear")
 			{
 				if (side == "West")
-					objType = "bldr_prop_Flag_Wolf";  // swap Bear → Wolf for Blue side
+					objType = "bldr_prop_Flag_Wolf";
 			}
 
-			vector pos = Vector(center[0] + p.dx, center[1] + p.dy + baseYOffset, center[2] + p.dz);
+			vector pos = Vector(p.dx + center[0], p.dy + baseYOffset + center[1], p.dz + center[2]);
 
 			Object o = GetGame().CreateObjectEx(objType, pos, ECE_CREATEPHYSICS);
 			if (!o)
@@ -96,12 +94,27 @@ class KOTH_SpawnBase
 			o.SetOrientation(Vector(p.yaw, 0, 0));
 			s_Spawned.Insert(o);
 		}
+
+		CreateSafeZone(center, safeZoneRadius);
 	}
 
-	static void SpawnBases(vector eastCenter, vector westCenter)
+	static void CreateSafeZone(vector center, float radius)
 	{
-		SpawnBaseAt(eastCenter, "East");
-		SpawnBaseAt(westCenter, "West");
+		if (!GetGame().IsServer())
+			return;
+
+		float height = 50.0;
+
+		ExpansionZone zone = new ExpansionZoneCylinder(ExpansionZoneType.SAFE, center, radius, height);
+		s_SafeZones.Insert(zone);
+
+		Print("[KOTH] Safe zone created at: " + center.ToString() + " with radius: " + radius.ToString());
+	}
+
+	static void SpawnBases(vector eastCenter, vector westCenter, float eastRadius, float westRadius)
+	{
+		SpawnBaseAt(eastCenter, "East", eastRadius);
+		SpawnBaseAt(westCenter, "West", westRadius);
 	}
 
 	static void DespawnAll()
@@ -116,22 +129,29 @@ class KOTH_SpawnBase
 				GetGame().ObjectDelete(o);
 			s_Spawned.Remove(i);
 		}
+
+		for (int j = s_SafeZones.Count() - 1; j >= 0; j--)
+		{
+			ExpansionZone z = s_SafeZones[j];
+			if (z)
+				delete z;
+			s_SafeZones.Remove(j);
+		}
 	}
 }
 
-
-// Convenience wrapper for your zone object (uses your getters)
 static void KOTH_SpawnBasesForZone(KOTH_ZoneData zone)
 {
 	if (!GetGame().IsServer()) return;
 
 	vector east = zone.GetEastSpawnBuilding();
 	vector west = zone.GetWestSpawnBuilding();
+	float eastRadius = zone.GetEastSafeZoneRadius();
+	float westRadius = zone.GetWestSafeZoneRadius();
 
-	KOTH_SpawnBase.SpawnBases(east, west);
+	KOTH_SpawnBase.SpawnBases(east, west, eastRadius, westRadius);
 }
 
-// Optional cleanup, if needed during iteration
 static void KOTH_DespawnBases()
 {
 	KOTH_SpawnBase.DespawnAll();
