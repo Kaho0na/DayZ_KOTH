@@ -52,7 +52,7 @@ class KOTH_TeamMenu: ExpansionScriptViewMenu
 		PPEffects.SetBlurMenu(0.5);
 		m_Mission.GetHud().ShowHud(false);
 		m_Mission.GetHud().ShowQuickBar(false);
-        Background.LoadImageFile(0, "DayZExpansion/SpawnSelection/GUI/textures/wood_background.edds");
+        Background.LoadImageFile(0, "DayZ_KOTH/GUI/textures/selectio_menu.edds");
 
     }
 

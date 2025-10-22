@@ -15,7 +15,7 @@ FrameWidgetClass TeamSelectionMenu {
    ignorepointer 1
    position 0 0
    size 1 1
-   halign center_ref 
+   halign center_ref
    valign center_ref
    hexactpos 0
    vexactpos 0
@@ -43,11 +43,11 @@ FrameWidgetClass TeamSelectionMenu {
    style blank
    {
     ButtonWidgetClass East {
-     color 0 0 0 0.8078
-     position 0.3 0.06
-     size 0.15 0.04
-     halign right_ref
-     valign bottom_ref
+     color 0 0 0 0.7059
+     position 0.13 0.17
+     size 0.12 0.06
+     halign center_ref
+     valign center_ref
      hexactpos 0
      vexactpos 0
      hexactsize 0
@@ -67,9 +67,9 @@ FrameWidgetClass TeamSelectionMenu {
        vexactpos 0
        hexactsize 0
        vexactsize 0
-       text "SPAWN EAST"
+       text "JOIN EAST"
        font "gui/fonts/etelkatextpro"
-       "exact text" 0
+       "exact text" 1
        "size to text h" 0
        "text halign" center
        "text valign" center
@@ -77,11 +77,11 @@ FrameWidgetClass TeamSelectionMenu {
      }
     }
     ButtonWidgetClass West {
-     color 0 0 0 0.8078
-     position 0.13 0.06
-     size 0.15 0.04
-     halign right_ref
-     valign bottom_ref
+     color 0 0 0 0.7059
+     position -0.13 0.17
+     size 0.12 0.06
+     halign center_ref
+     valign center_ref
      hexactpos 0
      vexactpos 0
      hexactsize 0
@@ -101,9 +101,9 @@ FrameWidgetClass TeamSelectionMenu {
        vexactpos 0
        hexactsize 0
        vexactsize 0
-       text "SPAWN WEST"
+       text "JOIN WEST"
        font "gui/fonts/etelkatextpro"
-       "exact text" 0
+       "exact text" 1
        "size to text h" 0
        "text halign" center
        "text valign" center
