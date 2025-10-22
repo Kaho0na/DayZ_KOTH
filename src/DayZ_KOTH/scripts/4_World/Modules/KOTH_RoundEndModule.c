@@ -810,6 +810,8 @@ class KOTH_RoundEndModule: CF_ModuleWorld
             if (spawnPos != "0 0 0")
             {
                 KOTH_SpawnUtils.SpawnPlayerAtPosition(player, spawnPos);
+                // HEAL AND RESTORE PLAYER STATS
+                KOTH_PlayerLoadout.SetPlayerStats(player);
                 Print("[KOTH_RoundEndModule] Teleported " + player.GetIdentity().GetName() + " to " + m_PlayerTeam + " spawn");
             }
         }
