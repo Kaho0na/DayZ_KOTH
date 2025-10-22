@@ -73,6 +73,7 @@ class KOTH_SettingsBase: ExpansionSettingBase
     bool NotifyPlayersOnZoneChange = true;
     int ZoneChangeWarningTime = 60;
     bool AllowAdminZoneChange = true;
+    bool EnableAI = true;
 }
 
 class KOTH_Settings: KOTH_SettingsBase
@@ -144,6 +145,7 @@ class KOTH_Settings: KOTH_SettingsBase
         if (!ctx.Read(s.NotifyPlayersOnZoneChange)) return false;
         if (!ctx.Read(s.ZoneChangeWarningTime)) return false;
         if (!ctx.Read(s.AllowAdminZoneChange)) return false;
+        if (!ctx.Read(s.EnableAI)) return false;
 
         CopyInternal(s);
         m_IsLoaded = true;
@@ -212,6 +214,7 @@ class KOTH_Settings: KOTH_SettingsBase
         ctx.Write(NotifyPlayersOnZoneChange);
         ctx.Write(ZoneChangeWarningTime);
         ctx.Write(AllowAdminZoneChange);
+        ctx.Write(EnableAI);
     }
 
     override int Send(PlayerIdentity identity)
@@ -302,6 +305,7 @@ class KOTH_Settings: KOTH_SettingsBase
         NotifyPlayersOnZoneChange = s.NotifyPlayersOnZoneChange;
         ZoneChangeWarningTime = s.ZoneChangeWarningTime;
         AllowAdminZoneChange = s.AllowAdminZoneChange;
+        EnableAI = s.EnableAI;
     }
 
     override bool IsLoaded()
@@ -424,6 +428,7 @@ class KOTH_Settings: KOTH_SettingsBase
         NotifyPlayersOnZoneChange = true;
         ZoneChangeWarningTime = 60;
         AllowAdminZoneChange = true;
+        EnableAI = true;
     }
 
     override string SettingName()

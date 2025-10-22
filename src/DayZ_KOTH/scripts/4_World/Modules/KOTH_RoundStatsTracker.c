@@ -153,7 +153,13 @@ class KOTH_RoundStatsTracker: CF_ModuleWorld
         m_RoundActive = true;
         
         ResetAllStats();
-        
+        // Reset AI nicknames for fresh names each round
+        KOTH_AINicknameManager nickManager = KOTH_AINicknameManager.GetInstance();
+        if (nickManager)
+        {
+            nickManager.ResetAll();
+        }
+
         ref array<Man> players = new array<Man>;
         GetGame().GetPlayers(players);
         
@@ -172,6 +178,28 @@ class KOTH_RoundStatsTracker: CF_ModuleWorld
                 Print("[KOTH_RoundStatsTracker] Registered player: " + name + " (Level " + level + ")");
             }
         }
+    }
+    
+    void RegisterPlayer(string uid, string name, string team)
+    {
+        if (!GetGame().IsServer() || !m_RoundActive)
+            return;
+        
+        // Check if already registered
+        if (m_PlayerStats.Contains(uid))
+        {
+            Print("[KOTH_RoundStatsTracker] Player already registered: " + name);
+            return;
+        }
+        
+        // Create stats entry with 0 kills/deaths
+        int level = GetPlayerLevel(uid);
+        float joinTime = GetGame().GetTickTime();
+        
+        KOTH_RoundPlayerStats stats = new KOTH_RoundPlayerStats(uid, name, level, joinTime);
+        m_PlayerStats.Set(uid, stats);
+        
+        Print("[KOTH_RoundStatsTracker] Registered player: " + name + " (UID: " + uid + ", Team: " + team + ")");
     }
     
     void OnPlayerJoinRound(PlayerBase player)
@@ -213,7 +241,12 @@ class KOTH_RoundStatsTracker: CF_ModuleWorld
         m_RoundActive = false;
         
         CalculateAllPlayTimes();
-        
+        Print("[KOTH_RoundStatsTracker] Player UIDs in map:");
+        foreach (string uid, KOTH_RoundPlayerStats stats : m_PlayerStats)
+        {
+            Print("  - UID: " + uid + ", Name: " + stats.PlayerName + ", Kills: " + stats.Kills + ", Deaths: " + stats.Deaths);
+        }
+
         Print("[KOTH_RoundStatsTracker] Round ended - Final statistics:");
         Print("[KOTH_RoundStatsTracker]   - East Team: " + m_EastTeamStats.TotalKills + " kills, " + m_EastTeamStats.FinalScore + " score, " + m_EastTeamStats.TotalXPEarned + " XP");
         Print("[KOTH_RoundStatsTracker]   - West Team: " + m_WestTeamStats.TotalKills + " kills, " + m_WestTeamStats.FinalScore + " score, " + m_WestTeamStats.TotalXPEarned + " XP");
@@ -295,6 +328,8 @@ class KOTH_RoundStatsTracker: CF_ModuleWorld
         if (!GetGame().IsServer() || !m_RoundActive)
             return;
         
+        Print("[KOTH_RoundStatsTracker] RecordDeath - UID: " + victimUID + ", Name: " + victimName);
+
         KOTH_RoundPlayerStats victimStats = GetOrCreatePlayerStats(victimUID, victimName);
         
         victimStats.Deaths = victimStats.Deaths + 1;

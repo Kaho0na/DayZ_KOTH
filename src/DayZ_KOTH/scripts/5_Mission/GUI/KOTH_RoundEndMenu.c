@@ -628,12 +628,7 @@ class KOTH_RoundEndMenu: ExpansionScriptViewMenu
         {
             KOTH_RoundPlayerStats playerStats = allPlayers.Get(i);
             KOTH_RoundEndPlayerEntry entry = new KOTH_RoundEndPlayerEntry(i, playerStats);
-            // ADD THIS DEBUG:
-Print("[DEBUG] Player: " + playerStats.PlayerName);
-Print("[DEBUG]   Kills: " + playerStats.Kills);
-Print("[DEBUG]   Deaths: " + playerStats.Deaths);
-Print("[DEBUG]   KD: " + playerStats.KDRatio);
-Print("[DEBUG]   UID: " + playerStats.PlayerUID);
+
             KOTH_RoundEndPlayerEntryController controller = KOTH_RoundEndPlayerEntryController.Cast(entry.GetController());
             if (controller && playerStats)
             {
@@ -654,7 +649,7 @@ Print("[DEBUG]   UID: " + playerStats.PlayerUID);
                 controller.PlayerHeadshots = playerStats.Headshots.ToString();
                 controller.PlayerRevives = playerStats.Revives.ToString();
                 controller.PlayerXP = playerStats.XPEarned.ToString();
-                controller.PlayerMoney = playerStats.MoneyEarned.ToString();
+                controller.PlayerMoney = "$" + playerStats.MoneyEarned.ToString();
                 
                 controller.NotifyPropertyChanged("PlayerName");
                 controller.NotifyPropertyChanged("PlayerLevel");

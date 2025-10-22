@@ -194,6 +194,38 @@ modded class PlayerBase
         m_KOTHReviver = null;
     }
     
+    override void EEInit()
+    {
+        super.EEInit();
+        
+        if (!GetGame().IsServer())
+            return;
+        
+        // Register player/AI in stats tracker when they spawn
+        KOTH_RoundStatsTracker statsTracker = KOTH_RoundStatsTracker.GetInstance();
+        if (statsTracker && statsTracker.IsRoundActive())
+        {
+            string uid;
+            string name;
+            string team = GetKOTHTeam();
+            
+            if (GetIdentity())
+            {
+                uid = GetIdentity().GetId();
+                name = GetIdentity().GetName();
+            }
+            else
+            {
+                // AI without identity
+                KOTH_AINicknameManager nickManager = KOTH_AINicknameManager.GetInstance();
+                uid = nickManager.GetUniqueUID(this);
+                name = nickManager.GetOrAssignNickname(this);
+            }
+            
+            statsTracker.RegisterPlayer(uid, name, team);
+        }
+    }
+
     override void EEKilled(Object killer)
     {
         super.EEKilled(killer);

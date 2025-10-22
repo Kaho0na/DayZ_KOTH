@@ -486,6 +486,8 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         if (!GetGame().IsServer() || !killer || !victim)
             return;
         
+        KOTH_AINicknameManager nickManager = KOTH_AINicknameManager.GetInstance();  // DECLARE ONCE HERE
+        
         PlayerIdentity killerIdent = killer.GetIdentity();
         string killerUID;
         string killerName;
@@ -497,9 +499,9 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         }
         else
         {
-            killerUID = killer.GetType();
-            killerName = killer.GetType();
-            return;
+            // REUSE nickManager (already declared above)
+            killerUID = nickManager.GetUniqueUID(killer);
+            killerName = nickManager.GetOrAssignNickname(killer);
         }
         
         string killerTeam = killer.GetKOTHTeam();
@@ -516,17 +518,20 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         else
         {
             victimTeam = GetExpansionAIFaction(victim);
-            victimUID = victim.GetType();
-            victimName = victim.GetType();
+            // REUSE nickManager (already declared above)
+            victimUID = nickManager.GetUniqueUID(victim);
+            victimName = nickManager.GetOrAssignNickname(victim);
         }
-        
+        Print("[KOTH_ProcessKill] Victim UID: " + victimUID + ", Name: " + victimName);
+
+        bool validTeams = true;
         if (killerTeam == "" || victimTeam == "" || victimTeam == "Unknown")
         {
-            Print("[KOTH_PlayerRewardManager] Skipping reward - invalid team/faction");
-            return;
+            Print("[KOTH_PlayerRewardManager] Invalid team/faction - will record stats but skip rewards");
+            validTeams = false;
         }
         
-        if (killerTeam == victimTeam)
+        if (validTeams && killerTeam == victimTeam)
         {
             RemovePlayerMoney(killer, m_TeamKillPenalty, "Team Kill Penalty");
             KOTH_NotificationModule.ShowNotificationAdvanced("Teamkill Penalty", "-$" + m_TeamKillPenalty.ToString(), ARGB(255, 255, 0, 0), "", ARGB(255, 255, 255, 255), ARGB(255, 139, 0, 0), 4.0, killerIdent);
@@ -534,10 +539,10 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
             
             if (m_StatsTracker)
             {
-                m_StatsTracker.RecordTeamkill(killerUID, killerIdent.GetName(), killerTeam);
+                m_StatsTracker.RecordTeamkill(killerUID, killerName, killerTeam);
             }
         }
-        else
+        else if (validTeams && killerTeam != victimTeam)
         {
             float distance = vector.Distance(killer.GetPosition(), victim.GetPosition());
             int distanceInt = distance;
@@ -548,51 +553,53 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
             int xpReward = m_KillXP;
             string rewardType = "Enemy Kill";
             
-            KOTH_Players data = GetPlayerData(killerUID);
-            if (!data)
-                return;
-            
-            data.TotalEnemiesKilled = data.TotalEnemiesKilled + 1;
-            
-            if (distanceInt > data.LongestKill)
+            if (killerIdent)
             {
-                data.LongestKill = distanceInt;
-            }
-            
-            if (wasHeadshot)
-            {
-                moneyReward = m_KillReward + m_HeadshotReward;
-                xpReward = m_KillXP + m_HeadshotXP;
-                rewardType = "Headshot Kill";
+                KOTH_Players data = GetPlayerData(killerUID);
+                if (!data)
+                    return;
                 
-                if (distanceInt > data.LongestHeadshot)
+                data.TotalEnemiesKilled = data.TotalEnemiesKilled + 1;
+                
+                if (distanceInt > data.LongestKill)
                 {
-                    data.LongestHeadshot = distanceInt;
+                    data.LongestKill = distanceInt;
+                }
+                
+                if (wasHeadshot)
+                {
+                    moneyReward = m_KillReward + m_HeadshotReward;
+                    xpReward = m_KillXP + m_HeadshotXP;
+                    rewardType = "Headshot Kill";
+                    
+                    if (distanceInt > data.LongestHeadshot)
+                    {
+                        data.LongestHeadshot = distanceInt;
+                    }
+                }
+                
+                IncrementKillstreak(killerUID, data);
+                SavePlayerData(killerUID);
+                
+                AddPlayerMoney(killer, moneyReward, rewardType);
+                AddPlayerXP(killer, xpReward, rewardType);
+                
+                if (wasHeadshot)
+                {
+                    KOTH_NotificationModule.ShowNotificationAdvanced("Enemy Killed (" + distanceInt.ToString() + "m)", "$" + moneyReward.ToString(), ARGB(255, 0, 255, 0), xpReward.ToString() + "XP", ARGB(255, 144, 238, 144), ARGB(255, 255, 255, 0), 3.0, killerIdent);
+                    KOTH_NotificationModule.ShowNotificationAdvanced("BONUS HEADSHOT! (" + distanceInt.ToString() + "m)", "$" + moneyReward.ToString(), ARGB(255, 255, 215, 0), xpReward.ToString() + "XP", ARGB(255, 255, 165, 0), ARGB(255, 255, 140, 0), 3.0, killerIdent);
+                }
+                else
+                {
+                    KOTH_NotificationModule.ShowNotificationAdvanced("Enemy Killed (" + distanceInt.ToString() + "m)", "$" + moneyReward.ToString(), ARGB(255, 0, 255, 0), xpReward.ToString() + "XP", ARGB(255, 144, 238, 144), ARGB(255, 255, 255, 0), 3.0, killerIdent);
                 }
             }
-            
-            IncrementKillstreak(killerUID, data);
-            
-            SavePlayerData(killerUID);
-            
-            if (m_StatsTracker)
-            {
-                m_StatsTracker.RecordKill(killerUID, killerName, killerTeam, wasHeadshot, distanceInt);
-                m_StatsTracker.RecordDeath(victimUID, victimName, victimTeam);
-            }
-            
-            AddPlayerMoney(killer, moneyReward, rewardType);
-            AddPlayerXP(killer, xpReward, rewardType);
-            
-            if (wasHeadshot)
-            {
-                KOTH_NotificationModule.ShowNotificationAdvanced("Enemy Killed (" + distanceInt.ToString() + "m)", "$" + moneyReward.ToString(), ARGB(255, 0, 255, 0), xpReward.ToString() + "XP", ARGB(255, 144, 238, 144), ARGB(255, 255, 255, 0), 3.0, killerIdent);
-                KOTH_NotificationModule.ShowNotificationAdvanced("BONUS HEADSHOT! (" + distanceInt.ToString() + "m)", "$" + moneyReward.ToString(), ARGB(255, 255, 215, 0), xpReward.ToString() + "XP", ARGB(255, 255, 165, 0), ARGB(255, 255, 140, 0), 3.0, killerIdent);
-            }
-            else
-            {
-                KOTH_NotificationModule.ShowNotificationAdvanced("Enemy Killed (" + distanceInt.ToString() + "m)", "$" + moneyReward.ToString(), ARGB(255, 0, 255, 0), xpReward.ToString() + "XP", ARGB(255, 144, 238, 144), ARGB(255, 255, 255, 0), 3.0, killerIdent);
-            }
+        }
+
+        if (m_StatsTracker)
+        {
+            m_StatsTracker.RecordKill(killerUID, killerName, killerTeam, wasHeadshot, distanceInt);
+            m_StatsTracker.RecordDeath(victimUID, victimName, victimTeam);
         }
     }
     
