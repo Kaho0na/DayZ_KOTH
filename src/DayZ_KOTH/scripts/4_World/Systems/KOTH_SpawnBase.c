@@ -64,13 +64,21 @@ class KOTH_SpawnBase
 {
 	static ref array<Object> s_Spawned = new array<Object>();
 	static ref array<ref ExpansionZone> s_SafeZones = new array<ref ExpansionZone>();
+	static ref array<ref KOTH_VehicleSpawn> s_VehicleSpawners = new array<ref KOTH_VehicleSpawn>();
 
 	static void SpawnBaseAt(vector center, string side, float safeZoneRadius)
 	{
 		if (!GetGame().IsServer())
 			return;
 
+		Print("[KOTH_SpawnBase] ══════════════════════════════════════");
+		Print("[KOTH_SpawnBase] Spawning base for: " + side);
+		Print("[KOTH_SpawnBase] Center position: " + center.ToString());
+
 		float baseYOffset = -2.0;
+		vector platformPos;
+		float platformYaw = -54.0;
+		bool platformFound = false;
 
 		foreach (KOTHSpawnPiece p: KOTH_SPAWN_COMPOUND)
 		{
@@ -93,9 +101,87 @@ class KOTH_SpawnBase
 
 			o.SetOrientation(Vector(p.yaw, 0, 0));
 			s_Spawned.Insert(o);
+
+			if (p.type == "bldr_Platform1_Block")
+			{
+				platformPos = pos;
+				platformYaw = p.yaw;
+				platformFound = true;
+				Print("[KOTH_SpawnBase] Platform found at: " + platformPos.ToString());
+				Print("[KOTH_SpawnBase] Platform yaw: " + platformYaw.ToString());
+			}
 		}
 
 		CreateSafeZone(center, safeZoneRadius);
+
+		if (platformFound)
+		{
+			Print("[KOTH_SpawnBase] Spawning vehicle for side: " + side);
+			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SpawnFactionVehicle, 1000, false, center, side, platformYaw);
+		}
+		else
+		{
+			Print("[KOTH_SpawnBase] ERROR: Platform not found! Cannot spawn vehicle.");
+		}
+
+		Print("[KOTH_SpawnBase] ══════════════════════════════════════");
+	}
+
+	static void SpawnFactionVehicle(vector baseCenter, string side, float baseYaw)
+	{
+		if (!GetGame().IsServer())
+		{
+			Print("[KOTH_SpawnBase] ERROR: SpawnFactionVehicle called on client");
+			return;
+		}
+
+		string vehicleType;
+
+		if (side == "East")
+		{
+			vehicleType = "Hatchback_02";
+		}
+		else if (side == "West")
+		{
+			vehicleType = "Hatchback_02_Blue";
+		}
+		else
+		{
+			Print("[KOTH_SpawnBase] ERROR: Invalid side: " + side);
+			return;
+		}
+
+		Print("[KOTH_SpawnBase] Vehicle type determined: " + vehicleType);
+
+		float offsetX = -10;
+		float offsetZ = 10;
+		
+		float vehicleX = baseCenter[0] + offsetX;
+		float vehicleZ = baseCenter[2] + offsetZ;
+		float vehicleY = GetGame().SurfaceY(vehicleX, vehicleZ);
+		vector vehiclePos = Vector(vehicleX, vehicleY, vehicleZ);
+		
+		Print("[KOTH_SpawnBase] Vehicle offset - X: " + offsetX.ToString() + " Z: " + offsetZ.ToString());
+		Print("[KOTH_SpawnBase] Vehicle position calculated: " + vehiclePos.ToString());
+
+		vector vehicleOrientation = Vector(baseYaw, 0, 0);
+		Print("[KOTH_SpawnBase] Vehicle orientation: " + vehicleOrientation.ToString());
+
+		Print("[KOTH_SpawnBase] Creating KOTH_VehicleSpawn instance...");
+		KOTH_VehicleSpawn spawner = new KOTH_VehicleSpawn(vehicleType, vehiclePos, vehicleOrientation);
+
+		Print("[KOTH_SpawnBase] Calling SpawnVehicle()...");
+		Car spawnedCar = spawner.SpawnVehicle();
+
+		if (spawnedCar)
+		{
+			Print("[KOTH_SpawnBase] Vehicle spawned successfully!");
+			s_VehicleSpawners.Insert(spawner);
+		}
+		else
+		{
+			Print("[KOTH_SpawnBase] ERROR: Vehicle spawn returned null");
+		}
 	}
 
 	static void CreateSafeZone(vector center, float radius)
@@ -103,9 +189,7 @@ class KOTH_SpawnBase
 		if (!GetGame().IsServer())
 			return;
 
-		float height = 50.0;
-
-		ExpansionZone zone = new ExpansionZoneCylinder(ExpansionZoneType.SAFE, center, radius, height);
+		ExpansionZone zone = new ExpansionZoneCircle(ExpansionZoneType.SAFE, center, radius);
 		s_SafeZones.Insert(zone);
 
 		Print("[KOTH] Safe zone created at: " + center.ToString() + " with radius: " + radius.ToString());
@@ -122,6 +206,8 @@ class KOTH_SpawnBase
 		if (!GetGame().IsServer())
 			return;
 
+		Print("[KOTH_SpawnBase] Despawning all bases and vehicles...");
+
 		for (int i = s_Spawned.Count() - 1; i >= 0; i--)
 		{
 			Object o = s_Spawned[i];
@@ -137,6 +223,20 @@ class KOTH_SpawnBase
 				delete z;
 			s_SafeZones.Remove(j);
 		}
+
+		for (int k = s_VehicleSpawners.Count() - 1; k >= 0; k--)
+		{
+			KOTH_VehicleSpawn vs = s_VehicleSpawners[k];
+			if (vs)
+			{
+				vs.StopRespawnTimer();
+				vs.CleanupVehicle();
+				delete vs;
+			}
+			s_VehicleSpawners.Remove(k);
+		}
+
+		Print("[KOTH_SpawnBase] All bases and vehicles despawned");
 	}
 }
 
