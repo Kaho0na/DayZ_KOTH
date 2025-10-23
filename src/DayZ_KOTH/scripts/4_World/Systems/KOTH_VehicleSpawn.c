@@ -11,12 +11,17 @@ class KOTH_VehicleSpawn
     
     void KOTH_VehicleSpawn(string vehicleType, vector spawnPos, vector orientation)
     {
+        KOTH_Settings m_Vehiclesettings = GetExpansionSettings().GetDayZ_KOTH();
+        if (m_Vehiclesettings)
+        {
+            m_RespawnCheckInterval = m_Vehiclesettings.VehicleRespawnCheckInterval * 1000;
+            m_CheckRadius = m_Vehiclesettings.VehicleSpawnCheckRadius;
+        }
         m_VehicleType = vehicleType;
         m_SpawnPosition = spawnPos;
         m_SpawnOrientation = orientation;
         m_Attachments = new TStringArray;
-        m_RespawnCheckInterval = 30000;
-        m_CheckRadius = 20.0;
+        
         m_CallQueue = GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM);
         
         SetupVehicleAttachments();

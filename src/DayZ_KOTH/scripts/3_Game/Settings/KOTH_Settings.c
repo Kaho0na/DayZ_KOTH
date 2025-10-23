@@ -72,6 +72,8 @@ class KOTH_SettingsBase: ExpansionSettingBase
     int ZoneSelectionMode = 0;
     bool NotifyPlayersOnZoneChange = true;
     int ZoneChangeWarningTime = 60;
+    int VehicleRespawnCheckInterval = 60;
+    int VehicleSpawnCheckRadius = 30;
     bool AllowAdminZoneChange = true;
     bool EnableAI = true;
 }
@@ -144,6 +146,8 @@ class KOTH_Settings: KOTH_SettingsBase
         if (!ctx.Read(s.ZoneSelectionMode)) return false;
         if (!ctx.Read(s.NotifyPlayersOnZoneChange)) return false;
         if (!ctx.Read(s.ZoneChangeWarningTime)) return false;
+        if (!ctx.Read(s.VehicleRespawnCheckInterval)) return false;
+        if (!ctx.Read(s.VehicleSpawnCheckRadius)) return false;
         if (!ctx.Read(s.AllowAdminZoneChange)) return false;
         if (!ctx.Read(s.EnableAI)) return false;
 
@@ -213,6 +217,8 @@ class KOTH_Settings: KOTH_SettingsBase
         ctx.Write(ZoneSelectionMode);
         ctx.Write(NotifyPlayersOnZoneChange);
         ctx.Write(ZoneChangeWarningTime);
+        ctx.Write(VehicleRespawnCheckInterval);
+        ctx.Write(VehicleSpawnCheckRadius);
         ctx.Write(AllowAdminZoneChange);
         ctx.Write(EnableAI);
     }
@@ -304,6 +310,8 @@ class KOTH_Settings: KOTH_SettingsBase
         ZoneSelectionMode = s.ZoneSelectionMode;
         NotifyPlayersOnZoneChange = s.NotifyPlayersOnZoneChange;
         ZoneChangeWarningTime = s.ZoneChangeWarningTime;
+        VehicleRespawnCheckInterval = s.VehicleRespawnCheckInterval;
+        VehicleSpawnCheckRadius = s.VehicleSpawnCheckRadius;
         AllowAdminZoneChange = s.AllowAdminZoneChange;
         EnableAI = s.EnableAI;
     }
@@ -427,6 +435,8 @@ class KOTH_Settings: KOTH_SettingsBase
         ZoneSelectionMode = 0;
         NotifyPlayersOnZoneChange = true;
         ZoneChangeWarningTime = 60;
+        VehicleRespawnCheckInterval = 60;
+        VehicleSpawnCheckRadius = 30;
         AllowAdminZoneChange = true;
         EnableAI = true;
     }
