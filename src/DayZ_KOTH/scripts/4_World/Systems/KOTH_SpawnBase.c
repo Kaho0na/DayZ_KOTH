@@ -47,10 +47,6 @@ static ref array<ref KOTHSpawnPiece> KOTH_SPAWN_COMPOUND = {
 	new KOTHSpawnPiece("StaticObj_WhiteBoard",             3.72705,  -1.30811,  4.35944,  126.0000),
 	new KOTHSpawnPiece("bldr_Misc_Range_Roof",       -2.93896,  -2.21753,  4.34960,   36.0000),
 
-	new KOTHSpawnPiece("SurvivorM_Boris",            -3.75195,  -1.15649,  3.38896,   36.0000),
-	new KOTHSpawnPiece("SurvivorM_Mirek",            -1.83447,  -2.88159,  3.38896,   36.0000),
-	new KOTHSpawnPiece("SurvivorM_Denis",             1.00293,  -4.79736,  3.38896,    0.0000),
-
 	new KOTHSpawnPiece("bldr_misc_flagpole",         -0.55908,   5.8681,   6.66342,    0.0000),
 	new KOTHSpawnPiece("bldr_prop_Flag_Bear",        -0.64502,   5.8510,   10.1842,    0.0000),
 
@@ -65,6 +61,7 @@ class KOTH_SpawnBase
 	static ref array<Object> s_Spawned = new array<Object>();
 	static ref array<ref ExpansionZone> s_SafeZones = new array<ref ExpansionZone>();
 	static ref array<ref KOTH_VehicleSpawn> s_VehicleSpawners = new array<ref KOTH_VehicleSpawn>();
+	static ref array<ref ExpansionMarketTraderZone> s_TraderZones = new array<ref ExpansionMarketTraderZone>();
 
 	static void SpawnBaseAt(vector center, string side, float safeZoneRadius)
 	{
@@ -112,6 +109,8 @@ class KOTH_SpawnBase
 			}
 		}
 
+		CreateTraderZone(center, side);
+
 		CreateSafeZone(center, safeZoneRadius);
 
 		if (platformFound)
@@ -124,7 +123,133 @@ class KOTH_SpawnBase
 			Print("[KOTH_SpawnBase] ERROR: Platform not found! Cannot spawn vehicle.");
 		}
 
+		GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SpawnTradersDelayed, 2000, false, center, baseYOffset, side);
+
 		Print("[KOTH_SpawnBase] ══════════════════════════════════════");
+	}
+
+	static void CreateTraderZone(vector center, string side)
+	{
+		if (!GetGame().IsServer())
+			return;
+
+		string zoneName;
+		if (side == "East")
+		{
+			zoneName = "KOTH_East_Base";
+		}
+		else if (side == "West")
+		{
+			zoneName = "KOTH_West_Base";
+		}
+		else
+		{
+			zoneName = "KOTH_Unknown_Base";
+		}
+
+		ExpansionMarketTraderZone traderZone = new ExpansionMarketTraderZone();
+		traderZone.m_Version = ExpansionMarketTraderZone.VERSION;
+		traderZone.m_DisplayName = zoneName;
+		traderZone.m_FileName = zoneName;
+		traderZone.Position = center;
+		traderZone.Radius = 50.0;
+		traderZone.BuyPricePercent = 100.0;
+		traderZone.SellPricePercent = 50.0;
+
+		string filePath = EXPANSION_TRADER_ZONES_FOLDER + zoneName + ".json";
+		JsonFileLoader<ExpansionMarketTraderZone>.JsonSaveFile(filePath, traderZone);
+
+		s_TraderZones.Insert(traderZone);
+
+		Print("[KOTH_SpawnBase] Trader zone JSON created: " + filePath);
+	}
+
+	static void SpawnTradersDelayed(vector center, float baseYOffset, string side)
+	{
+		if (!GetGame().IsServer())
+			return;
+
+		Print("[KOTH_SpawnBase] Reloading market settings to detect new trader zones...");
+		ExpansionMarketSettings marketSettings = GetExpansionSettings().GetMarket();
+		if (marketSettings)
+		{
+			marketSettings.Load();
+			Print("[KOTH_SpawnBase] Market settings reloaded successfully");
+		}
+		else
+		{
+			Print("[KOTH_SpawnBase] WARNING: Could not get ExpansionMarketSettings");
+		}
+
+		SpawnTrader("Weapons", Vector(-3.75195 + center[0], 3.38896 + baseYOffset + center[1], -1.15649 + center[2]), Vector(36.0, 0, 0), side);
+		SpawnTrader("Clothing", Vector(-1.83447 + center[0], 3.38896 + baseYOffset + center[1], -2.88159 + center[2]), Vector(36.0, 0, 0), side);
+		SpawnTrader("Vehicles", Vector(1.00293 + center[0], 3.38896 + baseYOffset + center[1], -4.79736 + center[2]), Vector(0.0, 0, 0), side);
+	}
+
+	static void SpawnTrader(string traderCategory, vector spawnPos, vector orientation, string side)
+	{
+		if (!GetGame().IsServer())
+			return;
+
+		string traderClass;
+		string loadoutName;
+
+		if (traderCategory == "Weapons")
+		{
+			traderClass = "ExpansionTraderBoris";
+		}
+		else if (traderCategory == "Clothing")
+		{
+			traderClass = "ExpansionTraderMirek";
+		}
+		else if (traderCategory == "Vehicles")
+		{
+			traderClass = "ExpansionTraderDenis";
+		}
+		else
+		{
+			Print("[KOTH_SpawnBase] ERROR: Unknown trader category: " + traderCategory);
+			return;
+		}
+
+		if (side == "East")
+		{
+			loadoutName = "EastLoadout";
+		}
+		else if (side == "West")
+		{
+			loadoutName = "WestLoadout";
+		}
+		else
+		{
+			loadoutName = "WestLoadout";
+		}
+
+		Print("[KOTH_SpawnBase] Spawning trader: " + traderClass + " at position: " + spawnPos.ToString());
+
+		Object npcObj = ExpansionGame.CreateObjectSafe(traderClass, spawnPos, false, false, true);
+		if (!npcObj)
+		{
+			Print("[KOTH_SpawnBase] ERROR: Failed to spawn trader: " + traderClass);
+			return;
+		}
+
+		npcObj.SetPosition(spawnPos);
+		npcObj.SetOrientation(orientation);
+
+		ExpansionTraderNPCBase traderNPC;
+		if (Class.CastTo(traderNPC, npcObj))
+		{
+			traderNPC.LoadTrader(traderCategory);
+			ExpansionHumanLoadout.Apply(traderNPC, loadoutName, true);
+			Print("[KOTH_SpawnBase] Trader configured: " + traderClass + " | Category: " + traderCategory + " | Loadout: " + loadoutName);
+		}
+		else
+		{
+			Print("[KOTH_SpawnBase] ERROR: Failed to cast trader NPC: " + traderClass);
+		}
+
+		s_Spawned.Insert(npcObj);
 	}
 
 	static void SpawnFactionVehicle(vector baseCenter, string side, float baseYaw)
@@ -234,6 +359,19 @@ class KOTH_SpawnBase
 				delete vs;
 			}
 			s_VehicleSpawners.Remove(k);
+		}
+
+		for (int m = s_TraderZones.Count() - 1; m >= 0; m--)
+		{
+			ExpansionMarketTraderZone tz = s_TraderZones[m];
+			if (tz)
+			{
+				string filePath = EXPANSION_TRADER_ZONES_FOLDER + tz.m_FileName + ".json";
+				DeleteFile(filePath);
+				Print("[KOTH_SpawnBase] Deleted trader zone file: " + filePath);
+				delete tz;
+			}
+			s_TraderZones.Remove(m);
 		}
 
 		Print("[KOTH_SpawnBase] All bases and vehicles despawned");
