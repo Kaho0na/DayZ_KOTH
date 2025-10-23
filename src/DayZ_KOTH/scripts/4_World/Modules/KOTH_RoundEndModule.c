@@ -899,7 +899,7 @@ class KOTH_RoundEndModule: CF_ModuleWorld
             return "";
         }
         
-        string winningZone = "";
+        array<string> tiedZones = new array<string>;
         int highestVotes = 0;
         
         foreach (string zoneName, int voteCount : m_ZoneVotes)
@@ -907,17 +907,30 @@ class KOTH_RoundEndModule: CF_ModuleWorld
             if (voteCount > highestVotes)
             {
                 highestVotes = voteCount;
-                winningZone = zoneName;
+                tiedZones.Clear();
+                tiedZones.Insert(zoneName);
+            }
+            else if (voteCount == highestVotes && voteCount > 0)
+            {
+                tiedZones.Insert(zoneName);
             }
         }
         
-        if (highestVotes > 0)
+        if (tiedZones.Count() == 0)
         {
-            Print("[KOTH_RoundEndModule] Voting result: " + winningZone + " with " + highestVotes + " votes");
-            return winningZone;
+            return "";
         }
         
-        return "";
+        if (tiedZones.Count() == 1)
+        {
+            Print("[KOTH_RoundEndModule] Voting result: " + tiedZones[0] + " with " + highestVotes + " votes");
+            return tiedZones[0];
+        }
+        
+        int randomIndex = Math.RandomInt(0, tiedZones.Count());
+        string winningZone = tiedZones[randomIndex];
+        Print("[KOTH_RoundEndModule] Tie broken randomly: " + winningZone + " with " + highestVotes + " votes (tied with " + tiedZones.Count() + " zones)");
+        return winningZone;
     }
     
     PlayerBase GetPlayerByUID(string uid)
