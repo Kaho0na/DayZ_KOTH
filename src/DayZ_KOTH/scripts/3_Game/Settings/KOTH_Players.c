@@ -33,10 +33,15 @@ class KOTH_Players : KOTH_PlayersBase
 	int TotalEnemiesKilled;
 	string LastTeamSelection;
 
+	ref array<string> OwnedWeapons;
+	ref array<string> OwnedAttachments;
+
 	// Constructor
 	void KOTH_Players()
 	{
 		m_Version = VERSION;
+		OwnedWeapons = new array<string>();
+    	OwnedAttachments = new array<string>();
 	}
 
 	// Load from file
@@ -46,6 +51,7 @@ class KOTH_Players : KOTH_PlayersBase
 		settings.Defaults();
 		ExpansionJsonFileParser<KOTH_Players>.Load(EXPANSION_KOTH_Players + name + ".json", settings);
 		settings.m_FileName = name; // Save the file name so Save() works correctly later
+
 		return settings;
 	}
 
@@ -53,6 +59,33 @@ class KOTH_Players : KOTH_PlayersBase
 	void Save()
 	{
 		JsonFileLoader<KOTH_Players>.JsonSaveFile(EXPANSION_KOTH_Players + m_FileName + ".json", this);
+	}
+
+	void AddOwnedItem(string itemClass)
+	{
+		if (!HasOwnedItem(itemClass))
+		{
+			OwnedWeapons.Insert(itemClass);
+		}
+	}
+
+	bool HasOwnedItem(string itemClass)
+	{
+		return OwnedWeapons.Find(itemClass) != -1;
+	}
+
+	array<string> GetOwnedWeapons()
+	{
+		return OwnedWeapons;
+	}
+
+	void RemoveOwnedItem(string itemClass)
+	{
+		int idx = OwnedWeapons.Find(itemClass);
+		if (idx != -1)
+		{
+			OwnedWeapons.Remove(idx);
+		}
 	}
 
 	// Defaults if file not found

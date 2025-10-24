@@ -251,5 +251,23 @@ modded class MissionServer
             }
         }
     }
-    
+
+    // TEMP: Shop keybind test
+    override void OnUpdate(float timeslice)
+    {
+        super.OnUpdate(timeslice);
+        
+        // TEMP: Shop keybind test (L key)
+        Input input = GetGame().GetInput();
+        if (input.LocalPress("UALookAround")) // L key
+        {
+            Print("[KOTH_Shop] Shop keybind pressed, opening shop menu");
+            PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+            if (player && player.GetIdentity())
+            {
+                Print("[KOTH_Shop] Requesting shop open for player " + player.GetIdentity().GetName());
+                KOTH_ShopModule.GetInstance().RequestShopOpen(player, player.GetIdentity());
+            }
+        }
+    }
 }

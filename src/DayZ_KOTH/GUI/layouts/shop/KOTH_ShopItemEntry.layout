@@ -1,0 +1,149 @@
+PanelWidgetClass ShopItemEntry {
+    ignorepointer 1
+    color 0 0 0 1
+    size 0.95 0.15
+    hexactpos 0
+    vexactpos 0
+    hexactsize 0
+    vexactsize 0
+    style DayZDefaultPanel
+    {
+        ItemPreviewWidgetClass ItemImage {
+            ignorepointer 1
+            position 0.02 0.1
+            size 0.15 0.8
+            hexactpos 0
+            vexactpos 0
+            hexactsize 0
+            vexactsize 0
+        }
+        TextWidgetClass ItemName {
+            ignorepointer 1
+            position 0.2 0.15
+            size 0.35 0.3
+            hexactpos 0
+            vexactpos 0
+            hexactsize 0
+            vexactsize 0
+            text "AKM"
+            font "gui/fonts/metron"
+            "text color" 1 1 1 1
+            "outline size" 1
+            "outline color" 0 0 0 1
+            "exact text" 1
+            "exact text size" 24
+            "size to text h" 1
+            "size to text v" 1
+            "text halign" left
+            "text valign" center
+        }
+        TextWidgetClass ItemAmmo {
+            ignorepointer 1
+            position 0.2 0.5
+            size 0.35 0.25
+            hexactpos 0
+            vexactpos 0
+            hexactsize 0
+            vexactsize 0
+            text "7.62x39mm"
+            font "gui/fonts/metron"
+            "text color" 0.7 0.7 0.7 1
+            "outline size" 1
+            "outline color" 0 0 0 1
+            "exact text" 1
+            "exact text size" 18
+            "size to text h" 1
+            "size to text v" 1
+            "text halign" left
+            "text valign" center
+        }
+        ButtonWidgetClass RentButton {
+            ignorepointer 0
+            position 0.57 0.25
+            size 0.18 0.5
+            hexactpos 0
+            vexactpos 0
+            hexactsize 0
+            vexactsize 0
+            style OldButton
+            text "RENT\n$500"
+            font "gui/fonts/metron"
+            "text color" 0.7843 0.7843 0 1
+            "exact text" 1
+            "exact text size" 18
+            "text halign" center
+            "text valign" center
+        }
+        ButtonWidgetClass BuyButton {
+            ignorepointer 0
+            position 0.77 0.25
+            size 0.18 0.5
+            hexactpos 0
+            vexactpos 0
+            hexactsize 0
+            vexactsize 0
+            style OldButton
+            text "BUY\n$5000"
+            font "gui/fonts/metron"
+            "text color" 0 0.7843 0 1
+            "exact text" 1
+            "exact text size" 18
+            "text halign" center
+            "text valign" center
+        }
+        PanelWidgetClass OwnedBadge {
+            ignorepointer 1
+            visible 0
+            position 0.2 0.75
+            size 0.15 0.2
+            hexactpos 0
+            vexactpos 0
+            hexactsize 0
+            vexactsize 0
+            style EditorButton
+            {
+                TextWidgetClass OwnedText {
+                    ignorepointer 1
+                    position 0 0
+                    size 1 1
+                    hexactpos 0
+                    vexactpos 0
+                    hexactsize 0
+                    vexactsize 0
+                    text "OWNED"
+                    font "gui/fonts/metron"
+                    "text color" 0 1 0 1
+                    "outline size" 1
+                    "outline color" 0 0 0 1
+                    "exact text" 1
+                    "exact text size" 16
+                    "size to text h" 1
+                    "size to text v" 1
+                    "text halign" center
+                    "text valign" center
+                }
+            }
+        }
+        TextWidgetClass LevelRequirement {
+            ignorepointer 1
+            visible 0
+            position 0.57 0.05
+            size 0.38 0.15
+            hexactpos 0
+            vexactpos 0
+            hexactsize 0
+            vexactsize 0
+            text "REQUIRE LVL 10"
+            font "gui/fonts/metron"
+            "text color" 0.7843 0 0 1
+            "outline size" 1
+            "outline color" 0 0 0 1
+            "exact text" 1
+            "exact text size" 16
+            "size to text h" 1
+            "size to text v" 1
+            "text halign" center
+            "text valign" center
+        }
+    }
+}
