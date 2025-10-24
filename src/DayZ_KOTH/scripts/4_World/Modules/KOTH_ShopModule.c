@@ -8,6 +8,8 @@ class KOTH_ShopModule : CF_ModuleWorld
     
     ref map<string, ref KOTH_ShopCategory> m_Categories;
     ref ScriptInvoker m_ShopMenuInvoker;
+    ref ScriptInvoker m_ItemPurchasedInvoker;
+    ref ScriptInvoker m_ItemEquippedInvoker;
     private ExpansionMarketModule m_MarketModule;
     private KOTH_PlayerRewardManager m_RewardManager;
     
@@ -16,6 +18,8 @@ class KOTH_ShopModule : CF_ModuleWorld
         s_Instance = this;
         m_Categories = new map<string, ref KOTH_ShopCategory>();
         m_ShopMenuInvoker = new ScriptInvoker();
+        m_ItemPurchasedInvoker = new ScriptInvoker();
+        m_ItemEquippedInvoker = new ScriptInvoker();
     }
     
     override void OnInit()
@@ -64,6 +68,16 @@ class KOTH_ShopModule : CF_ModuleWorld
     ScriptInvoker GetMenuSI()
     {
         return m_ShopMenuInvoker;
+    }
+    
+    ScriptInvoker GetItemPurchasedSI()
+    {
+        return m_ItemPurchasedInvoker;
+    }
+    
+    ScriptInvoker GetItemEquippedSI()
+    {
+        return m_ItemEquippedInvoker;
     }
     
     void LoadShopData()
@@ -314,7 +328,7 @@ class KOTH_ShopModule : CF_ModuleWorld
         
         EquipWeapon(player, item);
         SyncPlayerStats(player, playerData);
-        SendShopResult(player, true, "Rented " + item.DisplayName);
+        SendShopResult(player, true, "Rented " + item.DisplayName, className, false);
     }
     
     void BuyItem(PlayerBase player, string className)
@@ -336,7 +350,7 @@ class KOTH_ShopModule : CF_ModuleWorld
         {
             EquipWeapon(player, item);
             SyncPlayerStats(player, playerData);
-            SendShopResult(player, true, "Equipped " + item.DisplayName);
+            SendShopResult(player, true, "Equipped " + item.DisplayName, className, false);
             return;
         }
         
@@ -351,7 +365,7 @@ class KOTH_ShopModule : CF_ModuleWorld
         
         EquipWeapon(player, item);
         SyncPlayerStats(player, playerData);
-        SendShopResult(player, true, "Purchased " + item.DisplayName);
+        SendShopResult(player, true, "Purchased " + item.DisplayName, className, true);
     }
     
     bool ValidatePlayerData(PlayerBase player, KOTH_Players playerData)
@@ -462,9 +476,30 @@ class KOTH_ShopModule : CF_ModuleWorld
         if (!ctx.Read(message))
             return;
         
+        string itemClass;
+        if (!ctx.Read(itemClass))
+            return;
+        
+        bool wasPurchase;
+        if (!ctx.Read(wasPurchase))
+            return;
+        
+        int newBalance;
+        if (!ctx.Read(newBalance))
+            return;
+        
         if (success)
         {
             ExpansionNotification("Shop", message).Success();
+            
+            if (wasPurchase)
+            {
+                m_ItemPurchasedInvoker.Invoke(itemClass, newBalance);
+            }
+            else if (itemClass != "")
+            {
+                m_ItemEquippedInvoker.Invoke(itemClass);
+            }
         }
         else
         {
@@ -472,11 +507,23 @@ class KOTH_ShopModule : CF_ModuleWorld
         }
     }
     
-    void SendShopResult(PlayerBase player, bool success, string message)
+    void SendShopResult(PlayerBase player, bool success, string message, string itemClass = "", bool wasPurchase = false)
     {
+        int newBalance = 0;
+        if (success)
+        {
+            string uid = player.GetIdentity().GetId();
+            KOTH_Players playerData = KOTH_Players.Load(uid);
+            if (playerData)
+                newBalance = playerData.TotalMoneyinBank;
+        }
+        
         auto rpc = Expansion_CreateRPC("RPC_ShopResult");
         rpc.Write(success);
         rpc.Write(message);
+        rpc.Write(itemClass);
+        rpc.Write(wasPurchase);
+        rpc.Write(newBalance);
         rpc.Expansion_Send(player, true, player.GetIdentity());
     }
 }
