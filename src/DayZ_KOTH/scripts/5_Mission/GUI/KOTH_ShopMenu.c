@@ -247,6 +247,85 @@ class KOTH_ShopMenu : ExpansionScriptViewMenu
         return false;
     }
     
+    bool IsScope(string className)
+    {
+        array<string> scopeTypes = {"Optic", "Scope", "Sight", "ReflexOptic", "M4_CarryHandleOptic"};
+        
+        foreach (string scopeType : scopeTypes)
+        {
+            if (className.IndexOf(scopeType) != -1)
+                return true;
+        }
+        
+        return false;
+    }
+    
+    bool CanAttachScopeToCurrentWeapon(string scopeClassName)
+    {
+        PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+        if (!player)
+            return false;
+        
+        EntityAI weaponInHands = player.GetHumanInventory().GetEntityInHands();
+        if (!weaponInHands || !weaponInHands.IsWeapon())
+            return false;
+        
+        return true;
+    }
+    
+    bool HasScopeOnCurrentWeapon()
+    {
+        PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+        if (!player)
+            return false;
+        
+        EntityAI weaponInHands = player.GetHumanInventory().GetEntityInHands();
+        if (!weaponInHands || !weaponInHands.IsWeapon())
+            return false;
+        
+        int opticSlotId = InventorySlots.GetSlotIdFromString("weaponOptics");
+        EntityAI existingOptic = weaponInHands.GetInventory().FindAttachment(opticSlotId);
+        
+        return existingOptic != null;
+    }
+    
+    bool IsScopeAttachedToWeapon(string scopeClassName)
+    {
+        PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+        if (!player)
+            return false;
+        
+        EntityAI weaponInHands = player.GetHumanInventory().GetEntityInHands();
+        if (!weaponInHands || !weaponInHands.IsWeapon())
+            return false;
+        
+        array<string> opticSlotNames = {
+            "weaponOptics",
+            "weaponOpticsAK",
+            "weaponOpticsAcog",
+            "weaponOpticsHunting",
+            "weaponOpticsLRS",
+            "weaponOpticsMosin",
+            "weaponOpticsCrossbow",
+            "weaponOpticsAug"
+        };
+        
+        foreach (string slotName : opticSlotNames)
+        {
+            int slotId = InventorySlots.GetSlotIdFromString(slotName);
+            if (slotId == -1)
+                continue;
+            
+            EntityAI attachedOptic = weaponInHands.GetInventory().FindAttachment(slotId);
+            if (attachedOptic && attachedOptic.GetType() == scopeClassName)
+            {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
     KOTH_ShopCategory GetCategoryByName(string categoryName)
     {
         foreach (KOTH_ShopCategory categoryData : m_Categories)
@@ -292,12 +371,133 @@ class KOTH_ShopMenu : ExpansionScriptViewMenu
     {
         ClearItemList();
         
+        bool isScopeCategory = (categoryData.Category == "Scopes");
+        array<string> compatibleScopes = new array<string>();
+        
+        if (isScopeCategory)
+        {
+            compatibleScopes = GetCompatibleScopes();
+            Print("[KOTH_ShopMenu] Found " + compatibleScopes.Count() + " compatible scopes");
+        }
+        
         foreach (KOTH_ShopItem shopItem : categoryData.Items)
         {
+            if (isScopeCategory)
+            {
+                bool isCompatible = false;
+                foreach (string compatScope : compatibleScopes)
+                {
+                    if (compatScope == shopItem.ClassName)
+                    {
+                        isCompatible = true;
+                        break;
+                    }
+                }
+                
+                if (!isCompatible)
+                {
+                    Print("[KOTH_ShopMenu] Skipping incompatible scope: " + shopItem.ClassName);
+                    continue;
+                }
+            }
+            
             Widget itemEntry = CreateItemEntry(shopItem);
             if (itemEntry)
                 m_ItemListWrapper.AddChild(itemEntry);
         }
+    }
+    
+    array<string> GetCompatibleScopes()
+    {
+        array<string> compatibleScopes = new array<string>();
+        
+        PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+        if (!player)
+        {
+            Print("[KOTH_ShopMenu] No player found");
+            return compatibleScopes;
+        }
+        
+        EntityAI weaponInHands = player.GetHumanInventory().GetEntityInHands();
+        if (!weaponInHands || !weaponInHands.IsWeapon())
+        {
+            Print("[KOTH_ShopMenu] No weapon in hands");
+            return compatibleScopes;
+        }
+        
+        Print("[KOTH_ShopMenu] Checking compatibility for weapon: " + weaponInHands.GetType());
+        
+        KOTH_ShopCategory scopeCategory = GetCategoryByName("Scopes");
+        if (!scopeCategory)
+        {
+            Print("[KOTH_ShopMenu] Scopes category not found");
+            return compatibleScopes;
+        }
+        
+        foreach (KOTH_ShopItem scopeItem : scopeCategory.Items)
+        {
+            bool isCompatible = CanAttachScope(weaponInHands, scopeItem.ClassName);
+            
+            Print("[KOTH_ShopMenu] " + scopeItem.ClassName + " compatible: " + isCompatible);
+            
+            if (isCompatible)
+            {
+                compatibleScopes.Insert(scopeItem.ClassName);
+            }
+        }
+        
+        Print("[KOTH_ShopMenu] Found " + compatibleScopes.Count() + " compatible scopes");
+        return compatibleScopes;
+    }
+    
+    bool CanAttachScope(EntityAI weapon, string scopeClassName)
+    {
+        EntityAI existingScope = null;
+        InventoryLocation existingScopeLoc = null;
+        
+        array<string> opticSlotNames = {
+            "weaponOptics",
+            "weaponOpticsAK",
+            "weaponOpticsAcog",
+            "weaponOpticsHunting",
+            "weaponOpticsLRS",
+            "weaponOpticsMosin",
+            "weaponOpticsCrossbow",
+            "weaponOpticsAug"
+        };
+        
+        foreach (string slotName : opticSlotNames)
+        {
+            int slotId = InventorySlots.GetSlotIdFromString(slotName);
+            if (slotId == -1)
+                continue;
+            
+            EntityAI attachedOptic = weapon.GetInventory().FindAttachment(slotId);
+            if (attachedOptic)
+            {
+                existingScope = attachedOptic;
+                existingScopeLoc = new InventoryLocation();
+                attachedOptic.GetInventory().GetCurrentInventoryLocation(existingScopeLoc);
+                GameInventory.LocationRemoveEntity(existingScopeLoc);
+                break;
+            }
+        }
+        
+        EntityAI testScope = ExpansionItemSpawnHelper.SpawnAttachment(scopeClassName, weapon);
+        bool canAttach = false;
+        
+        if (testScope)
+        {
+            GetGame().ObjectDelete(testScope);
+            canAttach = true;
+        }
+        
+        if (existingScope && existingScopeLoc)
+        {
+            GameInventory.LocationAddEntity(existingScopeLoc);
+        }
+        
+        return canAttach;
     }
     
     void ClearItemList()
@@ -385,21 +585,37 @@ class KOTH_ShopMenu : ExpansionScriptViewMenu
         bool canAffordRent = PlayerCanAfford(shopItem.RentPrice);
         bool canAffordBuy = PlayerCanAfford(shopItem.BuyPrice);
         
+        bool isScopeItem = IsScope(shopItem.ClassName);
+        bool isScopeAttached = false;
+        
+        if (isScopeItem)
+        {
+            isScopeAttached = IsScopeAttachedToWeapon(shopItem.ClassName);
+        }
+        
         if (rentButton)
         {
-            SetupRentButton(rentButton, shopItem, isItemOwned, hasInInventory, playerHasLevel, canAffordRent);
+            SetupRentButton(rentButton, shopItem, isItemOwned, hasInInventory, playerHasLevel, canAffordRent, isScopeItem, isScopeAttached);
             m_ButtonToItemClass.Set(rentButton, shopItem.ClassName);
         }
         
         if (buyButton)
         {
-            SetupBuyButton(buyButton, shopItem, isItemOwned, hasInInventory, playerHasLevel, canAffordBuy);
+            SetupBuyButton(buyButton, shopItem, isItemOwned, hasInInventory, playerHasLevel, canAffordBuy, isScopeItem, isScopeAttached);
             m_ButtonToItemClass.Set(buyButton, shopItem.ClassName);
         }
     }
     
-    void SetupRentButton(ButtonWidget rentBtn, KOTH_ShopItem shopItem, bool isOwned, bool hasInInventory, bool hasLevel, bool hasRentMoney)
+    void SetupRentButton(ButtonWidget rentBtn, KOTH_ShopItem shopItem, bool isOwned, bool hasInInventory, bool hasLevel, bool hasRentMoney, bool isScope, bool isScopeAttached)
     {
+        if (isScope && isScopeAttached)
+        {
+            rentBtn.SetText("ATTACHED");
+            rentBtn.Enable(false);
+            rentBtn.SetColor(ARGB(255, 100, 100, 100));
+            return;
+        }
+        
         if (isOwned)
         {
             rentBtn.SetText("OWNED");
@@ -434,8 +650,16 @@ class KOTH_ShopMenu : ExpansionScriptViewMenu
         }
     }
     
-    void SetupBuyButton(ButtonWidget buyBtn, KOTH_ShopItem shopItem, bool isOwned, bool hasInInventory, bool hasLevel, bool hasBuyMoney)
+    void SetupBuyButton(ButtonWidget buyBtn, KOTH_ShopItem shopItem, bool isOwned, bool hasInInventory, bool hasLevel, bool hasBuyMoney, bool isScope, bool isScopeAttached)
     {
+        if (isScope && isScopeAttached)
+        {
+            buyBtn.SetText("ATTACHED");
+            buyBtn.Enable(false);
+            buyBtn.SetColor(ARGB(255, 100, 100, 100));
+            return;
+        }
+        
         if (isOwned)
         {
             if (hasInInventory)

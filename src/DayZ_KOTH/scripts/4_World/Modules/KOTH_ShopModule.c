@@ -434,19 +434,106 @@ class KOTH_ShopModule : CF_ModuleWorld
     void EquipWeapon(PlayerBase player, KOTH_ShopItem item)
     {
         bool isPistol = IsPistol(item.ClassName);
+        bool isScope = IsScope(item.ClassName);
         
-        if (isPistol)
+        if (isScope)
+        {
+            EquipScope(player, item);
+        }
+        else if (isPistol)
         {
             ClearPistolAmmo(player);
             EquipPistol(player, item);
+            GiveStandardLoadout(player, item);
         }
         else
         {
             ClearRifleAmmo(player);
             EquipPrimaryWeapon(player, item);
+            GiveStandardLoadout(player, item);
+        }
+    }
+    
+    bool IsScope(string className)
+    {
+        array<string> scopeTypes = {"Optic", "Scope", "Sight", "ReflexOptic", "M4_CarryHandleOptic"};
+        
+        foreach (string scopeType : scopeTypes)
+        {
+            if (className.IndexOf(scopeType) != -1)
+                return true;
         }
         
-        GiveStandardLoadout(player, item);
+        return false;
+    }
+    
+    void EquipScope(PlayerBase player, KOTH_ShopItem item)
+    {
+        EntityAI weaponInHands = player.GetHumanInventory().GetEntityInHands();
+        
+        if (!weaponInHands || !weaponInHands.IsWeapon())
+        {
+            Print("[KOTH_Shop] ERROR: No weapon in hands for scope attachment");
+            return;
+        }
+        
+        int opticSlotId = InventorySlots.GetSlotIdFromString("weaponOptics");
+        EntityAI existingOptic = weaponInHands.GetInventory().FindAttachment(opticSlotId);
+        
+        if (existingOptic)
+        {
+            GetGame().ObjectDelete(existingOptic);
+            Print("[KOTH_Shop] Removed existing optic: " + existingOptic.GetType());
+        }
+        
+        EntityAI newOptic = weaponInHands.GetInventory().CreateAttachment(item.ClassName);
+        if (newOptic)
+        {
+            Print("[KOTH_Shop] Attached scope to weapon: " + item.ClassName);
+            
+            int batterySlot = InventorySlots.GetSlotIdFromString("BatteryD");
+            if (batterySlot != -1)
+            {
+                EntityAI existingBattery = newOptic.GetInventory().FindAttachment(batterySlot);
+                if (!existingBattery)
+                {
+                    EntityAI battery = newOptic.GetInventory().CreateAttachment("Battery9V");
+                    if (battery)
+                    {
+                        Print("[KOTH_Shop] Added 9V battery to scope: " + item.ClassName);
+                    }
+                    else
+                    {
+                        Print("[KOTH_Shop] Failed to add battery to scope: " + item.ClassName);
+                    }
+                }
+            }
+            
+            ExpansionNotification("Shop", "Scope equipped successfully").Success(player.GetIdentity());
+        }
+        else
+        {
+            Print("[KOTH_Shop] ERROR: Failed to attach scope: " + item.ClassName);
+            ExpansionNotification("Shop", "Failed to equip scope").Error(player.GetIdentity());
+        }
+    }
+    
+    bool ScopeNeedsBattery(EntityAI scope)
+    {
+        int batterySlot = InventorySlots.GetSlotIdFromString("BatteryD");
+        if (batterySlot != -1 && scope.GetInventory().FindAttachment(batterySlot) == null)
+        {
+            string configPath = "CfgVehicles " + scope.GetType() + " attachments BatteryD";
+            TStringArray batteries = new TStringArray();
+            GetGame().ConfigGetTextArray(configPath, batteries);
+            if (batteries && batteries.Count() > 0)
+            {
+                Print("[KOTH_Shop] Scope " + scope.GetType() + " needs battery");
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     void ClearPistolAmmo(PlayerBase player)
