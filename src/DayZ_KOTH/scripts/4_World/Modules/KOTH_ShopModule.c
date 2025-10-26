@@ -191,11 +191,21 @@ class KOTH_ShopModule : CF_ModuleWorld
             return;
         }
         
-        Print("[KOTH_Shop] SERVER: Building shop data RPC...");
+        string playerFaction = player.GetKOTHTeam();
+        
+        if (playerFaction != "East" && playerFaction != "West")
+        {
+            Print("[KOTH_Shop] ERROR: Player has no valid team! Team: " + playerFaction);
+            ExpansionNotification("Shop Error", "You must select a team first").Error(ident);
+            return;
+        }
+        
+        Print("[KOTH_Shop] SERVER: Building shop data RPC... Player faction: " + playerFaction);
         
         auto rpc = Expansion_CreateRPC("RPC_ReceiveShopData");
         rpc.Write(playerData.CurrentLevel);
         rpc.Write(playerData.TotalMoneyinBank);
+        rpc.Write(playerFaction);
         
         rpc.Write(playerData.OwnedWeapons.Count());
         foreach (string ownedItem : playerData.OwnedWeapons)
@@ -218,6 +228,7 @@ class KOTH_ShopModule : CF_ModuleWorld
                 rpc.Write(item.BuyPrice);
                 rpc.Write(item.RequiredLevel);
                 rpc.Write(item.MagazineClass);
+                rpc.Write(item.Faction);
                 
                 rpc.Write(item.DefaultAttachments.Count());
                 foreach (string att : item.DefaultAttachments)
@@ -246,6 +257,12 @@ class KOTH_ShopModule : CF_ModuleWorld
         int playerMoney;
         if (!ctx.Read(playerMoney))
             return;
+        
+        string playerFaction;
+        if (!ctx.Read(playerFaction))
+            return;
+        
+        Print("[KOTH_Shop] CLIENT: Player faction is " + playerFaction);
         
         array<string> ownedItems = new array<string>();
         int ownedCount;
@@ -297,6 +314,8 @@ class KOTH_ShopModule : CF_ModuleWorld
                     return;
                 if (!ctx.Read(item.MagazineClass))
                     return;
+                if (!ctx.Read(item.Faction))
+                    return;
                 
                 int attCount;
                 if (!ctx.Read(attCount))
@@ -311,7 +330,15 @@ class KOTH_ShopModule : CF_ModuleWorld
                     item.DefaultAttachments.Insert(att);
                 }
                 
-                category.Items.Insert(item);
+                if (item.Faction == "Both" || item.Faction == playerFaction)
+                {
+                    category.Items.Insert(item);
+                    Print("[KOTH_Shop] CLIENT: Added item " + item.DisplayName + " (Faction: " + item.Faction + ")");
+                }
+                else
+                {
+                    Print("[KOTH_Shop] CLIENT: Filtered out item " + item.DisplayName + " (Faction: " + item.Faction + ", Player: " + playerFaction + ")");
+                }
             }
             
             categories.Insert(category);

@@ -12,7 +12,7 @@ FrameWidgetClass KOTH_ShopMenu {
  {
   PanelWidgetClass ShopBackground {
    ignorepointer 1
-   color 0 0 0 0.7843
+   color 0.1765 0.2275 0.251 0.7843
    size 0.7 0.8
    halign center_ref
    valign center_ref

@@ -10,10 +10,12 @@ class KOTH_ShopItem
     int BuyPrice;
     int RequiredLevel;
     string MagazineClass;
+    string Faction;
     ref array<string> DefaultAttachments;
     
     void KOTH_ShopItem()
     {
         DefaultAttachments = new array<string>();
+        Faction = "Both";
     }
 }
