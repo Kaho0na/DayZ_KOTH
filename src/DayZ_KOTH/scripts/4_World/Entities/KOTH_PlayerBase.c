@@ -1,8 +1,12 @@
 /**
- * KOTH_PlayerBase.c (ASSIST + REVIVE + HEADSHOT TRACKING)
+ * KOTH_PlayerBase.c (UNIFIED VERSION)
  *
  * King of the Hill by Kahoona
- * Track headshot kills, assists (knockdowns), and revives with anti-farm
+ * Features:
+ * - Headshot tracking
+ * - Assist/Revive system with anti-farm
+ * - Armband protection (cannot drop team armbands)
+ * - Safe zone weapon restrictions (cannot drop or shoulder weapons in SZ)
  *
  * Place in: 4_World/Entities/KOTH_PlayerBase.c
  */
@@ -64,6 +68,52 @@ modded class PlayerBase
     string GetLastRevivedPlayerUID()
     {
         return m_KOTHLastRevivedPlayerUID;
+    }
+    
+    override bool CanDropEntity(notnull EntityAI item)
+    {
+        if (item && (item.IsKindOf("Armband_Red") || item.IsKindOf("Armband_Blue")))
+        {
+            if (m_KOTHTeam == "East" || m_KOTHTeam == "West")
+            {
+                return false;
+            }
+        }
+        
+        if (Expansion_IsInSafeZone())
+        {
+            return false;
+        }
+        
+        return super.CanDropEntity(item);
+    }
+    
+    override bool CanReceiveItemIntoCargo(EntityAI item)
+    {
+        if (Expansion_IsInSafeZone())
+        {
+            EntityAI itemInHands = GetHumanInventory().GetEntityInHands();
+            if (itemInHands == item && item.IsWeapon())
+            {
+                return false;
+            }
+        }
+        
+        return super.CanReceiveItemIntoCargo(item);
+    }
+    
+    override bool CanReceiveAttachment(EntityAI attachment, int slotId)
+    {
+        if (Expansion_IsInSafeZone() && attachment && attachment.IsWeapon())
+        {
+            EntityAI itemInHands = GetHumanInventory().GetEntityInHands();
+            if (itemInHands == attachment)
+            {
+                return false;
+            }
+        }
+        
+        return super.CanReceiveAttachment(attachment, slotId);
     }
     
     override void EEHitBy(TotalDamageResult damageResult, int damageType, EntityAI source, int component, string dmgZone, string ammo, vector modelPos, float speedCoef)
@@ -201,7 +251,6 @@ modded class PlayerBase
         if (!GetGame().IsServer())
             return;
         
-        // Register player/AI in stats tracker when they spawn
         KOTH_RoundStatsTracker statsTracker = KOTH_RoundStatsTracker.GetInstance();
         if (statsTracker && statsTracker.IsRoundActive())
         {
@@ -216,7 +265,6 @@ modded class PlayerBase
             }
             else
             {
-                // AI without identity
                 KOTH_AINicknameManager nickManager = KOTH_AINicknameManager.GetInstance();
                 uid = nickManager.GetUniqueUID(this);
                 name = nickManager.GetOrAssignNickname(this);
@@ -265,18 +313,5 @@ modded class PlayerBase
         m_KOTHHeadshotKill = false;
         m_KOTHLastAttacker = null;
         m_KOTHReviver = null;
-    }
-    
-    override bool CanDropEntity(notnull EntityAI item)
-    {
-        if (item && (item.IsKindOf("Armband_Red") || item.IsKindOf("Armband_Blue")))
-        {
-            if (m_KOTHTeam == "East" || m_KOTHTeam == "West")
-            {
-                return false;
-            }
-        }
-        
-        return super.CanDropEntity(item);
     }
 }
