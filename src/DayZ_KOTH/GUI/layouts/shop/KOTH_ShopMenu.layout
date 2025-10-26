@@ -169,7 +169,7 @@ FrameWidgetClass KOTH_ShopMenu {
                             "text halign" center
                             "text valign" center
       }
-      ButtonWidgetClass LaunchersTab {
+      ButtonWidgetClass ItemsTab {
        ignorepointer 0
        position 0.74 0.1
        size 0.22 0.8
@@ -178,7 +178,7 @@ FrameWidgetClass KOTH_ShopMenu {
        hexactsize 0
        vexactsize 0
        style Default
-       text "LAUNCHERS"
+       text "ITEMS"
        font "gui/fonts/metron"
        "text color" 1 1 1 1
                             "exact text" 1

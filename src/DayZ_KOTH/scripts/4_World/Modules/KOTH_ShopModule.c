@@ -85,7 +85,7 @@ class KOTH_ShopModule : CF_ModuleWorld
         LoadCategory("Rifles");
         LoadCategory("Pistols");
         LoadCategory("Scopes");
-        LoadCategory("Launchers");
+        LoadCategory("Items");
         
         Print("[KOTH_Shop] Shop data loaded. Total categories: " + m_Categories.Count());
     }
@@ -130,13 +130,19 @@ class KOTH_ShopModule : CF_ModuleWorld
     
     protected void RPC_RequestShopOpen(PlayerIdentity sender, Object target, ParamsReadContext ctx)
     {
+        Print("[KOTH_Shop] SERVER: RPC_RequestShopOpen received");
+        
         if (!GetGame().IsServer())
             return;
         
         PlayerBase player = PlayerBase.Cast(target);
         if (!player)
+        {
+            Print("[KOTH_Shop] ERROR: Player cast failed");
             return;
+        }
         
+        Print("[KOTH_Shop] SERVER: Calling RequestShopOpen for " + sender.GetName());
         RequestShopOpen(player, sender);
     }
     
@@ -174,6 +180,8 @@ class KOTH_ShopModule : CF_ModuleWorld
     
     void RequestShopOpen(PlayerBase player, PlayerIdentity ident)
     {
+        Print("[KOTH_Shop] SERVER: RequestShopOpen called for " + ident.GetName());
+        
         string uid = ident.GetId();
         KOTH_Players playerData = KOTH_Players.Load(uid);
         
@@ -182,6 +190,8 @@ class KOTH_ShopModule : CF_ModuleWorld
             Print("[KOTH_Shop] ERROR: Player data not found for " + ident.GetName());
             return;
         }
+        
+        Print("[KOTH_Shop] SERVER: Building shop data RPC...");
         
         auto rpc = Expansion_CreateRPC("RPC_ReceiveShopData");
         rpc.Write(playerData.CurrentLevel);
@@ -217,11 +227,15 @@ class KOTH_ShopModule : CF_ModuleWorld
             }
         }
         
+        Print("[KOTH_Shop] SERVER: Sending RPC_ReceiveShopData to client...");
         rpc.Expansion_Send(player, true, ident);
+        Print("[KOTH_Shop] SERVER: RPC sent successfully");
     }
     
     protected void RPC_ReceiveShopData(PlayerIdentity sender, Object target, ParamsReadContext ctx)
     {
+        Print("[KOTH_Shop] CLIENT: RPC_ReceiveShopData received");
+        
         if (GetGame().IsServer())
             return;
         
@@ -253,16 +267,17 @@ class KOTH_ShopModule : CF_ModuleWorld
         
         for (int j = 0; j < catCount; j++)
         {
-            string catName;
-            if (!ctx.Read(catName))
+            string categoryName;
+            if (!ctx.Read(categoryName))
                 return;
-            
-            KOTH_ShopCategory cat = new KOTH_ShopCategory();
-            cat.Category = catName;
             
             int itemCount;
             if (!ctx.Read(itemCount))
                 return;
+            
+            KOTH_ShopCategory category = new KOTH_ShopCategory();
+            category.Category = categoryName;
+            category.Items = new array<ref KOTH_ShopItem>();
             
             for (int k = 0; k < itemCount; k++)
             {
@@ -287,6 +302,7 @@ class KOTH_ShopModule : CF_ModuleWorld
                 if (!ctx.Read(attCount))
                     return;
                 
+                item.DefaultAttachments = new array<string>();
                 for (int l = 0; l < attCount; l++)
                 {
                     string att;
@@ -295,168 +311,248 @@ class KOTH_ShopModule : CF_ModuleWorld
                     item.DefaultAttachments.Insert(att);
                 }
                 
-                cat.Items.Insert(item);
+                category.Items.Insert(item);
             }
             
-            categories.Insert(cat);
+            categories.Insert(category);
         }
         
-        GetDayZGame().GetExpansionGame().GetExpansionUIManager().CreateSVMenu("KOTH_ShopMenu");
+        Print("[KOTH_Shop] CLIENT: Opening menu...");
+        if (!GetDayZGame().GetExpansionGame().GetExpansionUIManager().CreateSVMenu("KOTH_ShopMenu"))
+        {
+            Print("[KOTH_Shop] ERROR: Failed to create menu!");
+            return;
+        }
+        
+        Print("[KOTH_Shop] CLIENT: Invoking menu with " + categories.Count() + " categories");
         m_ShopMenuInvoker.Invoke(categories, ownedItems, playerLevel, playerMoney);
+        Print("[KOTH_Shop] CLIENT: Menu invoker called");
     }
     
-    void RentItem(PlayerBase player, string className)
+    bool IsItemCategory(string itemClass)
     {
-        KOTH_ShopItem item = GetItem(className);
-        if (!item)
+        KOTH_ShopCategory itemCat = GetCategory("Items");
+        if (!itemCat)
+            return false;
+        
+        foreach (KOTH_ShopItem item : itemCat.Items)
         {
-            SendShopResult(player, false, "Item not found");
-            return;
+            if (item.ClassName == itemClass)
+                return true;
         }
         
-        string uid = player.GetIdentity().GetId();
+        return false;
+    }
+    
+    bool HasInventorySpaceForItem(PlayerBase player, string itemClass)
+    {
+        Print("[KOTH_Shop] Checking inventory space for: " + itemClass);
+        
+        EntityAI testItem = player.GetInventory().CreateInInventory(itemClass);
+        if (testItem)
+        {
+            Print("[KOTH_Shop] Test item created successfully - has space!");
+            GetGame().ObjectDelete(testItem);
+            return true;
+        }
+        
+        Print("[KOTH_Shop] Test item creation failed - no space!");
+        return false;
+    }
+    
+    void RentItem(PlayerBase player, string itemClass)
+    {
+        if (!player)
+            return;
+        
+        PlayerIdentity ident = player.GetIdentity();
+        string uid = ident.GetId();
+        
         KOTH_Players playerData = KOTH_Players.Load(uid);
-        
-        if (!ValidatePlayerData(player, playerData))
-            return;
-        
-        if (!ValidateLevel(player, playerData, item))
-            return;
-        
-        if (!ProcessPayment(player, playerData, uid, item.RentPrice))
-            return;
-        
-        EquipWeapon(player, item);
-        SyncPlayerStats(player, playerData);
-        SendShopResult(player, true, "Rented " + item.DisplayName, className, false);
-    }
-    
-    void BuyItem(PlayerBase player, string className)
-    {
-        KOTH_ShopItem item = GetItem(className);
-        if (!item)
-        {
-            SendShopResult(player, false, "Item not found");
-            return;
-        }
-        
-        string uid = player.GetIdentity().GetId();
-        KOTH_Players playerData = KOTH_Players.Load(uid);
-        
-        if (!ValidatePlayerData(player, playerData))
-            return;
-        
-        if (playerData.HasOwnedItem(className))
-        {
-            EquipWeapon(player, item);
-            SyncPlayerStats(player, playerData);
-            SendShopResult(player, true, "Equipped " + item.DisplayName, className, false);
-            return;
-        }
-        
-        if (!ValidateLevel(player, playerData, item))
-            return;
-        
-        if (!ProcessPayment(player, playerData, uid, item.BuyPrice))
-            return;
-        
-        playerData.AddOwnedItem(className);
-        playerData.Save();
-        
-        EquipWeapon(player, item);
-        SyncPlayerStats(player, playerData);
-        SendShopResult(player, true, "Purchased " + item.DisplayName, className, true);
-    }
-    
-    bool ValidatePlayerData(PlayerBase player, KOTH_Players playerData)
-    {
         if (!playerData)
         {
-            SendShopResult(player, false, "Player data not found");
-            return false;
+            ExpansionNotification("Shop Error", "Player data not found").Error(ident);
+            return;
         }
-        return true;
-    }
-    
-    bool ValidateLevel(PlayerBase player, KOTH_Players playerData, KOTH_ShopItem item)
-    {
+        
+        KOTH_ShopItem item = GetItem(itemClass);
+        if (!item)
+        {
+            ExpansionNotification("Shop Error", "Item not found in shop").Error(ident);
+            return;
+        }
+        
         if (playerData.CurrentLevel < item.RequiredLevel)
         {
-            SendShopResult(player, false, "Requires Level " + item.RequiredLevel);
-            return false;
+            ExpansionNotification("Shop", "You need level " + item.RequiredLevel.ToString() + " to rent this item").Error(ident);
+            return;
         }
-        return true;
-    }
-    
-    bool ProcessPayment(PlayerBase player, KOTH_Players playerData, string uid, int price)
-    {
-        if (playerData.TotalMoneyinBank < price)
+        
+        if (playerData.TotalMoneyinBank < item.RentPrice)
         {
-            SendShopResult(player, false, "Insufficient funds");
-            return false;
+            ExpansionNotification("Shop", "Not enough money. Need $" + item.RentPrice.ToString()).Error(ident);
+            return;
         }
         
-        if (!m_MarketModule)
-        {
-            Print("[KOTH_Shop] ERROR: MarketModule is NULL!");
-            SendShopResult(player, false, "Market system not available");
-            return false;
-        }
-        
-        Print("[KOTH_Shop] Getting ATM data for UID: " + uid);
-        ref ExpansionMarketATM_Data atmData = m_MarketModule.GetPlayerATMData(uid);
-        if (!atmData)
-        {
-            Print("[KOTH_Shop] ERROR: ATM data not found for UID: " + uid);
-            SendShopResult(player, false, "ATM data not found");
-            return false;
-        }
-        
-        Print("[KOTH_Shop] Current ATM balance: " + atmData.GetMoney());
-        atmData.RemoveMoney(price);
-        atmData.Save();
-        Print("[KOTH_Shop] New ATM balance: " + atmData.GetMoney());
-        
-        playerData.TotalMoneyinBank -= price;
+        playerData.TotalMoneyinBank = playerData.TotalMoneyinBank - item.RentPrice;
         playerData.Save();
         
-        return true;
-    }
-    
-    void SyncPlayerStats(PlayerBase player, KOTH_Players playerData)
-    {
-        if (m_RewardManager)
-        {
-            m_RewardManager.SyncPlayerStatsToClient(player.GetIdentity(), playerData);
-        }
-    }
-    
-    void EquipWeapon(PlayerBase player, KOTH_ShopItem item)
-    {
-        bool isPistol = IsPistol(item.ClassName);
-        bool isScope = IsScope(item.ClassName);
-        
-        if (isScope)
+        if (IsScope(itemClass))
         {
             EquipScope(player, item);
         }
-        else if (isPistol)
+        else if (IsItemCategory(itemClass))
         {
-            ClearPistolAmmo(player);
+            if (!HasInventorySpaceForItem(player, itemClass))
+            {
+                ExpansionNotification("Shop", "No space in inventory").Error(ident);
+                playerData.TotalMoneyinBank = playerData.TotalMoneyinBank + item.RentPrice;
+                playerData.Save();
+                return;
+            }
+            EquipItem(player, item);
+        }
+        else if (IsPistol(itemClass))
+        {
+            ClearPistolMagazines(player);
             EquipPistol(player, item);
             GiveStandardLoadout(player, item);
         }
         else
         {
-            ClearRifleAmmo(player);
+            ClearRifleMagazines(player);
             EquipPrimaryWeapon(player, item);
             GiveStandardLoadout(player, item);
         }
+        
+        SendShopResult(player, true, "Rented " + item.DisplayName + " for $" + item.RentPrice.ToString(), itemClass, false);
+    }
+    
+    void BuyItem(PlayerBase player, string itemClass)
+    {
+        if (!player)
+            return;
+        
+        PlayerIdentity ident = player.GetIdentity();
+        string uid = ident.GetId();
+        
+        KOTH_Players playerData = KOTH_Players.Load(uid);
+        if (!playerData)
+        {
+            ExpansionNotification("Shop Error", "Player data not found").Error(ident);
+            return;
+        }
+        
+        KOTH_ShopItem item = GetItem(itemClass);
+        if (!item)
+        {
+            ExpansionNotification("Shop Error", "Item not found in shop").Error(ident);
+            return;
+        }
+        
+        if (playerData.CurrentLevel < item.RequiredLevel)
+        {
+            ExpansionNotification("Shop", "You need level " + item.RequiredLevel.ToString() + " to buy this item").Error(ident);
+            return;
+        }
+        
+        bool alreadyOwned = playerData.OwnedWeapons.Find(itemClass) != -1;
+        
+        if (!alreadyOwned)
+        {
+            if (playerData.TotalMoneyinBank < item.BuyPrice)
+            {
+                ExpansionNotification("Shop", "Not enough money. Need $" + item.BuyPrice.ToString()).Error(ident);
+                return;
+            }
+            
+            if (IsItemCategory(itemClass))
+            {
+                if (!HasInventorySpaceForItem(player, itemClass))
+                {
+                    ExpansionNotification("Shop", "No space in inventory").Error(ident);
+                    return;
+                }
+            }
+            
+            playerData.TotalMoneyinBank = playerData.TotalMoneyinBank - item.BuyPrice;
+            playerData.OwnedWeapons.Insert(itemClass);
+            playerData.Save();
+            
+            if (IsItemCategory(itemClass))
+            {
+                EquipItem(player, item);
+            }
+            else if (IsScope(itemClass))
+            {
+                EquipScope(player, item);
+            }
+            else if (IsPistol(itemClass))
+            {
+                ClearPistolMagazines(player);
+                EquipPistol(player, item);
+                GiveStandardLoadout(player, item);
+            }
+            else
+            {
+                ClearRifleMagazines(player);
+                EquipPrimaryWeapon(player, item);
+                GiveStandardLoadout(player, item);
+            }
+            
+            SendShopResult(player, true, "Purchased " + item.DisplayName + " for $" + item.BuyPrice.ToString(), itemClass, true);
+        }
+        else
+        {
+            if (IsItemCategory(itemClass))
+            {
+                if (!HasInventorySpaceForItem(player, itemClass))
+                {
+                    ExpansionNotification("Shop", "No space in inventory").Error(ident);
+                    return;
+                }
+            }
+            
+            if (IsItemCategory(itemClass))
+            {
+                EquipItem(player, item);
+            }
+            else if (IsScope(itemClass))
+            {
+                EquipScope(player, item);
+            }
+            else if (IsPistol(itemClass))
+            {
+                ClearPistolMagazines(player);
+                EquipPistol(player, item);
+                GiveStandardLoadout(player, item);
+            }
+            else
+            {
+                ClearRifleMagazines(player);
+                EquipPrimaryWeapon(player, item);
+                GiveStandardLoadout(player, item);
+            }
+            
+            SendShopResult(player, true, "Equipped " + item.DisplayName, itemClass, false);
+        }
+    }
+    
+    void EquipItem(PlayerBase player, KOTH_ShopItem item)
+    {
+        EntityAI createdItem = player.GetInventory().CreateInInventory(item.ClassName);
+        if (!createdItem)
+        {
+            Print("[KOTH_Shop] ERROR: Failed to create item in inventory: " + item.ClassName);
+            return;
+        }
+        
+        Print("[KOTH_Shop] Created item in inventory: " + item.ClassName);
     }
     
     bool IsScope(string className)
     {
-        array<string> scopeTypes = {"Optic", "Scope", "Sight", "ReflexOptic", "M4_CarryHandleOptic"};
+        array<string> scopeTypes = {"ReflexOptic", "ACOGOptic", "M4_CarryHandleOptic", "M68Optic", "KazuarOptic", "PUScopeOptic", "HuntingOptic", "PSO1Optic", "KobraOptic", "Crossbow_RedpointOptic", "StarlightOptic", "DHOptic"};
         
         foreach (string scopeType : scopeTypes)
         {
@@ -469,74 +565,55 @@ class KOTH_ShopModule : CF_ModuleWorld
     
     void EquipScope(PlayerBase player, KOTH_ShopItem item)
     {
-        EntityAI weaponInHands = player.GetHumanInventory().GetEntityInHands();
+        EntityAI weapon = player.GetHumanInventory().GetEntityInHands();
         
-        if (!weaponInHands || !weaponInHands.IsWeapon())
+        if (!weapon || !weapon.IsWeapon())
         {
-            Print("[KOTH_Shop] ERROR: No weapon in hands for scope attachment");
+            ExpansionNotification("Shop", "You need a weapon in your hands to equip a scope").Error(player.GetIdentity());
             return;
         }
         
-        int opticSlotId = InventorySlots.GetSlotIdFromString("weaponOptics");
-        EntityAI existingOptic = weaponInHands.GetInventory().FindAttachment(opticSlotId);
+        array<EntityAI> attachments = new array<EntityAI>();
+        weapon.GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER, attachments);
         
-        if (existingOptic)
+        foreach (EntityAI att : attachments)
         {
-            GetGame().ObjectDelete(existingOptic);
-            Print("[KOTH_Shop] Removed existing optic: " + existingOptic.GetType());
+            if (IsScope(att.GetType()))
+            {
+                GetGame().ObjectDelete(att);
+                Print("[KOTH_Shop] Removed old scope: " + att.GetType());
+                break;
+            }
         }
         
-        EntityAI newOptic = weaponInHands.GetInventory().CreateAttachment(item.ClassName);
-        if (newOptic)
+        EntityAI newScope = ExpansionItemSpawnHelper.SpawnAttachment(item.ClassName, weapon);
+        
+        if (!newScope)
         {
-            Print("[KOTH_Shop] Attached scope to weapon: " + item.ClassName);
+            ExpansionNotification("Shop", "Cannot attach this scope to your current weapon").Error(player.GetIdentity());
+            Print("[KOTH_Shop] Failed to attach scope: " + item.ClassName);
+        }
+        else
+        {
+            Print("[KOTH_Shop] Successfully attached scope: " + item.ClassName);
             
             int batterySlot = InventorySlots.GetSlotIdFromString("BatteryD");
             if (batterySlot != -1)
             {
-                EntityAI existingBattery = newOptic.GetInventory().FindAttachment(batterySlot);
+                EntityAI existingBattery = newScope.GetInventory().FindAttachment(batterySlot);
                 if (!existingBattery)
                 {
-                    EntityAI battery = newOptic.GetInventory().CreateAttachment("Battery9V");
+                    EntityAI battery = newScope.GetInventory().CreateAttachment("Battery9V");
                     if (battery)
                     {
-                        Print("[KOTH_Shop] Added 9V battery to scope: " + item.ClassName);
-                    }
-                    else
-                    {
-                        Print("[KOTH_Shop] Failed to add battery to scope: " + item.ClassName);
+                        Print("[KOTH_Shop] Added 9V battery to scope");
                     }
                 }
             }
-            
-            ExpansionNotification("Shop", "Scope equipped successfully").Success(player.GetIdentity());
-        }
-        else
-        {
-            Print("[KOTH_Shop] ERROR: Failed to attach scope: " + item.ClassName);
-            ExpansionNotification("Shop", "Failed to equip scope").Error(player.GetIdentity());
         }
     }
     
-    bool ScopeNeedsBattery(EntityAI scope)
-    {
-        int batterySlot = InventorySlots.GetSlotIdFromString("BatteryD");
-        if (batterySlot != -1 && scope.GetInventory().FindAttachment(batterySlot) == null)
-        {
-            string configPath = "CfgVehicles " + scope.GetType() + " attachments BatteryD";
-            TStringArray batteries = new TStringArray();
-            GetGame().ConfigGetTextArray(configPath, batteries);
-            if (batteries && batteries.Count() > 0)
-            {
-                Print("[KOTH_Shop] Scope " + scope.GetType() + " needs battery");
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-    void ClearPistolAmmo(PlayerBase player)
+    void ClearPistolMagazines(PlayerBase player)
     {
         array<string> pistolMagTypes = {"Mag_Glock_15Rnd", "Mag_FNX45_15Rnd", "Mag_CZ75_15Rnd", "Mag_1911_7Rnd", "Mag_Deagle_9Rnd", "Mag_MKII_10Rnd", "Mag_P1_8Rnd", "Ammo_9x19", "Ammo_45ACP", "Ammo_357"};
         
@@ -569,8 +646,10 @@ class KOTH_ShopModule : CF_ModuleWorld
         Print("[KOTH_Shop] Cleared " + itemsToDelete.Count() + " pistol magazines and ammo");
     }
     
-    void ClearRifleAmmo(PlayerBase player)
+    void ClearRifleMagazines(PlayerBase player)
     {
+        array<string> pistolMagTypes = {"Mag_Glock_15Rnd", "Mag_FNX45_15Rnd", "Mag_CZ75_15Rnd", "Mag_1911_7Rnd", "Mag_Deagle_9Rnd", "Mag_MKII_10Rnd", "Mag_P1_8Rnd", "Ammo_9x19", "Ammo_45ACP", "Ammo_357"};
+        
         array<EntityAI> itemsToDelete = new array<EntityAI>();
         array<EntityAI> allItems = new array<EntityAI>();
         
@@ -580,7 +659,22 @@ class KOTH_ShopModule : CF_ModuleWorld
         {
             if (item.IsMagazine() || item.IsAmmoPile())
             {
-                itemsToDelete.Insert(item);
+                string itemType = item.GetType();
+                bool isPistolMag = false;
+                
+                foreach (string pistolMagType : pistolMagTypes)
+                {
+                    if (itemType.IndexOf(pistolMagType) != -1)
+                    {
+                        isPistolMag = true;
+                        break;
+                    }
+                }
+                
+                if (!isPistolMag)
+                {
+                    itemsToDelete.Insert(item);
+                }
             }
         }
         
@@ -589,7 +683,7 @@ class KOTH_ShopModule : CF_ModuleWorld
             GetGame().ObjectDelete(itemToDelete);
         }
         
-        Print("[KOTH_Shop] Cleared " + itemsToDelete.Count() + " rifle magazines and ammo");
+        Print("[KOTH_Shop] Cleared " + itemsToDelete.Count() + " rifle magazines and ammo (preserved pistol mags)");
     }
     
     bool IsPistol(string className)

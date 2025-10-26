@@ -13,7 +13,7 @@ class KOTH_ShopMenu : ExpansionScriptViewMenu
     protected ButtonWidget m_RiflesTab;
     protected ButtonWidget m_PistolsTab;
     protected ButtonWidget m_ScopesTab;
-    protected ButtonWidget m_LaunchersTab;
+    protected ButtonWidget m_ItemsTab;
     protected WrapSpacerWidget m_ItemListWrapper;
     protected ButtonWidget m_CloseButton;
     
@@ -59,7 +59,7 @@ class KOTH_ShopMenu : ExpansionScriptViewMenu
         m_RiflesTab = ButtonWidget.Cast(root.FindAnyWidget("RiflesTab"));
         m_PistolsTab = ButtonWidget.Cast(root.FindAnyWidget("PistolsTab"));
         m_ScopesTab = ButtonWidget.Cast(root.FindAnyWidget("ScopesTab"));
-        m_LaunchersTab = ButtonWidget.Cast(root.FindAnyWidget("LaunchersTab"));
+        m_ItemsTab = ButtonWidget.Cast(root.FindAnyWidget("ItemsTab"));
         m_ItemListWrapper = WrapSpacerWidget.Cast(root.FindAnyWidget("ItemListWrapper"));
         m_CloseButton = ButtonWidget.Cast(root.FindAnyWidget("CloseButton"));
     }
@@ -102,9 +102,9 @@ class KOTH_ShopMenu : ExpansionScriptViewMenu
             return true;
         }
         
-        if (w == m_LaunchersTab)
+        if (w == m_ItemsTab)
         {
-            ShowCategory("Launchers");
+            ShowCategory("Items");
             return true;
         }
         
@@ -154,8 +154,13 @@ class KOTH_ShopMenu : ExpansionScriptViewMenu
     
     void OnShopDataReceived(array<ref KOTH_ShopCategory> categories, array<string> ownedItems, int level, int money)
     {
+        Print("[KOTH_ShopMenu] OnShopDataReceived called with " + categories.Count() + " categories");
+        
         if (!m_ShopController)
+        {
+            Print("[KOTH_ShopMenu] ERROR: Controller not initialized yet!");
             return;
+        }
         
         m_Categories = categories;
         m_OwnedItems = ownedItems;
@@ -247,144 +252,36 @@ class KOTH_ShopMenu : ExpansionScriptViewMenu
         return false;
     }
     
-    bool IsScope(string className)
+    void ShowCategory(string categoryName)
     {
-        array<string> scopeTypes = {"Optic", "Scope", "Sight", "ReflexOptic", "M4_CarryHandleOptic"};
+        Print("[KOTH_ShopMenu] ShowCategory: " + categoryName);
+        m_CurrentCategory = categoryName;
         
-        foreach (string scopeType : scopeTypes)
+        KOTH_ShopCategory category = null;
+        foreach (KOTH_ShopCategory cat : m_Categories)
         {
-            if (className.IndexOf(scopeType) != -1)
-                return true;
-        }
-        
-        return false;
-    }
-    
-    bool CanAttachScopeToCurrentWeapon(string scopeClassName)
-    {
-        PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
-        if (!player)
-            return false;
-        
-        EntityAI weaponInHands = player.GetHumanInventory().GetEntityInHands();
-        if (!weaponInHands || !weaponInHands.IsWeapon())
-            return false;
-        
-        return true;
-    }
-    
-    bool HasScopeOnCurrentWeapon()
-    {
-        PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
-        if (!player)
-            return false;
-        
-        EntityAI weaponInHands = player.GetHumanInventory().GetEntityInHands();
-        if (!weaponInHands || !weaponInHands.IsWeapon())
-            return false;
-        
-        int opticSlotId = InventorySlots.GetSlotIdFromString("weaponOptics");
-        EntityAI existingOptic = weaponInHands.GetInventory().FindAttachment(opticSlotId);
-        
-        return existingOptic != null;
-    }
-    
-    bool IsScopeAttachedToWeapon(string scopeClassName)
-    {
-        PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
-        if (!player)
-            return false;
-        
-        EntityAI weaponInHands = player.GetHumanInventory().GetEntityInHands();
-        if (!weaponInHands || !weaponInHands.IsWeapon())
-            return false;
-        
-        array<string> opticSlotNames = {
-            "weaponOptics",
-            "weaponOpticsAK",
-            "weaponOpticsAcog",
-            "weaponOpticsHunting",
-            "weaponOpticsLRS",
-            "weaponOpticsMosin",
-            "weaponOpticsCrossbow",
-            "weaponOpticsAug"
-        };
-        
-        foreach (string slotName : opticSlotNames)
-        {
-            int slotId = InventorySlots.GetSlotIdFromString(slotName);
-            if (slotId == -1)
-                continue;
-            
-            EntityAI attachedOptic = weaponInHands.GetInventory().FindAttachment(slotId);
-            if (attachedOptic && attachedOptic.GetType() == scopeClassName)
+            if (cat.Category == categoryName)
             {
-                return true;
+                category = cat;
+                break;
             }
         }
         
-        return false;
-    }
-    
-    KOTH_ShopCategory GetCategoryByName(string categoryName)
-    {
-        foreach (KOTH_ShopCategory categoryData : m_Categories)
+        if (!category)
         {
-            if (categoryData.Category == categoryName)
-                return categoryData;
-        }
-        return null;
-    }
-    
-    void ShowCategory(string categoryName)
-    {
-        m_CurrentCategory = categoryName;
-        SetTabActive(categoryName);
-        
-        KOTH_ShopCategory categoryData = GetCategoryByName(categoryName);
-        if (categoryData)
-        {
-            PopulateItemList(categoryData);
-        }
-    }
-    
-    void SetTabActive(string categoryName)
-    {
-        SetTabColor(m_RiflesTab, categoryName == "Rifles");
-        SetTabColor(m_PistolsTab, categoryName == "Pistols");
-        SetTabColor(m_ScopesTab, categoryName == "Scopes");
-        SetTabColor(m_LaunchersTab, categoryName == "Launchers");
-    }
-    
-    void SetTabColor(ButtonWidget tabButton, bool isActive)
-    {
-        if (!tabButton)
+            Print("[KOTH_ShopMenu] ERROR: Category not found: " + categoryName);
             return;
+        }
         
-        if (isActive)
-            tabButton.SetColor(ARGB(255, 100, 200, 200));
-        else
-            tabButton.SetColor(ARGB(255, 255, 255, 255));
-    }
-    
-    void PopulateItemList(KOTH_ShopCategory categoryData)
-    {
         ClearItemList();
         
-        bool isScopeCategory = (categoryData.Category == "Scopes");
-        array<string> compatibleScopes = new array<string>();
-        
-        if (isScopeCategory)
+        foreach (KOTH_ShopItem shopItem : category.Items)
         {
-            compatibleScopes = GetCompatibleScopes();
-            Print("[KOTH_ShopMenu] Found " + compatibleScopes.Count() + " compatible scopes");
-        }
-        
-        foreach (KOTH_ShopItem shopItem : categoryData.Items)
-        {
-            if (isScopeCategory)
+            if (categoryName == "Scopes")
             {
+                array<string> compatibleScopes = GetCompatibleScopes();
                 bool isCompatible = false;
+                
                 foreach (string compatScope : compatibleScopes)
                 {
                     if (compatScope == shopItem.ClassName)
@@ -401,9 +298,7 @@ class KOTH_ShopMenu : ExpansionScriptViewMenu
                 }
             }
             
-            Widget itemEntry = CreateItemEntry(shopItem);
-            if (itemEntry)
-                m_ItemListWrapper.AddChild(itemEntry);
+            CreateItemEntry(shopItem);
         }
     }
     
@@ -413,34 +308,30 @@ class KOTH_ShopMenu : ExpansionScriptViewMenu
         
         PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
         if (!player)
-        {
-            Print("[KOTH_ShopMenu] No player found");
             return compatibleScopes;
-        }
         
         EntityAI weaponInHands = player.GetHumanInventory().GetEntityInHands();
         if (!weaponInHands || !weaponInHands.IsWeapon())
-        {
-            Print("[KOTH_ShopMenu] No weapon in hands");
             return compatibleScopes;
+        
+        Print("[KOTH_ShopMenu] Checking scope compatibility for weapon: " + weaponInHands.GetType());
+        
+        KOTH_ShopCategory scopeCategory = null;
+        foreach (KOTH_ShopCategory cat : m_Categories)
+        {
+            if (cat.Category == "Scopes")
+            {
+                scopeCategory = cat;
+                break;
+            }
         }
         
-        Print("[KOTH_ShopMenu] Checking compatibility for weapon: " + weaponInHands.GetType());
-        
-        KOTH_ShopCategory scopeCategory = GetCategoryByName("Scopes");
         if (!scopeCategory)
-        {
-            Print("[KOTH_ShopMenu] Scopes category not found");
             return compatibleScopes;
-        }
         
         foreach (KOTH_ShopItem scopeItem : scopeCategory.Items)
         {
-            bool isCompatible = CanAttachScope(weaponInHands, scopeItem.ClassName);
-            
-            Print("[KOTH_ShopMenu] " + scopeItem.ClassName + " compatible: " + isCompatible);
-            
-            if (isCompatible)
+            if (CanAttachScope(weaponInHands, scopeItem.ClassName))
             {
                 compatibleScopes.Insert(scopeItem.ClassName);
             }
@@ -452,32 +343,18 @@ class KOTH_ShopMenu : ExpansionScriptViewMenu
     
     bool CanAttachScope(EntityAI weapon, string scopeClassName)
     {
+        InventoryLocation existingScopeLoc = new InventoryLocation();
         EntityAI existingScope = null;
-        InventoryLocation existingScopeLoc = null;
         
-        array<string> opticSlotNames = {
-            "weaponOptics",
-            "weaponOpticsAK",
-            "weaponOpticsAcog",
-            "weaponOpticsHunting",
-            "weaponOpticsLRS",
-            "weaponOpticsMosin",
-            "weaponOpticsCrossbow",
-            "weaponOpticsAug"
-        };
+        array<EntityAI> attachments = new array<EntityAI>();
+        weapon.GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER, attachments);
         
-        foreach (string slotName : opticSlotNames)
+        foreach (EntityAI att : attachments)
         {
-            int slotId = InventorySlots.GetSlotIdFromString(slotName);
-            if (slotId == -1)
-                continue;
-            
-            EntityAI attachedOptic = weapon.GetInventory().FindAttachment(slotId);
-            if (attachedOptic)
+            if (IsScope(att.GetType()))
             {
-                existingScope = attachedOptic;
-                existingScopeLoc = new InventoryLocation();
-                attachedOptic.GetInventory().GetCurrentInventoryLocation(existingScopeLoc);
+                existingScope = att;
+                att.GetInventory().GetCurrentInventoryLocation(existingScopeLoc);
                 GameInventory.LocationRemoveEntity(existingScopeLoc);
                 break;
             }
@@ -498,6 +375,41 @@ class KOTH_ShopMenu : ExpansionScriptViewMenu
         }
         
         return canAttach;
+    }
+    
+    bool IsScope(string className)
+    {
+        array<string> scopeTypes = {"ReflexOptic", "ACOGOptic", "M4_CarryHandleOptic", "M68Optic", "KazuarOptic", "PUScopeOptic", "HuntingOptic", "PSO1Optic", "KobraOptic", "Crossbow_RedpointOptic", "StarlightOptic", "DHOptic"};
+        
+        foreach (string scopeType : scopeTypes)
+        {
+            if (className.IndexOf(scopeType) != -1)
+                return true;
+        }
+        
+        return false;
+    }
+    
+    bool IsScopeAttachedToWeapon(string scopeClassName)
+    {
+        PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
+        if (!player)
+            return false;
+        
+        EntityAI weapon = player.GetHumanInventory().GetEntityInHands();
+        if (!weapon || !weapon.IsWeapon())
+            return false;
+        
+        array<EntityAI> attachments = new array<EntityAI>();
+        weapon.GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER, attachments);
+        
+        foreach (EntityAI att : attachments)
+        {
+            if (att.GetType() == scopeClassName)
+                return true;
+        }
+        
+        return false;
     }
     
     void ClearItemList()
