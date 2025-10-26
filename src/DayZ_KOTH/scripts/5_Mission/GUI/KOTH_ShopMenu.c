@@ -443,14 +443,23 @@ class KOTH_ShopMenu : ExpansionScriptViewMenu
     {
         ItemPreviewWidget itemPreview = ItemPreviewWidget.Cast(entryWidget.FindAnyWidget("ItemImage"));
         if (!itemPreview)
+        {
+            Print("[KOTH_ShopMenu] ERROR: ItemImage widget not found");
             return;
+        }
         
-        EntityAI previewObj = EntityAI.Cast(GetGame().CreateObjectEx(shopItem.ClassName, vector.Zero, ECE_PLACE_ON_SURFACE));
+        EntityAI previewObj = EntityAI.Cast(GetGame().CreateObjectEx(shopItem.ClassName, vector.Zero, ECE_LOCAL | ECE_NOLIFETIME));
         if (previewObj)
         {
             m_PreviewObjects.Insert(previewObj);
             itemPreview.SetItem(previewObj);
-            itemPreview.SetModelOrientation(vector.Zero);
+            itemPreview.SetModelOrientation(Vector(0, 0, 0));
+            itemPreview.Show(true);
+            Print("[KOTH_ShopMenu] Preview created for: " + shopItem.ClassName);
+        }
+        else
+        {
+            Print("[KOTH_ShopMenu] ERROR: Failed to create preview object for: " + shopItem.ClassName);
         }
     }
     
