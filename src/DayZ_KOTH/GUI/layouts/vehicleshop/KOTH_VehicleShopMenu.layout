@@ -1,0 +1,200 @@
+FrameWidgetClass KOTH_VehicleShopMenu {
+ ignorepointer 0
+ color 0 0 0 1
+ size 1 1
+ halign center_ref
+ valign center_ref
+ hexactpos 0
+ vexactpos 0
+ hexactsize 0
+ vexactsize 0
+ scriptclass "KOTH_VehicleShopMenuController"
+ {
+  PanelWidgetClass VehicleShopBackground {
+   ignorepointer 1
+   color 0.1765 0.2275 0.251 0.7843
+   size 0.6 0.7
+   halign center_ref
+   valign center_ref
+   hexactpos 0
+   vexactpos 0
+   hexactsize 0
+   vexactsize 0
+   style DayZDefaultPanel
+   {
+    PanelWidgetClass VehicleShopHeader {
+     ignorepointer 1
+     position 0 0
+     size 1 0.12
+     halign center_ref
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     style blank
+     {
+      TextWidgetClass VehicleShopTitle {
+       ignorepointer 1
+       position 0.02 0.15
+       size 0.4 1
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       text "VEHICLE RENTAL"
+       font "gui/fonts/metron"
+       "text color" 0.7843 1 1 1
+       "outline size" 1
+       "outline color" 0 0 0 1
+       "exact text" 1
+       "exact text size" 32
+       "size to text h" 0
+       "size to text v" 1
+       "text halign" left
+       "text valign" center
+      }
+      TextWidgetClass PlayerBalance {
+       ignorepointer 1
+       position 0.02 0.15
+       size 0.16 0.4
+       halign right_ref
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       scriptclass "ViewBinding"
+       text "$0"
+       font "gui/fonts/metron"
+       "outline size" 1
+       "outline color" 0 0 0 1
+       "exact text" 0
+       "exact text size" 24
+       "size to text h" 0
+       "size to text v" 1
+       "text halign" center
+       "text valign" center
+                    {
+                        ScriptParamsClass {
+                            Binding_Name "PlayerBalance"
+                        }
+                    }
+      }
+      TextWidgetClass PlayerLevel {
+       ignorepointer 1
+       position 0.2 0.15
+       size 0.2 0.4
+       halign right_ref
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       scriptclass "ViewBinding"
+       text "Level: 1"
+       font "gui/fonts/metron"
+       "outline size" 1
+       "outline color" 0 0 0 1
+       "exact text" 0
+       "exact text size" 24
+       "size to text h" 0
+       "size to text v" 1
+       "text halign" right
+       "text valign" center
+                    {
+                        ScriptParamsClass {
+                            Binding_Name "PlayerLevel"
+                        }
+                    }
+      }
+     }
+    }
+    PanelWidgetClass CooldownPanel {
+     ignorepointer 1
+     position 0 0.12
+     size 1 0.08
+     halign center_ref
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     style blank
+     {
+      TextWidgetClass CooldownText {
+       ignorepointer 1
+       position 0 0.2
+       size 1 0.6
+       halign center_ref
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       scriptclass "ViewBinding"
+       text "Ready to Rent"
+       font "gui/fonts/metron"
+       "text color" 0 0.7843 0 1
+       "outline size" 1
+       "outline color" 0 0 0 1
+       "exact text" 0
+       "exact text size" 22
+       "size to text h" 0
+       "size to text v" 1
+       "text halign" center
+       "text valign" center
+                    {
+                        ScriptParamsClass {
+                            Binding_Name "RentalCooldown"
+                        }
+                    }
+      }
+     }
+    }
+    ScrollWidgetClass VehicleListScroller {
+     ignorepointer 0
+     position 0 0.2
+     size 1 0.73
+     halign center_ref
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     "Scrollbar V" 1
+     {
+      WrapSpacerWidgetClass VehicleListWrapper {
+       ignorepointer 1
+       position 0 0.01
+       size 0.98 0.98
+       halign center_ref
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       Padding 5
+       Margin 0
+       "Size To Content H" 0
+       "Size To Content V" 1
+       content_halign center
+       content_valign top
+      }
+     }
+    }
+    ButtonWidgetClass CloseButton {
+     ignorepointer 0
+     position 0.01 0.01
+     size 0.2 0.06
+     valign bottom_ref
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     style Default
+     text "CLOSE"
+     font "gui/fonts/metron"
+     "text color" 1 1 1 1
+                "exact text" 1
+                "exact text size" 22
+                "text halign" center
+                "text valign" center
+    }
+   }
+  }
+ }
+}

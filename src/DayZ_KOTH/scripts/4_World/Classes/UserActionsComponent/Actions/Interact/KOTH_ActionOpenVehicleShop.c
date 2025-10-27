@@ -1,8 +1,8 @@
-class KOTH_ActionOpenShopMenu: ActionInteractBase
+class KOTH_ActionOpenVehicleShop: ActionInteractBase
 {
-	protected KOTH_ShopModule m_ShopModule;
+	protected KOTH_VehicleShopModule m_VehicleShopModule;
 	
-	void KOTH_ActionOpenShopMenu()
+	void KOTH_ActionOpenVehicleShop()
 	{
 		m_CommandUID = DayZPlayerConstants.CMD_ACTIONMOD_ATTACHITEM;
 		m_StanceMask = DayZPlayerConstants.STANCEMASK_ERECT | DayZPlayerConstants.STANCEMASK_CROUCH;
@@ -16,7 +16,7 @@ class KOTH_ActionOpenShopMenu: ActionInteractBase
 
 	override string GetText()
 	{
-		return "Open Shop Menu";
+		return "Open Vehicle Shop";
 	}
 
 	override typename GetInputType()
@@ -35,13 +35,13 @@ class KOTH_ActionOpenShopMenu: ActionInteractBase
 		if (!Class.CastTo(targetObject, target.GetParentOrObject()))
 			return false;
 
-		KOTH_NPCMirek shopNPC = KOTH_NPCMirek.Cast(targetObject);
-		if (!shopNPC)
+		KOTH_NPCBoris vehicleNPC = KOTH_NPCBoris.Cast(targetObject);
+		if (!vehicleNPC)
 			return false;
 			
 		if (!GetGame().IsDedicatedServer())
 		{
-			m_Text = "Open Shop Menu";
+			m_Text = "Open Vehicle Shop";
 		}
 
 		return true;
@@ -55,36 +55,30 @@ class KOTH_ActionOpenShopMenu: ActionInteractBase
 		
 		if (!player || !player.GetIdentity())
 		{
-			Print("[KOTH_ActionOpenShopMenu] ERROR: Player or Player Identity is null");
 			return;
 		}
 
 		
-		m_ShopModule = KOTH_ShopModule.GetInstance();
+		m_VehicleShopModule = KOTH_VehicleShopModule.GetInstance();
 		
-		if (!m_ShopModule)
+		if (!m_VehicleShopModule)
 		{
-			Print("[KOTH_ActionOpenShopMenu] ERROR: Could not get KOTH_ShopModule via GetInstance()");
 			return;
 		}
 
 
 		if (!action_data.m_Target)
 		{
-			Print("[KOTH_ActionOpenShopMenu] ERROR: action_data.m_Target is null");
 			return;
 		}
-
 
 		Object targetObject;
 		if (!Class.CastTo(targetObject, action_data.m_Target.GetParentOrObject()))
 		{
-			Print("[KOTH_ActionOpenShopMenu] ERROR: Failed to cast target object");
 			return;
 		}
 
 		
-		m_ShopModule.RequestShopOpen(player, player.GetIdentity());
-		
+		m_VehicleShopModule.RequestVehicleShopOpen(player, player.GetIdentity());
 	}
 }

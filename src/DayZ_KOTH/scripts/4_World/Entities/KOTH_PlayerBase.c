@@ -75,6 +75,7 @@ modded class PlayerBase
 		super.SetActions(InputActionMap);
 
 		AddAction(KOTH_ActionOpenShopMenu, InputActionMap);
+        AddAction(KOTH_ActionOpenVehicleShop, InputActionMap);
 	}
 
     override bool CanDropEntity(notnull EntityAI item)

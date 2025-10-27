@@ -23,6 +23,6 @@ modded class ActionConstructor
 		super.RegisterActions( actions );	
 
 		actions.Insert(KOTH_ActionOpenShopMenu);
-
+		actions.Insert(KOTH_ActionOpenVehicleShop);
 	}
 }
