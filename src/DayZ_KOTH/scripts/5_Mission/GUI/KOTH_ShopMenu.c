@@ -274,6 +274,13 @@ class KOTH_ShopMenu : ExpansionScriptViewMenu
         }
         
         ClearItemList();
+
+        ScrollWidget scrollWidget = ScrollWidget.Cast(m_ItemListWrapper.GetParent());
+        if (scrollWidget)
+        {
+            scrollWidget.VScrollToPos(0);
+        }
+
         
         foreach (KOTH_ShopItem shopItem : category.Items)
         {

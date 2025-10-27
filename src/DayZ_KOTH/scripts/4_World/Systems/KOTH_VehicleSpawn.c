@@ -36,7 +36,7 @@ class KOTH_VehicleSpawn
     
     protected void SetupVehicleAttachments()
     {
-        if (m_VehicleType == "Hatchback_02" || m_VehicleType == "Hatchback_02_Blue")
+        if (m_VehicleType == "Hatchback_02")
         {
             m_Attachments.Insert("Hatchback_02_Wheel");
             m_Attachments.Insert("Hatchback_02_Wheel");
@@ -50,6 +50,28 @@ class KOTH_VehicleSpawn
             m_Attachments.Insert("Hatchback_02_Door_2_2");
             m_Attachments.Insert("Hatchback_02_Hood");
             m_Attachments.Insert("Hatchback_02_Trunk");
+            
+            m_Attachments.Insert("CarBattery");
+            m_Attachments.Insert("CarRadiator");
+            m_Attachments.Insert("SparkPlug");
+            
+            m_Attachments.Insert("HeadlightH7");
+            m_Attachments.Insert("HeadlightH7");
+        }
+        else if (m_VehicleType == "Hatchback_02_Blue")
+        {
+            m_Attachments.Insert("Hatchback_02_Wheel");
+            m_Attachments.Insert("Hatchback_02_Wheel");
+            m_Attachments.Insert("Hatchback_02_Wheel");
+            m_Attachments.Insert("Hatchback_02_Wheel");
+            m_Attachments.Insert("Hatchback_02_Wheel");
+            
+            m_Attachments.Insert("Hatchback_02_Door_1_1_Blue");
+            m_Attachments.Insert("Hatchback_02_Door_1_2_Blue");
+            m_Attachments.Insert("Hatchback_02_Door_2_1_Blue");
+            m_Attachments.Insert("Hatchback_02_Door_2_2_Blue");
+            m_Attachments.Insert("Hatchback_02_Hood_Blue");
+            m_Attachments.Insert("Hatchback_02_Trunk_Blue");
             
             m_Attachments.Insert("CarBattery");
             m_Attachments.Insert("CarRadiator");
