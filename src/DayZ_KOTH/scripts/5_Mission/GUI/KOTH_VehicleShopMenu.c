@@ -13,6 +13,7 @@ class KOTH_VehicleShopMenu : ExpansionScriptViewMenu
     protected TextWidget m_CooldownText;
     
     protected ref map<Widget, string> m_ButtonToVehicleClass;
+    protected ref array<EntityAI> m_PreviewObjects;
     
     protected ref array<ref KOTH_VehicleShopItem> m_Vehicles;
     protected int m_PlayerLevel;
@@ -24,6 +25,7 @@ class KOTH_VehicleShopMenu : ExpansionScriptViewMenu
     {
         m_ButtonToVehicleClass = new map<Widget, string>();
         m_Vehicles = new array<ref KOTH_VehicleShopItem>();
+        m_PreviewObjects = new array<EntityAI>();
         
         KOTH_VehicleShopModule.GetInstance().GetMenuSI().Insert(OnVehicleShopDataReceived);
     }
@@ -56,6 +58,17 @@ class KOTH_VehicleShopMenu : ExpansionScriptViewMenu
     {
         super.OnHide();
         GetGame().GetCallQueue(CALL_CATEGORY_GUI).Remove(UpdateCooldownDisplay);
+        CleanupPreviewObjects();
+    }
+    
+    void CleanupPreviewObjects()
+    {
+        foreach (EntityAI previewObj : m_PreviewObjects)
+        {
+            if (previewObj)
+                GetGame().ObjectDelete(previewObj);
+        }
+        m_PreviewObjects.Clear();
     }
     
     override bool OnClick(Widget w, int x, int y, int button)
@@ -203,6 +216,8 @@ class KOTH_VehicleShopMenu : ExpansionScriptViewMenu
             
             Print("[KOTH_VehicleShopMenu] Entry widget created successfully");
             
+            SetupVehiclePreview(entry, vehicle);
+            
             TextWidget nameText = TextWidget.Cast(entry.FindAnyWidget("VehicleName"));
             TextWidget priceText = TextWidget.Cast(entry.FindAnyWidget("VehiclePrice"));
             ButtonWidget rentButton = ButtonWidget.Cast(entry.FindAnyWidget("RentButton"));
@@ -253,6 +268,30 @@ class KOTH_VehicleShopMenu : ExpansionScriptViewMenu
         
         Print("[KOTH_VehicleShopMenu] === PopulateVehicleList END ===");
         Print("[KOTH_VehicleShopMenu] Total entries created: " + m_ButtonToVehicleClass.Count());
+    }
+    
+    void SetupVehiclePreview(Widget entryWidget, KOTH_VehicleShopItem vehicle)
+    {
+        ItemPreviewWidget itemPreview = ItemPreviewWidget.Cast(entryWidget.FindAnyWidget("VehicleImage"));
+        if (!itemPreview)
+        {
+            Print("[KOTH_VehicleShopMenu] ERROR: VehicleImage widget not found");
+            return;
+        }
+        
+        EntityAI previewObj = EntityAI.Cast(GetGame().CreateObjectEx(vehicle.ClassName, vector.Zero, ECE_LOCAL | ECE_NOLIFETIME));
+        if (previewObj)
+        {
+            m_PreviewObjects.Insert(previewObj);
+            itemPreview.SetItem(previewObj);
+            itemPreview.SetModelOrientation(Vector(0, 0, 0));
+            itemPreview.Show(true);
+            Print("[KOTH_VehicleShopMenu] Preview created for: " + vehicle.ClassName);
+        }
+        else
+        {
+            Print("[KOTH_VehicleShopMenu] ERROR: Failed to create preview object for: " + vehicle.ClassName);
+        }
     }
     
     void UpdateCooldownDisplay()
