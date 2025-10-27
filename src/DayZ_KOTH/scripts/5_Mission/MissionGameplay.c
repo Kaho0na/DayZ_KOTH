@@ -1,4 +1,4 @@
-modded class MissionGameplay
+/*modded class MissionGameplay
 {
     override void OnKeyPress(int key)
     {
@@ -16,4 +16,4 @@ modded class MissionGameplay
             }
         }
     }
-}
+}*/

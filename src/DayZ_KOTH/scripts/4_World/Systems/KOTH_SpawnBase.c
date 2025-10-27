@@ -47,10 +47,8 @@ static ref array<ref KOTHSpawnPiece> KOTH_SPAWN_COMPOUND = {
 	new KOTHSpawnPiece("StaticObj_WhiteBoard",             3.72705,  -1.30811,  4.35944,  126.0000),
 	new KOTHSpawnPiece("bldr_Misc_Range_Roof",       -2.93896,  -2.21753,  4.34960,   36.0000),
 
-	new KOTHSpawnPiece("SurvivorM_Boris",            -3.75195,  -1.15649,  3.38896,   36.0000),
-	new KOTHSpawnPiece("SurvivorM_Mirek",            -1.83447,  -2.88159,  3.38896,   36.0000),
-	new KOTHSpawnPiece("SurvivorM_Denis",             1.00293,  -4.79736,  3.38896,    0.0000),
-
+	// NPCs removed - will be spawned separately with proper NPC system
+	
 	new KOTHSpawnPiece("bldr_misc_flagpole",         -0.55908,   5.8681,   6.66342,    0.0000),
 	new KOTHSpawnPiece("bldr_prop_Flag_Bear",        -0.64502,   5.8510,   10.1842,    0.0000),
 
@@ -65,6 +63,7 @@ class KOTH_SpawnBase
 	static ref array<Object> s_Spawned = new array<Object>();
 	static ref array<ref ExpansionZone> s_SafeZones = new array<ref ExpansionZone>();
 	static ref array<ref KOTH_VehicleSpawn> s_VehicleSpawners = new array<ref KOTH_VehicleSpawn>();
+	static ref array<KOTH_NPCBase> s_SpawnedNPCs = new array<KOTH_NPCBase>();
 
 	static void SpawnBaseAt(vector center, string side, float safeZoneRadius)
 	{
@@ -118,13 +117,89 @@ class KOTH_SpawnBase
 		{
 			Print("[KOTH_SpawnBase] Spawning vehicle for side: " + side);
 			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SpawnFactionVehicle, 1000, false, center, side, platformYaw);
+			
+			Print("[KOTH_SpawnBase] Spawning NPCs for side: " + side);
+			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SpawnBaseNPCs, 1500, false, center, side, baseYOffset);
 		}
 		else
 		{
-			Print("[KOTH_SpawnBase] ERROR: Platform not found! Cannot spawn vehicle.");
+			Print("[KOTH_SpawnBase] ERROR: Platform not found! Cannot spawn vehicle or NPCs.");
 		}
 
 		Print("[KOTH_SpawnBase] ══════════════════════════════════════");
+	}
+
+	static void SpawnBaseNPCs(vector baseCenter, string side, float baseYOffset)
+	{
+		if (!GetGame().IsServer())
+			return;
+		
+		Print("[KOTH_SpawnBase] Spawning NPCs at base: " + side);
+		
+		string loadout;
+		if (side == "East")
+			loadout = "EastLoadout";
+		else if (side == "West")
+			loadout = "WestLoadout";
+		else
+			loadout = "WestLoadout";
+		
+		Print("[KOTH_SpawnBase] Using loadout: " + loadout);
+		
+		KOTH_NPCBase shopNPC = SpawnNPC("KOTH_NPCMirek", baseCenter, -3.75195, -1.15649, 3.38896, 36.0, baseYOffset, loadout);
+		if (shopNPC)
+		{
+			s_SpawnedNPCs.Insert(shopNPC);
+			Print("[KOTH_SpawnBase] Shop NPC (Mirek) spawned successfully");
+		}
+		
+		KOTH_NPCBase vehiclesNPC = SpawnNPC("KOTH_NPCBoris", baseCenter, -1.83447, -2.88159, 3.38896, 36.0, baseYOffset, loadout);
+		if (vehiclesNPC)
+		{
+			s_SpawnedNPCs.Insert(vehiclesNPC);
+			Print("[KOTH_SpawnBase] Vehicles NPC (Boris) spawned successfully");
+		}
+		
+		KOTH_NPCBase clothesNPC = SpawnNPC("KOTH_NPCDenis", baseCenter, 1.00293, -4.79736, 3.38896, 0.0, baseYOffset, loadout);
+		if (clothesNPC)
+		{
+			s_SpawnedNPCs.Insert(clothesNPC);
+			Print("[KOTH_SpawnBase] Clothes NPC (Denis) spawned successfully");
+		}
+		
+		Print("[KOTH_SpawnBase] All NPCs spawned. Total: " + s_SpawnedNPCs.Count());
+	}
+
+	static KOTH_NPCBase SpawnNPC(string npcClassName, vector baseCenter, float dx, float dz, float dy, float yaw, float baseYOffset, string loadoutClass)
+	{
+		vector npcPos = Vector(dx + baseCenter[0], dy + baseYOffset + baseCenter[1], dz + baseCenter[2]);
+		vector npcOri = Vector(yaw, 0, 0);
+		
+		Print("[KOTH_SpawnBase] Spawning NPC: " + npcClassName + " at " + npcPos.ToString());
+		
+		EntityAI obj = EntityAI.Cast(ExpansionGame.CreateObjectSafe(npcClassName, npcPos));
+		if (!obj)
+		{
+			Print("[KOTH_SpawnBase] ERROR: Failed to create NPC object: " + npcClassName);
+			return null;
+		}
+		
+		KOTH_NPCBase npc = KOTH_NPCBase.Cast(obj);
+		if (!npc)
+		{
+			Print("[KOTH_SpawnBase] ERROR: Failed to cast to KOTH_NPCBase: " + npcClassName);
+			GetGame().ObjectDelete(obj);
+			return null;
+		}
+		
+		npc.SetPosition(npcPos);
+		npc.SetOrientation(npcOri);
+		
+		ExpansionHumanLoadout.Apply(npc, loadoutClass, true);
+		npc.Update();
+		
+		Print("[KOTH_SpawnBase] NPC spawned successfully: " + npcClassName);
+		return npc;
 	}
 
 	static void SpawnFactionVehicle(vector baseCenter, string side, float baseYaw)
@@ -206,7 +281,7 @@ class KOTH_SpawnBase
 		if (!GetGame().IsServer())
 			return;
 
-		Print("[KOTH_SpawnBase] Despawning all bases and vehicles...");
+		Print("[KOTH_SpawnBase] Despawning all bases, vehicles, and NPCs...");
 
 		for (int i = s_Spawned.Count() - 1; i >= 0; i--)
 		{
@@ -236,7 +311,18 @@ class KOTH_SpawnBase
 			s_VehicleSpawners.Remove(k);
 		}
 
-		Print("[KOTH_SpawnBase] All bases and vehicles despawned");
+		for (int n = s_SpawnedNPCs.Count() - 1; n >= 0; n--)
+		{
+			KOTH_NPCBase npc = s_SpawnedNPCs[n];
+			if (npc)
+			{
+				Print("[KOTH_SpawnBase] Deleting NPC: " + npc.GetType());
+				GetGame().ObjectDelete(npc);
+			}
+			s_SpawnedNPCs.Remove(n);
+		}
+
+		Print("[KOTH_SpawnBase] All bases, vehicles, and NPCs despawned");
 	}
 }
 

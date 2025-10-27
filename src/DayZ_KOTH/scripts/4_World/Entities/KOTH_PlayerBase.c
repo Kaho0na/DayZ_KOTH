@@ -69,7 +69,14 @@ modded class PlayerBase
     {
         return m_KOTHLastRevivedPlayerUID;
     }
-    
+
+    override void SetActions(out TInputActionMap InputActionMap)
+	{
+		super.SetActions(InputActionMap);
+
+		AddAction(KOTH_ActionOpenShopMenu, InputActionMap);
+	}
+
     override bool CanDropEntity(notnull EntityAI item)
     {
         if (item && (item.IsKindOf("Armband_Red") || item.IsKindOf("Armband_Blue")))
