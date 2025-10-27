@@ -186,9 +186,10 @@ class KOTH_ShopMenu : ExpansionScriptViewMenu
         GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(RefreshCurrentCategory, 100, false);
     }
     
-    void OnItemEquipped(string itemClass)
+    void OnItemEquipped(string itemClass, int newBalance)
     {
         Print("[KOTH_ShopMenu] OnItemEquipped: " + itemClass);
+        UpdateBalance(newBalance);
         GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(RefreshCurrentCategory, 100, false);
     }
     

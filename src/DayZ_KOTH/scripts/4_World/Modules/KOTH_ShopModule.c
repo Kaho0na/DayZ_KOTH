@@ -402,6 +402,12 @@ class KOTH_ShopModule : CF_ModuleWorld
             return;
         }
         
+        ExpansionMarketATM_Data atmData;
+        if (m_MarketModule)
+        {
+            atmData = m_MarketModule.GetPlayerATMData(uid);
+        }
+        
         KOTH_ShopItem item = GetItem(itemClass);
         if (!item)
         {
@@ -421,35 +427,58 @@ class KOTH_ShopModule : CF_ModuleWorld
             return;
         }
         
+        if (atmData)
+        {
+            atmData.RemoveMoney(item.RentPrice);
+            atmData.Save();
+        }
+        
         playerData.TotalMoneyinBank = playerData.TotalMoneyinBank - item.RentPrice;
         playerData.Save();
         
-        if (IsScope(itemClass))
+        if (m_RewardManager)
         {
-            EquipScope(player, item);
+            m_RewardManager.SyncPlayerStatsToClient(ident, playerData);
+        }
+        
+        if (KOTH_ShopScopes.IsScope(itemClass))
+        {
+            KOTH_ShopScopes.EquipScope(player, item);
         }
         else if (IsItemCategory(itemClass))
         {
             if (!HasInventorySpaceForItem(player, itemClass))
             {
                 ExpansionNotification("Shop", "No space in inventory").Error(ident);
+                
+                if (atmData)
+                {
+                    atmData.AddMoney(item.RentPrice);
+                    atmData.Save();
+                }
+                
                 playerData.TotalMoneyinBank = playerData.TotalMoneyinBank + item.RentPrice;
                 playerData.Save();
+                
+                if (m_RewardManager)
+                {
+                    m_RewardManager.SyncPlayerStatsToClient(ident, playerData);
+                }
                 return;
             }
-            EquipItem(player, item);
+            KOTH_ShopItems.EquipItem(player, item);
         }
-        else if (IsPistol(itemClass))
+        else if (KOTH_ShopPistols.IsPistol(itemClass))
         {
-            ClearPistolMagazines(player);
-            EquipPistol(player, item);
-            GiveStandardLoadout(player, item);
+            KOTH_ShopPistols.ClearPistolMagazines(player);
+            KOTH_ShopPistols.EquipPistol(player, item);
+            KOTH_ShopRifles.GiveStandardLoadout(player, item);
         }
         else
         {
-            ClearRifleMagazines(player);
-            EquipPrimaryWeapon(player, item);
-            GiveStandardLoadout(player, item);
+            KOTH_ShopRifles.ClearRifleMagazines(player);
+            KOTH_ShopRifles.EquipPrimaryWeapon(player, item);
+            KOTH_ShopRifles.GiveStandardLoadout(player, item);
         }
         
         SendShopResult(player, true, "Rented " + item.DisplayName + " for $" + item.RentPrice.ToString(), itemClass, false);
@@ -468,6 +497,12 @@ class KOTH_ShopModule : CF_ModuleWorld
         {
             ExpansionNotification("Shop Error", "Player data not found").Error(ident);
             return;
+        }
+        
+        ExpansionMarketATM_Data atmData;
+        if (m_MarketModule)
+        {
+            atmData = m_MarketModule.GetPlayerATMData(uid);
         }
         
         KOTH_ShopItem item = GetItem(itemClass);
@@ -502,29 +537,40 @@ class KOTH_ShopModule : CF_ModuleWorld
                 }
             }
             
+            if (atmData)
+            {
+                atmData.RemoveMoney(item.BuyPrice);
+                atmData.Save();
+            }
+            
             playerData.TotalMoneyinBank = playerData.TotalMoneyinBank - item.BuyPrice;
             playerData.OwnedWeapons.Insert(itemClass);
             playerData.Save();
             
+            if (m_RewardManager)
+            {
+                m_RewardManager.SyncPlayerStatsToClient(ident, playerData);
+            }
+            
             if (IsItemCategory(itemClass))
             {
-                EquipItem(player, item);
+                KOTH_ShopItems.EquipItem(player, item);
             }
-            else if (IsScope(itemClass))
+            else if (KOTH_ShopScopes.IsScope(itemClass))
             {
-                EquipScope(player, item);
+                KOTH_ShopScopes.EquipScope(player, item);
             }
-            else if (IsPistol(itemClass))
+            else if (KOTH_ShopPistols.IsPistol(itemClass))
             {
-                ClearPistolMagazines(player);
-                EquipPistol(player, item);
-                GiveStandardLoadout(player, item);
+                KOTH_ShopPistols.ClearPistolMagazines(player);
+                KOTH_ShopPistols.EquipPistol(player, item);
+                KOTH_ShopRifles.GiveStandardLoadout(player, item);
             }
             else
             {
-                ClearRifleMagazines(player);
-                EquipPrimaryWeapon(player, item);
-                GiveStandardLoadout(player, item);
+                KOTH_ShopRifles.ClearRifleMagazines(player);
+                KOTH_ShopRifles.EquipPrimaryWeapon(player, item);
+                KOTH_ShopRifles.GiveStandardLoadout(player, item);
             }
             
             SendShopResult(player, true, "Purchased " + item.DisplayName + " for $" + item.BuyPrice.ToString(), itemClass, true);
@@ -542,351 +588,27 @@ class KOTH_ShopModule : CF_ModuleWorld
             
             if (IsItemCategory(itemClass))
             {
-                EquipItem(player, item);
+                KOTH_ShopItems.EquipItem(player, item);
             }
-            else if (IsScope(itemClass))
+            else if (KOTH_ShopScopes.IsScope(itemClass))
             {
-                EquipScope(player, item);
+                KOTH_ShopScopes.EquipScope(player, item);
             }
-            else if (IsPistol(itemClass))
+            else if (KOTH_ShopPistols.IsPistol(itemClass))
             {
-                ClearPistolMagazines(player);
-                EquipPistol(player, item);
-                GiveStandardLoadout(player, item);
+                KOTH_ShopPistols.ClearPistolMagazines(player);
+                KOTH_ShopPistols.EquipPistol(player, item);
+                KOTH_ShopRifles.GiveStandardLoadout(player, item);
             }
             else
             {
-                ClearRifleMagazines(player);
-                EquipPrimaryWeapon(player, item);
-                GiveStandardLoadout(player, item);
+                KOTH_ShopRifles.ClearRifleMagazines(player);
+                KOTH_ShopRifles.EquipPrimaryWeapon(player, item);
+                KOTH_ShopRifles.GiveStandardLoadout(player, item);
             }
             
             SendShopResult(player, true, "Equipped " + item.DisplayName, itemClass, false);
         }
-    }
-    
-    void EquipItem(PlayerBase player, KOTH_ShopItem item)
-    {
-        EntityAI createdItem = player.GetInventory().CreateInInventory(item.ClassName);
-        if (!createdItem)
-        {
-            Print("[KOTH_Shop] ERROR: Failed to create item in inventory: " + item.ClassName);
-            return;
-        }
-        
-        Print("[KOTH_Shop] Created item in inventory: " + item.ClassName);
-    }
-    
-    bool IsScope(string className)
-    {
-        array<string> scopeTypes = {"ReflexOptic", "ACOGOptic", "M4_CarryHandleOptic", "M68Optic", "KazuarOptic", "PUScopeOptic", "HuntingOptic", "PSO1Optic", "KobraOptic", "Crossbow_RedpointOptic", "StarlightOptic", "DHOptic"};
-        
-        foreach (string scopeType : scopeTypes)
-        {
-            if (className.IndexOf(scopeType) != -1)
-                return true;
-        }
-        
-        return false;
-    }
-    
-    void EquipScope(PlayerBase player, KOTH_ShopItem item)
-    {
-        EntityAI weapon = player.GetHumanInventory().GetEntityInHands();
-        
-        if (!weapon || !weapon.IsWeapon())
-        {
-            ExpansionNotification("Shop", "You need a weapon in your hands to equip a scope").Error(player.GetIdentity());
-            return;
-        }
-        
-        array<EntityAI> attachments = new array<EntityAI>();
-        weapon.GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER, attachments);
-        
-        foreach (EntityAI att : attachments)
-        {
-            if (IsScope(att.GetType()))
-            {
-                GetGame().ObjectDelete(att);
-                Print("[KOTH_Shop] Removed old scope: " + att.GetType());
-                break;
-            }
-        }
-        
-        EntityAI newScope = ExpansionItemSpawnHelper.SpawnAttachment(item.ClassName, weapon);
-        
-        if (!newScope)
-        {
-            ExpansionNotification("Shop", "Cannot attach this scope to your current weapon").Error(player.GetIdentity());
-            Print("[KOTH_Shop] Failed to attach scope: " + item.ClassName);
-        }
-        else
-        {
-            Print("[KOTH_Shop] Successfully attached scope: " + item.ClassName);
-            
-            int batterySlot = InventorySlots.GetSlotIdFromString("BatteryD");
-            if (batterySlot != -1)
-            {
-                EntityAI existingBattery = newScope.GetInventory().FindAttachment(batterySlot);
-                if (!existingBattery)
-                {
-                    EntityAI battery = newScope.GetInventory().CreateAttachment("Battery9V");
-                    if (battery)
-                    {
-                        Print("[KOTH_Shop] Added 9V battery to scope");
-                    }
-                }
-            }
-        }
-    }
-    
-    void ClearPistolMagazines(PlayerBase player)
-    {
-        array<string> pistolMagTypes = {"Mag_Glock_15Rnd", "Mag_FNX45_15Rnd", "Mag_CZ75_15Rnd", "Mag_1911_7Rnd", "Mag_Deagle_9Rnd", "Mag_MKII_10Rnd", "Mag_P1_8Rnd", "Ammo_9x19", "Ammo_45ACP", "Ammo_357"};
-        
-        array<EntityAI> itemsToDelete = new array<EntityAI>();
-        array<EntityAI> allItems = new array<EntityAI>();
-        
-        player.GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER, allItems);
-        
-        foreach (EntityAI item : allItems)
-        {
-            if (item.IsMagazine() || item.IsAmmoPile())
-            {
-                string itemType = item.GetType();
-                foreach (string pistolMagType : pistolMagTypes)
-                {
-                    if (itemType.IndexOf(pistolMagType) != -1)
-                    {
-                        itemsToDelete.Insert(item);
-                        break;
-                    }
-                }
-            }
-        }
-        
-        foreach (EntityAI itemToDelete : itemsToDelete)
-        {
-            GetGame().ObjectDelete(itemToDelete);
-        }
-        
-        Print("[KOTH_Shop] Cleared " + itemsToDelete.Count() + " pistol magazines and ammo");
-    }
-    
-    void ClearRifleMagazines(PlayerBase player)
-    {
-        array<string> pistolMagTypes = {"Mag_Glock_15Rnd", "Mag_FNX45_15Rnd", "Mag_CZ75_15Rnd", "Mag_1911_7Rnd", "Mag_Deagle_9Rnd", "Mag_MKII_10Rnd", "Mag_P1_8Rnd", "Ammo_9x19", "Ammo_45ACP", "Ammo_357"};
-        
-        array<EntityAI> itemsToDelete = new array<EntityAI>();
-        array<EntityAI> allItems = new array<EntityAI>();
-        
-        player.GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER, allItems);
-        
-        foreach (EntityAI item : allItems)
-        {
-            if (item.IsMagazine() || item.IsAmmoPile())
-            {
-                string itemType = item.GetType();
-                bool isPistolMag = false;
-                
-                foreach (string pistolMagType : pistolMagTypes)
-                {
-                    if (itemType.IndexOf(pistolMagType) != -1)
-                    {
-                        isPistolMag = true;
-                        break;
-                    }
-                }
-                
-                if (!isPistolMag)
-                {
-                    itemsToDelete.Insert(item);
-                }
-            }
-        }
-        
-        foreach (EntityAI itemToDelete : itemsToDelete)
-        {
-            GetGame().ObjectDelete(itemToDelete);
-        }
-        
-        Print("[KOTH_Shop] Cleared " + itemsToDelete.Count() + " rifle magazines and ammo (preserved pistol mags)");
-    }
-    
-    bool IsPistol(string className)
-    {
-        array<string> pistolTypes = {"Glock19", "FNX45", "CZ75", "Deagle", "MKII", "P1", "Engraved1911", "Colt1911", "Magnum", "Pistol_Base"};
-        
-        foreach (string pistolType : pistolTypes)
-        {
-            if (className.IndexOf(pistolType) != -1)
-                return true;
-        }
-        
-        return false;
-    }
-    
-    void EquipPistol(PlayerBase player, KOTH_ShopItem item)
-    {
-        EntityAI holster = FindHolster(player);
-        
-        if (holster)
-        {
-            EntityAI oldPistol = holster.GetInventory().FindAttachment(InventorySlots.GetSlotIdFromString("Pistol"));
-            if (oldPistol)
-            {
-                GetGame().ObjectDelete(oldPistol);
-                Print("[KOTH_Shop] Deleted old pistol from holster");
-            }
-            
-            EntityAI newPistol = holster.GetInventory().CreateAttachment(item.ClassName);
-            if (newPistol)
-            {
-                if (item.MagazineClass != "")
-                {
-                    EntityAI mag = newPistol.GetInventory().CreateAttachment(item.MagazineClass);
-                    if (mag)
-                    {
-                        Magazine magCast = Magazine.Cast(mag);
-                        if (magCast)
-                            magCast.ServerSetAmmoMax();
-                    }
-                }
-                
-                foreach (string attachment : item.DefaultAttachments)
-                {
-                    newPistol.GetInventory().CreateAttachment(attachment);
-                }
-                
-                Print("[KOTH_Shop] Equipped pistol in holster: " + item.ClassName);
-            }
-        }
-        else
-        {
-            Print("[KOTH_Shop] WARNING: No holster found, placing pistol in hands");
-            EquipPrimaryWeapon(player, item);
-        }
-    }
-    
-    void EquipPrimaryWeapon(PlayerBase player, KOTH_ShopItem item)
-    {
-        EntityAI currentWeapon = player.GetHumanInventory().GetEntityInHands();
-        if (currentWeapon)
-        {
-            GetGame().ObjectDelete(currentWeapon);
-        }
-        
-        EntityAI weapon = player.GetHumanInventory().CreateInHands(item.ClassName);
-        if (!weapon)
-        {
-            Print("[KOTH_Shop] ERROR: Failed to create weapon: " + item.ClassName);
-            return;
-        }
-        
-        if (item.MagazineClass != "")
-        {
-            EntityAI mag = weapon.GetInventory().CreateAttachment(item.MagazineClass);
-            if (mag)
-            {
-                Magazine magCast = Magazine.Cast(mag);
-                if (magCast)
-                    magCast.ServerSetAmmoMax();
-            }
-        }
-        
-        foreach (string attachment : item.DefaultAttachments)
-        {
-            weapon.GetInventory().CreateAttachment(attachment);
-        }
-    }
-    
-    EntityAI FindHolster(PlayerBase player)
-    {
-        array<string> holsterTypes = {"PlateCarrierHolster_Green", "PlateCarrierHolster_Camo", "PlateCarrierHolster_Black", "ChestHolster"};
-        
-        array<EntityAI> items = new array<EntityAI>();
-        player.GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER, items);
-        
-        foreach (EntityAI item : items)
-        {
-            foreach (string holsterType : holsterTypes)
-            {
-                if (item.GetType() == holsterType)
-                {
-                    return item;
-                }
-            }
-        }
-        
-        return null;
-    }
-    
-    void ClearAllAmmoAndMagazines(PlayerBase player)
-    {
-        array<EntityAI> itemsToDelete = new array<EntityAI>();
-        array<EntityAI> allItems = new array<EntityAI>();
-        
-        player.GetInventory().EnumerateInventory(InventoryTraversalType.PREORDER, allItems);
-        
-        foreach (EntityAI item : allItems)
-        {
-            if (item.IsMagazine() || item.IsAmmoPile())
-            {
-                itemsToDelete.Insert(item);
-            }
-        }
-        
-        foreach (EntityAI itemToDelete : itemsToDelete)
-        {
-            GetGame().ObjectDelete(itemToDelete);
-        }
-        
-        Print("[KOTH_Shop] Cleared " + itemsToDelete.Count() + " magazines and ammo piles");
-    }
-    
-    void GiveStandardLoadout(PlayerBase player, KOTH_ShopItem item)
-    {
-        if (item.MagazineClass == "")
-        {
-            Print("[KOTH_Shop] No magazine class defined for " + item.ClassName);
-            return;
-        }
-        
-        int magsGiven = 0;
-        int magsToGive = 3;
-        
-        for (int i = 0; i < magsToGive; i++)
-        {
-            EntityAI mag = player.GetInventory().CreateInInventory(item.MagazineClass);
-            if (mag)
-            {
-                Magazine magCast = Magazine.Cast(mag);
-                if (magCast)
-                {
-                    magCast.ServerSetAmmoMax();
-                    magsGiven++;
-                }
-            }
-            else
-            {
-                Print("[KOTH_Shop] WARNING: Failed to create magazine in inventory, trying ground drop");
-                
-                vector dropPos = player.GetPosition() + (player.GetDirection() * 0.5);
-                EntityAI groundMag = GetGame().CreateObjectEx(item.MagazineClass, dropPos, ECE_PLACE_ON_SURFACE);
-                if (groundMag)
-                {
-                    Magazine groundMagCast = Magazine.Cast(groundMag);
-                    if (groundMagCast)
-                    {
-                        groundMagCast.ServerSetAmmoMax();
-                        magsGiven++;
-                        ExpansionNotification("Shop", "Inventory full - magazine dropped").Info(player.GetIdentity());
-                    }
-                }
-            }
-        }
-        
-        Print("[KOTH_Shop] Gave " + magsGiven + " magazines for " + item.ClassName);
     }
     
     protected void RPC_ShopResult(PlayerIdentity sender, Object target, ParamsReadContext ctx)
@@ -924,7 +646,7 @@ class KOTH_ShopModule : CF_ModuleWorld
             }
             else if (itemClass != "")
             {
-                m_ItemEquippedInvoker.Invoke(itemClass);
+                m_ItemEquippedInvoker.Invoke(itemClass, newBalance);
             }
         }
         else
