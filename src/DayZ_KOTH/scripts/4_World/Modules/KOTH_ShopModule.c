@@ -145,39 +145,7 @@ class KOTH_ShopModule : CF_ModuleWorld
         Print("[KOTH_Shop] SERVER: Calling RequestShopOpen for " + sender.GetName());
         RequestShopOpen(player, sender);
     }
-    
-    protected void RPC_RentItem(PlayerIdentity sender, Object target, ParamsReadContext ctx)
-    {
-        if (!GetGame().IsServer())
-            return;
-        
-        string itemClass;
-        if (!ctx.Read(itemClass))
-            return;
-        
-        PlayerBase player = PlayerBase.Cast(target);
-        if (!player)
-            return;
-        
-        RentItem(player, itemClass);
-    }
-    
-    protected void RPC_BuyItem(PlayerIdentity sender, Object target, ParamsReadContext ctx)
-    {
-        if (!GetGame().IsServer())
-            return;
-        
-        string itemClass;
-        if (!ctx.Read(itemClass))
-            return;
-        
-        PlayerBase player = PlayerBase.Cast(target);
-        if (!player)
-            return;
-        
-        BuyItem(player, itemClass);
-    }
-    
+
     void RequestShopOpen(PlayerBase player, PlayerIdentity ident)
     {
         Print("[KOTH_Shop] SERVER: RequestShopOpen called for " + ident.GetName());
@@ -242,6 +210,40 @@ class KOTH_ShopModule : CF_ModuleWorld
         rpc.Expansion_Send(player, true, ident);
         Print("[KOTH_Shop] SERVER: RPC sent successfully");
     }
+    
+    protected void RPC_RentItem(PlayerIdentity sender, Object target, ParamsReadContext ctx)
+    {
+        if (!GetGame().IsServer())
+            return;
+        
+        string itemClass;
+        if (!ctx.Read(itemClass))
+            return;
+        
+        PlayerBase player = PlayerBase.Cast(target);
+        if (!player)
+            return;
+        
+        RentItem(player, itemClass);
+    }
+    
+    protected void RPC_BuyItem(PlayerIdentity sender, Object target, ParamsReadContext ctx)
+    {
+        if (!GetGame().IsServer())
+            return;
+        
+        string itemClass;
+        if (!ctx.Read(itemClass))
+            return;
+        
+        PlayerBase player = PlayerBase.Cast(target);
+        if (!player)
+            return;
+        
+        BuyItem(player, itemClass);
+    }
+    
+
     
     protected void RPC_ReceiveShopData(PlayerIdentity sender, Object target, ParamsReadContext ctx)
     {

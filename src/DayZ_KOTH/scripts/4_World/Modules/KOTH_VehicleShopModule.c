@@ -68,7 +68,37 @@ class KOTH_VehicleShopModule : CF_ModuleWorld
     {
         string vehiclePath = "$profile:ExpansionMod/KOTH_Vehicle_Categories/";
         
-        LoadVehicleFile(vehiclePath + "Hatchback_02.json");
+        Print("[KOTH_VehicleShop] Scanning for vehicle files in: " + vehiclePath);
+        
+        array<string> files = new array<string>();
+        string fileName;
+        FileAttr fileAttr;
+        FindFileHandle handle = FindFile(vehiclePath + "*.json", fileName, fileAttr, 0);
+        
+        if (handle)
+        {
+            if (fileName.Length() > 0 && !(fileAttr & FileAttr.DIRECTORY))
+            {
+                files.Insert(fileName);
+            }
+            
+            while (FindNextFile(handle, fileName, fileAttr))
+            {
+                if (fileName.Length() > 0 && !(fileAttr & FileAttr.DIRECTORY))
+                {
+                    files.Insert(fileName);
+                }
+            }
+            
+            CloseFindFile(handle);
+        }
+        
+        Print("[KOTH_VehicleShop] Found " + files.Count() + " JSON files");
+        
+        foreach (string file : files)
+        {
+            LoadVehicleFile(vehiclePath + file);
+        }
         
         Print("[KOTH_VehicleShop] Vehicle data loaded. Total vehicles: " + m_Vehicles.Count());
     }
@@ -101,6 +131,18 @@ class KOTH_VehicleShopModule : CF_ModuleWorld
         return null;
     }
     
+    void RPC_RequestVehicleShopOpen(PlayerIdentity sender, Object target, ParamsReadContext ctx)
+    {
+        if (!GetGame().IsServer() || !sender)
+            return;
+        
+        PlayerBase player = PlayerBase.Cast(target);
+        if (!player)
+            return;
+        
+        RequestVehicleShopOpen(player, sender);
+    }
+
     void RequestVehicleShopOpen(PlayerBase player, PlayerIdentity identity)
     {
         if (!GetGame().IsServer() || !player || !identity)
@@ -109,29 +151,22 @@ class KOTH_VehicleShopModule : CF_ModuleWorld
         Print("[KOTH_VehicleShop] Request shop open for: " + identity.GetName());
         
         string uid = identity.GetId();
+        KOTH_Players playerData = KOTH_Players.Load(uid);
         
-        int atmBalance = 0;
-        if (m_MarketModule)
+        if (!playerData)
         {
-            ExpansionMarketATM_Data atmData = m_MarketModule.GetPlayerATMData(uid);
-            if (atmData)
-                atmBalance = atmData.GetMoney();
+            Print("[KOTH_VehicleShop] ERROR: Player data not found for " + identity.GetName());
+            return;
         }
-        
-        int playerLevel = 1;
-        if (m_RewardManager)
-        {
-            KOTH_Players playerData = m_RewardManager.GetPlayerData(uid);
-            if (playerData)
-                playerLevel = playerData.CurrentLevel;
-        }
-        
+
+        int playerBalance = playerData.TotalMoneyinBank;
+        int playerLevel = playerData.CurrentLevel;      
         string playerFaction = player.GetKOTHTeam();
         
         float cooldownRemaining = GetRentalCooldown(uid);
         
         auto rpc = Expansion_CreateRPC("RPC_ReceiveVehicleShopData");
-        rpc.Write(atmBalance);
+        rpc.Write(playerBalance);
         rpc.Write(playerLevel);
         rpc.Write(playerFaction);
         rpc.Write(cooldownRemaining);
@@ -147,25 +182,13 @@ class KOTH_VehicleShopModule : CF_ModuleWorld
         Print("[KOTH_VehicleShop] Sent shop data to client");
     }
     
-    void RPC_RequestVehicleShopOpen(PlayerIdentity sender, Object target, ParamsReadContext ctx)
-    {
-        if (!GetGame().IsServer() || !sender)
-            return;
-        
-        PlayerBase player = PlayerBase.Cast(target);
-        if (!player)
-            return;
-        
-        RequestVehicleShopOpen(player, sender);
-    }
-    
     void RPC_ReceiveVehicleShopData(PlayerIdentity sender, Object target, ParamsReadContext ctx)
     {
         if (GetGame().IsServer())
             return;
         
-        int atmBalance;
-        if (!ctx.Read(atmBalance)) return;
+        int playerBalance;
+        if (!ctx.Read(playerBalance)) return;
         
         int playerLevel;
         if (!ctx.Read(playerLevel)) return;
@@ -195,7 +218,7 @@ class KOTH_VehicleShopModule : CF_ModuleWorld
         }
         
         Print("[KOTH_VehicleShop] CLIENT: Invoking menu with " + vehicles.Count() + " vehicles");
-        m_VehicleMenuInvoker.Invoke(vehicles, playerLevel, atmBalance, playerFaction, cooldownRemaining);
+        m_VehicleMenuInvoker.Invoke(vehicles, playerLevel, playerBalance, playerFaction, cooldownRemaining);
         Print("[KOTH_VehicleShop] CLIENT: Menu invoker called");
     }
     
@@ -272,31 +295,33 @@ class KOTH_VehicleShopModule : CF_ModuleWorld
                 Print("[KOTH_VehicleShop] Money deducted: $" + vehicle.RentPrice.ToString());
             }
         }
+        KOTH_Players playerData = KOTH_Players.Load(uid);
+        playerData.TotalMoneyinBank = playerData.TotalMoneyinBank - vehicle.RentPrice;
+        playerData.Save();
         
-        Print("[KOTH_VehicleShop] Finding spawn position...");
+        if (m_RewardManager)
+        {
+            m_RewardManager.SyncPlayerStatsToClient(identity, playerData);
+        }
+
         vector spawnPos = FindVehicleSpawnPosition(player);
-        Print("[KOTH_VehicleShop] Spawn position: " + spawnPos.ToString());
         
-        Print("[KOTH_VehicleShop] Spawning vehicle...");
         SpawnVehicleForPlayer(player, vehicle, spawnPos);
         
         SetRentalCooldown(uid, 30.0);
-        Print("[KOTH_VehicleShop] Cooldown set");
         
         ExpansionNotification("Vehicle Rented", "You rented a " + vehicle.DisplayName + " for $" + vehicle.RentPrice.ToString()).Success(identity);
-        Print("[KOTH_VehicleShop] === ProcessVehicleRental END ===");
     }
     
     bool ValidateRental(PlayerBase player, PlayerIdentity identity, KOTH_VehicleShopItem vehicle)
     {
         string uid = identity.GetId();
         
-        int playerLevel = 1;
-        if (m_RewardManager)
+        KOTH_Players playerData = KOTH_Players.Load(uid);
+        if (playerData)
         {
-            KOTH_Players playerData = m_RewardManager.GetPlayerData(uid);
-            if (playerData)
-                playerLevel = playerData.CurrentLevel;
+            int playerLevel = playerData.CurrentLevel;
+            int playerBalance = playerData.TotalMoneyinBank;
         }
         
         if (playerLevel < vehicle.RequiredLevel)
@@ -307,21 +332,13 @@ class KOTH_VehicleShopModule : CF_ModuleWorld
         
         string playerFaction = player.GetKOTHTeam();
         
-        if (vehicle.Faction != "" && vehicle.Faction != playerFaction)
+        if (vehicle.Faction != "" && vehicle.Faction != "Both" && vehicle.Faction != playerFaction)
         {
             ExpansionNotification("Faction Locked", "This vehicle is locked to " + vehicle.Faction + " faction.").Error(identity);
             return false;
         }
         
-        int atmBalance = 0;
-        if (m_MarketModule)
-        {
-            ExpansionMarketATM_Data atmData = m_MarketModule.GetPlayerATMData(uid);
-            if (atmData)
-                atmBalance = atmData.GetMoney();
-        }
-        
-        if (atmBalance < vehicle.RentPrice)
+        if (playerBalance < vehicle.RentPrice)
         {
             ExpansionNotification("Insufficient Funds", "You need $" + vehicle.RentPrice.ToString() + " to rent this vehicle.").Error(identity);
             return false;

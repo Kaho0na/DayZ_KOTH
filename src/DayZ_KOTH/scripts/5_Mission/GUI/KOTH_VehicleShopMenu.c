@@ -175,17 +175,19 @@ class KOTH_VehicleShopMenu : ExpansionScriptViewMenu
         
         foreach (KOTH_VehicleShopItem vehicle : m_Vehicles)
         {
+            if (vehicle.Faction != "" && vehicle.Faction != "Both" && vehicle.Faction != m_PlayerFaction)
+            {
+                Print("[KOTH_VehicleShopMenu] Skipping vehicle (faction locked): " + vehicle.DisplayName + " (Faction: " + vehicle.Faction + ", Player: " + m_PlayerFaction + ")");
+                continue;
+            }
+            
             Print("[KOTH_VehicleShopMenu] Processing vehicle: " + vehicle.DisplayName);
             
             bool isLocked = false;
-            bool isFactionLocked = false;
             bool canAfford = true;
             
             if (m_PlayerLevel < vehicle.RequiredLevel)
                 isLocked = true;
-            
-            if (vehicle.Faction != "" && vehicle.Faction != m_PlayerFaction)
-                isFactionLocked = true;
             
             if (m_PlayerMoney < vehicle.RentPrice)
                 canAfford = false;
@@ -219,16 +221,6 @@ class KOTH_VehicleShopMenu : ExpansionScriptViewMenu
                 if (lockedText)
                 {
                     lockedText.SetText("REQUIRE LVL " + vehicle.RequiredLevel.ToString());
-                    lockedText.Show(true);
-                }
-                if (rentButton)
-                    rentButton.Show(false);
-            }
-            else if (isFactionLocked)
-            {
-                if (lockedText)
-                {
-                    lockedText.SetText("FACTION: " + vehicle.Faction);
                     lockedText.Show(true);
                 }
                 if (rentButton)

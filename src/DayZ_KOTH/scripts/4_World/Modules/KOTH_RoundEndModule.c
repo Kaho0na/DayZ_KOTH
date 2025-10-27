@@ -616,19 +616,19 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(Exec_ShowRoundEndMenu, 500, false, zones, m_EndScreenDisplaySeconds, votingEnabled, mvpName, mvpKills, sharpshooterName, sharpshooterHeadshots, medicName, medicRevives);
     }
     
-    void Exec_ShowRoundEndMenu(array<string> zones, float m_EndScreenDisplaySeconds, bool votingEnabled, string mvpName, int mvpKills, string sharpshooterName, int sharpshooterHeadshots, string medicName, int medicRevives)
+    void Exec_ShowRoundEndMenu(array<string> zones, float m_EndDisplaySeconds, bool votingEnabled, string mvpName, int mvpKills, string sharpshooterName, int sharpshooterHeadshots, string medicName, int medicRevives)
     {
         Print("[KOTH_RoundEndModule] CLIENT: Exec_ShowRoundEndMenu called");
         
         if (GetDayZGame().IsLoading() || GetDayZGame().GetMissionState() != DayZGame.MISSION_STATE_GAME)
         {
-            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(Exec_ShowRoundEndMenu, 500, false, zones, m_EndScreenDisplaySeconds, votingEnabled, mvpName, mvpKills, sharpshooterName, sharpshooterHeadshots, medicName, medicRevives);
+            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(Exec_ShowRoundEndMenu, 500, false, zones, m_EndDisplaySeconds, votingEnabled, mvpName, mvpKills, sharpshooterName, sharpshooterHeadshots, medicName, medicRevives);
             return;
         }
 
         if (!GetGame().GetMission() || !GetGame().GetMission().GetHud())
         {
-            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(Exec_ShowRoundEndMenu, 500, false, zones,  m_EndScreenDisplaySeconds, votingEnabled, mvpName, mvpKills, sharpshooterName, sharpshooterHeadshots, medicName, medicRevives);
+            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(Exec_ShowRoundEndMenu, 500, false, zones,  m_EndDisplaySeconds, votingEnabled, mvpName, mvpKills, sharpshooterName, sharpshooterHeadshots, medicName, medicRevives);
             return;
         }
 
@@ -643,9 +643,9 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         if (!OpenRoundEndMenu())
             return;
         
-        m_RoundEndMenuInvoker.Invoke(zones, m_EndScreenDisplaySeconds, votingEnabled, mvpName, mvpKills, sharpshooterName, sharpshooterHeadshots, medicName, medicRevives);
+        m_RoundEndMenuInvoker.Invoke(zones, m_EndDisplaySeconds, votingEnabled, mvpName, mvpKills, sharpshooterName, sharpshooterHeadshots, medicName, medicRevives);
         
-        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(CloseMenuAfterDuration, m_EndScreenDisplaySeconds * 1000, false);
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(CloseMenuAfterDuration, m_EndDisplaySeconds * 1000, false);
         
         Print("[KOTH_RoundEndModule] CLIENT: Round end menu created and invoked");
     }
