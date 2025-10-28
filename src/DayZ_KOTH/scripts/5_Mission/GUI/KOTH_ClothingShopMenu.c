@@ -2,6 +2,7 @@ class KOTH_ClothingShopMenuController : ExpansionViewController
 {
     string PlayerLevel;
     string EquipCooldown;
+    Object LoadoutPreview;
 }
 
 class KOTH_ClothingShopMenu : ExpansionScriptViewMenu
@@ -219,7 +220,7 @@ class KOTH_ClothingShopMenu : ExpansionScriptViewMenu
             Print("[KOTH_ClothingShopMenu] Entry widget created successfully");
             
             SetupLoadoutPreview(entry, loadout);
-            
+
             TextWidget nameText = TextWidget.Cast(entry.FindAnyWidget("LoadoutName"));
             ButtonWidget equipButton = ButtonWidget.Cast(entry.FindAnyWidget("EquipButton"));
             TextWidget lockedText = TextWidget.Cast(entry.FindAnyWidget("LockedText"));
@@ -277,22 +278,26 @@ class KOTH_ClothingShopMenu : ExpansionScriptViewMenu
             return;
         }
         
-        DayZPlayerImplement previewPlayer = DayZPlayerImplement.Cast(GetGame().CreateObjectEx("SurvivorMale", "0 0 0", ECE_CREATEPHYSICS | ECE_NOLIFETIME));
-        if (!previewPlayer)
+        string previewType = "SurvivorM_Mirek";
+        
+        EntityAI previewEntity = EntityAI.Cast(GetGame().CreateObjectEx(previewType, vector.Zero, ECE_LOCAL | ECE_NOLIFETIME));
+        if (!previewEntity)
         {
-            Print("[KOTH_ClothingShopMenu] ERROR: Failed to create preview player");
+            Print("[KOTH_ClothingShopMenu] ERROR: Failed to create preview entity");
             return;
         }
         
-        m_PreviewObjects.Insert(previewPlayer);
+        m_PreviewObjects.Insert(previewEntity);
+        // DISABLE PHYSICS SIMULATION
+        previewEntity.DisableSimulation(true);
+
+        bool loadoutApplied = ExpansionHumanLoadout.Apply(DayZPlayerImplement.Cast(previewEntity), loadout.FileName);
+        Print("[KOTH_ClothingShopMenu] Loadout applied: " + loadoutApplied);
         
-        bool loadoutApplied = ExpansionHumanLoadout.Apply(previewPlayer, loadout.FileName);
-        Print("[KOTH_ClothingShopMenu] Loadout applied: " + loadoutApplied + " for: " + loadout.FileName);
-        
-        playerPreview.SetPlayer(previewPlayer);
+        playerPreview.SetPlayer(previewEntity);
         playerPreview.SetModelOrientation(vector.Zero);
         playerPreview.Show(true);
-        
+        playerPreview.Update();
         Print("[KOTH_ClothingShopMenu] Preview setup complete for: " + loadout.DisplayName);
     }
     
