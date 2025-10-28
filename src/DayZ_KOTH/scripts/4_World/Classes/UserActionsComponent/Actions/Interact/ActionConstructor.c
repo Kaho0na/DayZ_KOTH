@@ -24,5 +24,6 @@ modded class ActionConstructor
 
 		actions.Insert(KOTH_ActionOpenShopMenu);
 		actions.Insert(KOTH_ActionOpenVehicleShop);
+		actions.Insert(KOTH_ActionOpenClothingShop);
 	}
 }

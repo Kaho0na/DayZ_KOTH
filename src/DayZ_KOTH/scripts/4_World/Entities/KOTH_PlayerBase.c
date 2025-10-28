@@ -76,6 +76,7 @@ modded class PlayerBase
 
 		AddAction(KOTH_ActionOpenShopMenu, InputActionMap);
         AddAction(KOTH_ActionOpenVehicleShop, InputActionMap);
+        AddAction(KOTH_ActionOpenClothingShop, InputActionMap);
 	}
 
     override bool CanDropEntity(notnull EntityAI item)

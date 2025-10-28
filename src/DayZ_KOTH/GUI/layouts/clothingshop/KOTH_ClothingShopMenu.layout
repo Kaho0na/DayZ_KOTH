@@ -1,0 +1,131 @@
+FrameWidgetClass KOTH_ClothingShopMenu {
+ ignorepointer 0
+ color 0 0 0 1
+ position 0 0
+ size 1 1
+ halign center_ref
+ valign center_ref
+ hexactsize 0
+ vexactsize 0
+ scriptclass "KOTH_ClothingShopMenuController"
+ {
+  PanelWidgetClass ClothingShopBackground {
+   ignorepointer 0
+   color 0.1765 0.2275 0.251 0.7843
+   position 0 0
+   size 0.6 0.7
+   halign center_ref
+   valign center_ref
+   hexactsize 0
+   vexactsize 0
+   style DayZDefaultPanel
+   "no focus" 0
+   {
+    PanelWidgetClass ClothingShopHeader {
+     ignorepointer 1
+     size 1.001 0.09
+     halign center_ref
+     hexactsize 0
+     vexactsize 0
+     style blank
+     {
+      TextWidgetClass ClothingShopTitle {
+       ignorepointer 1
+       position 0.02 0.15
+       size 0.4 0.65
+       hexactsize 0
+       vexactsize 0
+       text "CLOTHING SHOP"
+       font "gui/fonts/metron28"
+       "text color" 0.7843 1 1 1
+       "exact text" 1
+       "size to text h" 1
+       "size to text v" 0
+       "text halign" left
+       "text valign" center
+      }
+      TextWidgetClass PlayerLevel {
+       ignorepointer 1
+       position 0.25 0.15
+       size 0.13 0.65
+       halign right_ref
+       hexactsize 0
+       vexactsize 0
+       scriptclass "ViewBinding"
+       text "Level 1"
+       font "gui/fonts/metron"
+       "size to text v" 1
+       "text halign" center
+       "text valign" center
+              scriptclass "ViewBinding"
+                           {
+                        ScriptParamsClass {
+                            Binding_Name "PlayerLevel"
+                        }
+                    }
+      }
+      TextWidgetClass EquipCooldown {
+       ignorepointer 1
+       position 0.02 0.15
+       size 0.22 0.65
+       halign right_ref
+       hexactsize 0
+       vexactsize 0
+       scriptclass "ViewBinding"
+       text ""
+       font "gui/fonts/Metron"
+       "text halign" right
+       "text valign" center
+                     scriptclass "ViewBinding"
+                           {
+                        ScriptParamsClass {
+                            Binding_Name "EquipCooldown"
+                        }
+                    }
+      }
+     }
+    }
+    ScrollWidgetClass LoadoutScroll {
+     ignorepointer 0
+     position 0 0.09
+     size 1 0.82
+     halign center_ref
+     hexactsize 0
+     vexactsize 0
+     style blank
+     "Scrollbar H" 1
+     {
+      WrapSpacerWidgetClass LoadoutListWrapper {
+       clipchildren 0
+       ignorepointer 0
+       position 0 0.01
+       size 10000 0.98
+       halign left_ref
+       valign top_ref
+       hexactsize 1
+       vexactsize 0
+       style Colorable
+       Padding 20
+       Margin 20
+       "Size To Content H" 1
+      }
+     }
+    }
+    ButtonWidgetClass CloseButton {
+     ignorepointer 0
+     position 0.01 0.01
+     size 0.2 0.06
+     valign bottom_ref
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     style Default
+     text "CLOSE"
+     font "gui/fonts/metron"
+     "text color" 1 1 1 1
+    }
+   }
+  }
+ }
+}
