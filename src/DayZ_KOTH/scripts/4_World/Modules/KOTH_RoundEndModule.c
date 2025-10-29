@@ -194,17 +194,20 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         
         Print("[KOTH_RoundEndModule] STEP 1: Stopping zone triggers...");
         StopZoneTriggers();
-        
-        Print("[KOTH_RoundEndModule] STEP 2: Cleaning up AIs...");
+
+        Print("[KOTH_RoundEndModule] STEP 2: Ejecting players and deleting vehicles...");
+        EjectPlayersFromVehicles();
+
+        Print("[KOTH_RoundEndModule] STEP 3: Cleaning up AIs...");
         CleanupAIs();
-        
-        Print("[KOTH_RoundEndModule] STEP 3: Calculating and awarding bonuses...");
+
+        Print("[KOTH_RoundEndModule] STEP 4: Calculating and awarding bonuses...");
         CalculateAndAwardBonuses(winningTeam);
-        
-        Print("[KOTH_RoundEndModule] STEP 4: Preparing next zone...");
+
+        Print("[KOTH_RoundEndModule] STEP 5: Preparing next zone...");
         PrepareNextZone();
-        
-        Print("[KOTH_RoundEndModule] STEP 5: Showing round end screen...");
+
+        Print("[KOTH_RoundEndModule] STEP 6: Showing round end screen...");
         ShowRoundEndScreenToAllClients(winningTeam);
 
         if (m_HUDSync)
@@ -221,16 +224,79 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         }
         teleportDelay = teleportDelay * 1000;
         float newRoundDelay = teleportDelay + 5000;
-        Print("[KOTH_RoundEndModule] STEP 6: Scheduling teleport in 5s...");
+
+        Print("[KOTH_RoundEndModule] STEP 7: Scheduling teleport...");
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(TeleportAllPlayers, teleportDelay, false);
-        
-        Print("[KOTH_RoundEndModule] STEP 7: Scheduling new round..");
+
+        Print("[KOTH_RoundEndModule] STEP 8: Scheduling new round..");
         GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(StartNewRound, newRoundDelay, false);
         
         Print("[KOTH_RoundEndModule] Round end sequence initiated");
         Print("[KOTH_RoundEndModule] ============================================");
     }
-    
+
+    void EjectPlayersFromVehicles()
+    {
+        if (!GetGame().IsServer())
+            return;
+        
+        Print("[KOTH_RoundEndModule] Ejecting players from ALL vehicles and deleting vehicles...");
+        
+        ref array<Man> players = new array<Man>;
+        GetGame().GetPlayers(players);
+        
+        ref array<Transport> vehiclesToDelete = new array<Transport>;
+        
+        for (int i = 0; i < players.Count(); i++)
+        {
+            PlayerBase player = PlayerBase.Cast(players.Get(i));
+            if (!player || !player.GetIdentity())
+                continue;
+            
+            Transport transport = Transport.Cast(player.GetParent());
+            if (transport)
+            {
+                Print("[KOTH_RoundEndModule] Found player " + player.GetIdentity().GetName() + " in vehicle: " + transport.GetType());
+                
+                int crew_index = transport.CrewMemberIndex(player);
+                if (crew_index >= 0)
+                {
+                    Print("[KOTH_RoundEndModule] Ejecting from crew position: " + crew_index);
+                    transport.CrewGetOut(crew_index);
+                }
+                
+                if (vehiclesToDelete.Find(transport) == -1)
+                {
+                    vehiclesToDelete.Insert(transport);
+                }
+            }
+        }
+        
+        Print("[KOTH_RoundEndModule] Waiting 500ms for ejection animation...");
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(DeleteAllVehicles, 500, false, vehiclesToDelete);
+        
+        Print("[KOTH_RoundEndModule] Player ejection initiated");
+    }
+
+    void DeleteAllVehicles(array<Transport> vehicles)
+    {
+        if (!GetGame().IsServer())
+            return;
+        
+        Print("[KOTH_RoundEndModule] Deleting " + vehicles.Count() + " vehicles...");
+        
+        foreach (Transport vehicle : vehicles)
+        {
+            if (vehicle)
+            {
+                Print("[KOTH_RoundEndModule] Deleting vehicle: " + vehicle.GetType());
+                GetGame().ObjectDelete(vehicle);
+            }
+        }
+        
+        Print("[KOTH_RoundEndModule] All vehicles deleted");
+    }
+
     void StopZoneTriggers()
     {
         KOTH_Area mainZone = KOTH_Area.GetInstance();
@@ -763,62 +829,87 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         return SI_UpdateVoteCounts;
     }
     
-    void TeleportAllPlayers()
+void TeleportAllPlayers()
+{
+    if (!GetGame().IsServer() || !m_ZoneManager)
+        return;
+    
+    Print("[KOTH_RoundEndModule] ============================================");
+    Print("[KOTH_RoundEndModule] Teleporting all players to new spawn points...");
+    
+    string nextZone = DetermineNextZone();
+    
+    if (nextZone != "")
     {
-        if (!GetGame().IsServer() || !m_ZoneManager)
-            return;
-        
-        Print("[KOTH_RoundEndModule] ============================================");
-        Print("[KOTH_RoundEndModule] Teleporting all players to new spawn points...");
-        
-        string nextZone = DetermineNextZone();
-        
-        if (nextZone != "")
+        m_ZoneManager.LoadSpecificZone(nextZone);
+    }
+    else
+    {
+        m_ZoneManager.LoadNextZone();
+    }
+    
+    ref array<Man> players = new array<Man>;
+    GetGame().GetPlayers(players);
+    
+    Print("[KOTH_RoundEndModule] Found " + players.Count() + " players to teleport");
+    
+    for (int i = 0; i < players.Count(); i++)
+    {
+        PlayerBase player = PlayerBase.Cast(players.Get(i));
+        if (!player || !player.GetIdentity())
         {
-            m_ZoneManager.LoadSpecificZone(nextZone);
+            Print("[KOTH_RoundEndModule] Skipping invalid player at index " + i);
+            continue;
+        }
+        
+        Print("[KOTH_RoundEndModule] Processing player: " + player.GetIdentity().GetName());
+        
+        Transport transport = Transport.Cast(player.GetParent());
+        if (transport)
+        {
+            Print("[KOTH_RoundEndModule] WARNING: Player " + player.GetIdentity().GetName() + " still in vehicle during teleport!");
+            int crew_index = transport.CrewMemberIndex(player);
+            if (crew_index >= 0)
+            {
+                transport.CrewGetOut(crew_index);
+                Print("[KOTH_RoundEndModule] Force ejecting player before teleport");
+            }
+        }
+        
+        string m_PlayerTeam = player.GetKOTHTeam();
+        vector spawnPos;
+        
+        if (m_PlayerTeam == "East")
+        {
+            spawnPos = m_ZoneManager.GetEastSpawnPosition();
+        }
+        else if (m_PlayerTeam == "West")
+        {
+            spawnPos = m_ZoneManager.GetWestSpawnPosition();
         }
         else
         {
-            m_ZoneManager.LoadNextZone();
+            Print("[KOTH_RoundEndModule] Player has no team: " + player.GetIdentity().GetName());
+            continue;
         }
         
-        ref array<Man> players = new array<Man>;
-        GetGame().GetPlayers(players);
+        Print("[KOTH_RoundEndModule] Teleporting " + player.GetIdentity().GetName() + " to " + spawnPos.ToString());
         
-        for (int i = 0; i < players.Count(); i++)
+        if (spawnPos != "0 0 0")
         {
-            PlayerBase player = PlayerBase.Cast(players.Get(i));
-            if (!player || !player.GetIdentity())
-                continue;
-            
-            string m_PlayerTeam = player.GetKOTHTeam();
-            vector spawnPos;
-            
-            if (m_PlayerTeam == "East")
-            {
-                spawnPos = m_ZoneManager.GetEastSpawnPosition();
-            }
-            else if (m_PlayerTeam == "West")
-            {
-                spawnPos = m_ZoneManager.GetWestSpawnPosition();
-            }
-            else
-            {
-                continue;
-            }
-            
-            if (spawnPos != "0 0 0")
-            {
-                KOTH_SpawnUtils.SpawnPlayerAtPosition(player, spawnPos);
-                // HEAL AND RESTORE PLAYER STATS
-                KOTH_PlayerLoadout.SetPlayerStats(player);
-                Print("[KOTH_RoundEndModule] Teleported " + player.GetIdentity().GetName() + " to " + m_PlayerTeam + " spawn");
-            }
+            KOTH_SpawnUtils.SpawnPlayerAtPosition(player, spawnPos);
+            KOTH_PlayerLoadout.SetPlayerStats(player);
+            Print("[KOTH_RoundEndModule] ✅ Teleported " + player.GetIdentity().GetName() + " to " + m_PlayerTeam + " spawn");
         }
-        
-        Print("[KOTH_RoundEndModule] All players teleported");
-        Print("[KOTH_RoundEndModule] ============================================");
+        else
+        {
+            Print("[KOTH_RoundEndModule] ❌ Invalid spawn position for " + player.GetIdentity().GetName());
+        }
     }
+    
+    Print("[KOTH_RoundEndModule] All players teleported");
+    Print("[KOTH_RoundEndModule] ============================================");
+}
     
     void StartNewRound()
     {

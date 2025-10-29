@@ -324,6 +324,11 @@ class KOTH_SpawnBase
 
 		Print("[KOTH_SpawnBase] All bases, vehicles, and NPCs despawned");
 	}
+
+	static array<ref KOTH_VehicleSpawn> GetVehicleSpawners()
+	{
+		return s_VehicleSpawners;
+	}
 }
 
 static void KOTH_SpawnBasesForZone(KOTH_ZoneData zone)
