@@ -2,8 +2,8 @@ class KOTH_ShopRifles
 {
     static void ClearRifleMagazines(PlayerBase player)
     {
-        array<string> pistolMagTypes = {"Mag_Glock_15Rnd", "Mag_FNX45_15Rnd", "Mag_CZ75_15Rnd", "Mag_1911_7Rnd", "Mag_Deagle_9Rnd", "Mag_MKII_10Rnd", "Mag_P1_8Rnd", "Ammo_9x19", "Ammo_45ACP", "Ammo_357"};
-        
+        array<string> pistolMagTypes = {"Mag_Glock_15Rnd", "Mag_FNX45_15Rnd", "Mag_CZ75_15Rnd", "Mag_1911_7Rnd", "Mag_Deagle_9Rnd", "Mag_MKII_10Rnd", "Mag_P1_8Rnd"};
+        array<string> rifleAmmoTypes = {"AmmoBox_00buck_10rnd", "AmmoBox_12gaRubberSlug_10Rnd", "AmmoBox_12gaSlug_10Rnd", "AmmoBox_22_50Rnd", "AmmoBox_357_20Rnd", "AmmoBox_380_35rnd", "AmmoBox_45ACP_25rnd", "AmmoBox_308WinTracer_20Rnd", "AmmoBox_308Win_20Rnd", "AmmoBox_545x39Tracer_20Rnd", "AmmoBox_545x39_20Rnd", "AmmoBox_556x45Tracer_20Rnd", "AmmoBox_556x45_20Rnd", "AmmoBox_762x39Tracer_20Rnd", "AmmoBox_762x39_20Rnd", "AmmoBox_762x54Tracer_20Rnd", "AmmoBox_762x54_20Rnd", "AmmoBox_9x19_25rnd", "AmmoBox_9x39AP_20Rnd", "AmmoBox_9x39_20Rnd", "Ammo_12gaPellets", "Ammo_12gaRubberSlug", "Ammo_12gaSlug", "Ammo_22", "Ammo_357", "Ammo_380", "Ammo_45ACP", "Ammo_308Win", "Ammo_308WinTracer", "Ammo_545x39", "Ammo_545x39Tracer", "Ammo_556x45", "Ammo_556x45Tracer", "Ammo_762x39", "Ammo_762x39Tracer", "Ammo_762x54", "Ammo_762x54Tracer", "Ammo_9x19", "Ammo_9x39", "Ammo_9x39AP"};
         array<EntityAI> itemsToDelete = new array<EntityAI>();
         array<EntityAI> allItems = new array<EntityAI>();
         
@@ -11,9 +11,11 @@ class KOTH_ShopRifles
         
         foreach (EntityAI item : allItems)
         {
+            string itemType = item.GetType();
+            bool shouldDelete = false;
+            
             if (item.IsMagazine() || item.IsAmmoPile())
             {
-                string itemType = item.GetType();
                 bool isPistolMag = false;
                 
                 foreach (string pistolMagType : pistolMagTypes)
@@ -27,8 +29,25 @@ class KOTH_ShopRifles
                 
                 if (!isPistolMag)
                 {
-                    itemsToDelete.Insert(item);
+                    shouldDelete = true;
                 }
+            }
+            
+            if (!shouldDelete)
+            {
+                foreach (string rifleAmmoType : rifleAmmoTypes)
+                {
+                    if (itemType.IndexOf(rifleAmmoType) != -1)
+                    {
+                        shouldDelete = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (shouldDelete)
+            {
+                itemsToDelete.Insert(item);
             }
         }
         
@@ -37,7 +56,7 @@ class KOTH_ShopRifles
             GetGame().ObjectDelete(itemToDelete);
         }
         
-        Print("[KOTH_Shop] Cleared " + itemsToDelete.Count() + " rifle magazines and ammo (preserved pistol mags)");
+        Print("[KOTH_Shop] Cleared " + itemsToDelete.Count() + " rifle magazines and ammo boxes (preserved pistol mags)");
     }
 
 
