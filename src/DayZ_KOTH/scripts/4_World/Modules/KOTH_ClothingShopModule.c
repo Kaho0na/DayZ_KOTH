@@ -96,11 +96,11 @@ class KOTH_ClothingShopModule : CF_ModuleWorld
         }
     }
     
-    KOTH_ClothingShopLoadout GetLoadout(string displayName)
+    KOTH_ClothingShopLoadout GetLoadout(string fileName)
     {
         foreach (KOTH_ClothingShopLoadout loadout : m_Loadouts)
         {
-            if (loadout.DisplayName == displayName)
+            if (loadout.FileName == fileName)
                 return loadout;
         }
         return null;
@@ -249,13 +249,12 @@ class KOTH_ClothingShopModule : CF_ModuleWorld
         if (!playerData)
         {
             Print("[KOTH_ClothingShop] ERROR: Player data not found");
-            ExpansionNotification("Clothing Shop", "Player data not found!").Error(identity);
             return;
         }
         
         if (playerData.CurrentLevel < loadout.RequiredLevel)
         {
-            ExpansionNotification("Clothing Shop", "You need level " + loadout.RequiredLevel.ToString() + " to equip this loadout!").Error(identity);
+            ExpansionNotification("Clothing Shop", "You need level " + loadout.RequiredLevel.ToString() + " to use this loadout!").Error(identity);
             return;
         }
         
@@ -369,9 +368,30 @@ class KOTH_ClothingShopModule : CF_ModuleWorld
     {
         Print("[KOTH_ClothingShop] Applying loadout: " + loadout.DisplayName);
         
-        ExpansionHumanLoadout.Apply(player, loadout.FileName);
+        foreach (KOTH_LoadoutItem item : loadout.LoadoutItems)
+        {
+            SpawnLoadoutItemRecursive(player, item);
+        }
         
         Print("[KOTH_ClothingShop] Loadout applied");
+    }
+    
+    void SpawnLoadoutItemRecursive(EntityAI parent, KOTH_LoadoutItem itemData)
+    {
+        if (!itemData || !parent)
+            return;
+        
+        EntityAI item = EntityAI.Cast(parent.GetInventory().CreateInInventory(itemData.ClassName));
+        if (!item)
+        {
+            Print("[KOTH_ClothingShop] WARNING: Failed to create item: " + itemData.ClassName);
+            return;
+        }
+        
+        foreach (KOTH_LoadoutItem attData : itemData.Attachments)
+        {
+            SpawnLoadoutItemRecursive(item, attData);
+        }
     }
     
     void RestoreInventory(PlayerBase player, array<EntityAI> items)
@@ -449,12 +469,57 @@ class KOTH_ClothingShopModule : CF_ModuleWorld
     }
 }
 
+class KOTH_LoadoutItem
+{
+    string ClassName;
+    ref array<ref KOTH_LoadoutItem> Attachments;
+    
+    void KOTH_LoadoutItem()
+    {
+        Attachments = new array<ref KOTH_LoadoutItem>();
+    }
+    
+    void OnSend(ParamsWriteContext ctx)
+    {
+        ctx.Write(ClassName);
+        
+        ctx.Write(Attachments.Count());
+        foreach (KOTH_LoadoutItem att : Attachments)
+        {
+            att.OnSend(ctx);
+        }
+    }
+    
+    bool OnReceive(ParamsReadContext ctx)
+    {
+        if (!ctx.Read(ClassName)) return false;
+        
+        int attCount;
+        if (!ctx.Read(attCount)) return false;
+        
+        for (int i = 0; i < attCount; i++)
+        {
+            KOTH_LoadoutItem att = new KOTH_LoadoutItem();
+            if (!att.OnReceive(ctx)) return false;
+            Attachments.Insert(att);
+        }
+        
+        return true;
+    }
+}
+
 class KOTH_ClothingShopLoadout
 {
     string DisplayName;
     string Faction;
     int RequiredLevel;
     string FileName;
+    ref array<ref KOTH_LoadoutItem> LoadoutItems;
+    
+    void KOTH_ClothingShopLoadout()
+    {
+        LoadoutItems = new array<ref KOTH_LoadoutItem>();
+    }
     
     bool LoadFromFile(string filePath)
     {
@@ -475,7 +540,33 @@ class KOTH_ClothingShopLoadout
         FileName.Replace("$profile:ExpansionMod/KOTH_Clothes/", "");
         FileName.Replace(".json", "");
         
+        foreach (KOTH_LoadoutItemConfig itemConfig : config.Loadout)
+        {
+            KOTH_LoadoutItem item = new KOTH_LoadoutItem();
+            item.ClassName = itemConfig.ClassName;
+            
+            foreach (KOTH_LoadoutItemConfig attConfig : itemConfig.Attachments)
+            {
+                LoadAttachmentRecursive(item, attConfig);
+            }
+            
+            LoadoutItems.Insert(item);
+        }
+        
         return true;
+    }
+    
+    void LoadAttachmentRecursive(KOTH_LoadoutItem parent, KOTH_LoadoutItemConfig config)
+    {
+        KOTH_LoadoutItem att = new KOTH_LoadoutItem();
+        att.ClassName = config.ClassName;
+        
+        foreach (KOTH_LoadoutItemConfig subAttConfig : config.Attachments)
+        {
+            LoadAttachmentRecursive(att, subAttConfig);
+        }
+        
+        parent.Attachments.Insert(att);
     }
     
     void OnSend(ParamsWriteContext ctx)
@@ -484,6 +575,12 @@ class KOTH_ClothingShopLoadout
         ctx.Write(Faction);
         ctx.Write(RequiredLevel);
         ctx.Write(FileName);
+        
+        ctx.Write(LoadoutItems.Count());
+        foreach (KOTH_LoadoutItem item : LoadoutItems)
+        {
+            item.OnSend(ctx);
+        }
     }
     
     bool OnReceive(ParamsReadContext ctx)
@@ -493,7 +590,28 @@ class KOTH_ClothingShopLoadout
         if (!ctx.Read(RequiredLevel)) return false;
         if (!ctx.Read(FileName)) return false;
         
+        int itemCount;
+        if (!ctx.Read(itemCount)) return false;
+        
+        for (int i = 0; i < itemCount; i++)
+        {
+            KOTH_LoadoutItem item = new KOTH_LoadoutItem();
+            if (!item.OnReceive(ctx)) return false;
+            LoadoutItems.Insert(item);
+        }
+        
         return true;
+    }
+}
+
+class KOTH_LoadoutItemConfig
+{
+    string ClassName;
+    ref array<ref KOTH_LoadoutItemConfig> Attachments;
+    
+    void KOTH_LoadoutItemConfig()
+    {
+        Attachments = new array<ref KOTH_LoadoutItemConfig>();
     }
 }
 
@@ -502,4 +620,10 @@ class KOTH_ClothingShopLoadoutConfig
     string DisplayName;
     string Faction;
     int RequiredLevel;
+    ref array<ref KOTH_LoadoutItemConfig> Loadout;
+    
+    void KOTH_ClothingShopLoadoutConfig()
+    {
+        Loadout = new array<ref KOTH_LoadoutItemConfig>();
+    }
 }

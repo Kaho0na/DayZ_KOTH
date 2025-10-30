@@ -218,7 +218,7 @@ class KOTH_ClothingShopMenu : ExpansionScriptViewMenu
             }
             
             Print("[KOTH_ClothingShopMenu] Entry widget created successfully");
-            
+
             SetupLoadoutPreview(entry, loadout);
 
             TextWidget nameText = TextWidget.Cast(entry.FindAnyWidget("LoadoutName"));
@@ -260,7 +260,7 @@ class KOTH_ClothingShopMenu : ExpansionScriptViewMenu
                         equipButton.SetColor(ARGB(255, 200, 200, 0));
                     }
                     
-                    m_ButtonToLoadoutName.Set(equipButton, loadout.DisplayName);
+                    m_ButtonToLoadoutName.Set(equipButton, loadout.FileName);
                 }
             }
         }
@@ -288,17 +288,36 @@ class KOTH_ClothingShopMenu : ExpansionScriptViewMenu
         }
         
         m_PreviewObjects.Insert(previewEntity);
-        // DISABLE PHYSICS SIMULATION
         previewEntity.DisableSimulation(true);
 
-        bool loadoutApplied = ExpansionHumanLoadout.Apply(DayZPlayerImplement.Cast(previewEntity), loadout.FileName);
-        Print("[KOTH_ClothingShopMenu] Loadout applied: " + loadoutApplied);
+        foreach (KOTH_LoadoutItem item : loadout.LoadoutItems)
+        {
+            SpawnPreviewItemRecursive(previewEntity, item);
+        }
         
         playerPreview.SetPlayer(previewEntity);
         playerPreview.SetModelOrientation(vector.Zero);
         playerPreview.Show(true);
         playerPreview.Update();
         Print("[KOTH_ClothingShopMenu] Preview setup complete for: " + loadout.DisplayName);
+    }
+    
+    void SpawnPreviewItemRecursive(EntityAI parent, KOTH_LoadoutItem itemData)
+    {
+        if (!itemData || !parent)
+            return;
+        
+        EntityAI item = EntityAI.Cast(parent.GetInventory().CreateInInventory(itemData.ClassName));
+        if (!item)
+        {
+            Print("[KOTH_ClothingShopMenu] WARNING: Failed to create preview item: " + itemData.ClassName);
+            return;
+        }
+        
+        foreach (KOTH_LoadoutItem attData : itemData.Attachments)
+        {
+            SpawnPreviewItemRecursive(item, attData);
+        }
     }
     
     void UpdateCooldownDisplay()
