@@ -12,20 +12,23 @@ class CfgPatches
 		};
 	};
 };
+
 class CfgMods
 {
 	class DayZ_KOTH
 	{
 		dir="DayZ_KOTH";
-		picture="";
+		picture="DayZ_KOTH/logo.paa";
 		action="";
-		hideName=1;
-		hidePicture=1;
+		hideName=0;
+		hidePicture=0;
 		name="DayZ King of the Hill";
 		credits="Kahoona";
 		author="Kahoona";
-		authorID="0";
+		authorID="76561199197369229";
 		version="1.0.0";
+		overview="King of the Hill faction warfare mod with shop system, vehicles, and territory control";
+		tooltip="Kahoona - King of the Hill Mod";
 		extra=0;
 		type="mod";
 		dependencies[]=
