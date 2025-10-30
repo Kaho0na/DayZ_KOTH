@@ -121,7 +121,7 @@ class KOTH_PlayerLoadout
         EntityAI morphine;
         EntityAI saline;
         
-        item = player.GetInventory().CreateInInventory("TTSKOPants");
+        item = player.GetInventory().CreateInInventory("TrackSuitPants_Red");
         if (item)
         {
             bandage = item.GetInventory().CreateInInventory("BandageDressing");
@@ -131,34 +131,27 @@ class KOTH_PlayerLoadout
             morphine = item.GetInventory().CreateInInventory("Morphine");
             saline = item.GetInventory().CreateInInventory("SalineBagIV");
         }
-        
-        item = player.GetInventory().CreateInInventory("TTsKOJacket_Camo");
+        item = player.GetInventory().CreateInInventory("SkiGloves_Red");
+        item = player.GetInventory().CreateInInventory("TrackSuitJacket_Red");
         if (item)
         {
             knife = item.GetInventory().CreateInInventory("CombatKnife");
-            item.GetInventory().CreateInInventory("Mag_AK74_30Rnd");
-            item.GetInventory().CreateInInventory("Mag_AK74_30Rnd");
-            item.GetInventory().CreateInInventory("Mag_AK74_30Rnd");
-            item.GetInventory().CreateInInventory("Mag_AK74_30Rnd");
+            item.GetInventory().CreateInInventory("Mag_PP19_64rnd");
+            item.GetInventory().CreateInInventory("Mag_PP19_64rnd");
         }
         
-        player.GetInventory().CreateInInventory("TTSKOBoots");
+        player.GetInventory().CreateInInventory("Sneakers_Red");
         
         item = player.GetInventory().CreateInInventory("SmershVest");
         if (item)
         {
             grenade = item.GetInventory().CreateAttachment("RGD5Grenade");
             item.GetInventory().CreateAttachment("RGD5Grenade");
-            
-            item.GetInventory().CreateInInventory("Mag_AK74_45Rnd");
-            item.GetInventory().CreateInInventory("Mag_AK74_45Rnd");
-            item.GetInventory().CreateInInventory("Mag_CZ75_15Rnd");
-            item.GetInventory().CreateInInventory("Mag_CZ75_15Rnd");
             item.GetInventory().CreateInInventory("Mag_CZ75_15Rnd");
             item.GetInventory().CreateInInventory("Mag_CZ75_15Rnd");
         }
         
-        player.GetInventory().CreateInInventory("Ssh68Helmet");
+        player.GetInventory().CreateInInventory("BoonieHat_Red");
         
         item = player.GetInventory().CreateInInventory("MilitaryBelt");
         if (item)
@@ -174,11 +167,11 @@ class KOTH_PlayerLoadout
             }
         }
         
-        primaryWeapon = player.GetHumanInventory().CreateInHands("AKS74U");
+        primaryWeapon = player.GetHumanInventory().CreateInHands("PP19");
         if (primaryWeapon)
         {
-            primaryWeapon.GetInventory().CreateAttachment("AKS74U_Bttstck");
-            primaryWeapon.GetInventory().CreateAttachment("Mag_AK74_45Rnd");
+            primaryWeapon.GetInventory().CreateAttachment("Mag_PP19_64rnd");
+            primaryWeapon.GetInventory().CreateAttachment("PP19_Bttstck");
         }
         
         SetPermanentArmband(player, "Armband_Red");
@@ -208,7 +201,7 @@ class KOTH_PlayerLoadout
         EntityAI morphine;
         EntityAI saline;
         
-        item = player.GetInventory().CreateInInventory("BDUPants");
+        item = player.GetInventory().CreateInInventory("TrackSuitPants_Blue");
         if (item)
         {
             bandage = item.GetInventory().CreateInInventory("BandageDressing");
@@ -219,14 +212,14 @@ class KOTH_PlayerLoadout
             morphine = item.GetInventory().CreateInInventory("Morphine");
             saline = item.GetInventory().CreateInInventory("SalineBagIV");
         }
-        
-        item = player.GetInventory().CreateInInventory("BDUJacket");
+        item = player.GetInventory().CreateInInventory("SkiGloves_Blue");
+        item = player.GetInventory().CreateInInventory("TrackSuitJacket_Blue");
         if (item)
         {
-            item.GetInventory().CreateInInventory("Mag_CMAG_30Rnd_Black");
-            item.GetInventory().CreateInInventory("Mag_CMAG_30Rnd_Black");
-            item.GetInventory().CreateInInventory("Mag_CMAG_30Rnd_Black");
-            item.GetInventory().CreateInInventory("Mag_CMAG_30Rnd_Black");
+            item.GetInventory().CreateInInventory("Mag_CZ61_20Rnd");
+            item.GetInventory().CreateInInventory("Mag_CZ61_20Rnd");
+            item.GetInventory().CreateInInventory("Mag_CZ61_20Rnd");
+            item.GetInventory().CreateInInventory("Mag_CZ61_20Rnd");
         }
         
         item = player.GetInventory().CreateInInventory("UKAssVest_Camo");
@@ -234,22 +227,18 @@ class KOTH_PlayerLoadout
         {
             grenade = item.GetInventory().CreateAttachment("M67Grenade");
             item.GetInventory().CreateAttachment("M67Grenade");
+            item.GetInventory().CreateInInventory("CombatKnife");
+            item.GetInventory().CreateInInventory("Mag_CZ61_20Rnd");
+            item.GetInventory().CreateInInventory("Mag_CZ61_20Rnd");
             
-            item.GetInventory().CreateInInventory("Mag_CMAG_40Rnd_Black");
-            item.GetInventory().CreateInInventory("Mag_CMAG_40Rnd_Black");
-            item.GetInventory().CreateInInventory("Mag_Glock_15Rnd");
             item.GetInventory().CreateInInventory("Mag_Glock_15Rnd");
             item.GetInventory().CreateInInventory("Mag_Glock_15Rnd");
             item.GetInventory().CreateInInventory("Mag_Glock_15Rnd");
         }
         
-        player.GetInventory().CreateInInventory("BallisticHelmet_BDU");
+        player.GetInventory().CreateInInventory("BoonieHat_Blue");
         
-        item = player.GetInventory().CreateInInventory("MilitaryBoots_Black");
-        if (item)
-        {
-            knife = item.GetInventory().CreateAttachment("CombatKnife");
-        }
+        item = player.GetInventory().CreateInInventory("HikingBootsLow_Blue");
         
         item = player.GetInventory().CreateInInventory("MilitaryBelt");
         if (item)
@@ -265,10 +254,10 @@ class KOTH_PlayerLoadout
             }
         }
         
-        primaryWeapon = player.GetHumanInventory().CreateInHands("M16A2");
+        primaryWeapon = player.GetHumanInventory().CreateInHands("CZ61");
         if (primaryWeapon)
         {
-            primaryWeapon.GetInventory().CreateAttachment("Mag_CMAG_40Rnd_Black");
+            primaryWeapon.GetInventory().CreateAttachment("Mag_CZ61_20Rnd");
         }
         
         SetPermanentArmband(player, "Armband_Blue");
