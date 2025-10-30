@@ -44,7 +44,7 @@ static ref array<ref KOTHSpawnPiece> KOTH_SPAWN_COMPOUND = {
 	new KOTHSpawnPiece("bldr_Wall_Wood4_4",           2.09717,  -5.25562,  3.95457,  -53.9998),
 	new KOTHSpawnPiece("bldr_Wall_Wood4_Pole",       -3.90039,  -3.04419,  3.97192, -144.0000),
 
-	new KOTHSpawnPiece("StaticObj_WhiteBoard",             3.72705,  -1.30811,  4.35944,  126.0000),
+	//new KOTHSpawnPiece("StaticObj_WhiteBoard",             3.72705,  -1.30811,  4.35944,  126.0000),
 	new KOTHSpawnPiece("bldr_Misc_Range_Roof",       -2.93896,  -2.21753,  4.34960,   36.0000),
 
 	// NPCs removed - will be spawned separately with proper NPC system
@@ -52,7 +52,7 @@ static ref array<ref KOTHSpawnPiece> KOTH_SPAWN_COMPOUND = {
 	new KOTHSpawnPiece("bldr_misc_flagpole",         -0.55908,   5.8681,   6.66342,    0.0000),
 	new KOTHSpawnPiece("bldr_prop_Flag_Bear",        -0.64502,   5.8510,   10.1842,    0.0000),
 
-	new KOTHSpawnPiece("ExpansionATM_1",        -2.30615,   3.86182,   3.38896,    -54)
+	//new KOTHSpawnPiece("ExpansionATM_1",        -2.30615,   3.86182,   3.38896,    -54)
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
