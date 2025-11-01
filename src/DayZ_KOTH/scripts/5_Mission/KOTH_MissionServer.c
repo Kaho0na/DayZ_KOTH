@@ -233,7 +233,7 @@ modded class MissionServer
     
     void CheckPlayerArmbands()
     {
-        ref array<Man> players = new array<Man>;
+        array<Man> players = new array<Man>;
         GetGame().GetPlayers(players);
         
         for (int i = 0; i < players.Count(); i++)

@@ -53,7 +53,7 @@ class KOTH_ShopRifles
         
         foreach (EntityAI itemToDelete : itemsToDelete)
         {
-            GetGame().ObjectDelete(itemToDelete);
+            itemToDelete.DeleteSafe();
         }
         
         Print("[KOTH_Shop] Cleared " + itemsToDelete.Count() + " rifle magazines and ammo boxes (preserved pistol mags)");
@@ -99,7 +99,7 @@ class KOTH_ShopRifles
         EntityAI currentWeapon = player.GetHumanInventory().GetEntityInHands();
         if (currentWeapon)
         {
-            GetGame().ObjectDelete(currentWeapon);
+            currentWeapon.DeleteSafe();
         }
         
         EntityAI weapon = player.GetHumanInventory().CreateInHands(item.ClassName);

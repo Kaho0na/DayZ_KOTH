@@ -369,7 +369,7 @@ class KOTH_GameMode: CF_ModuleWorld
         if (!GetGame().IsServer())
             return;
         
-        ref array<Man> players = new array<Man>;
+        array<Man> players = new array<Man>;
         GetGame().GetPlayers(players);
         
         for (int i = 0; i < players.Count(); i++)

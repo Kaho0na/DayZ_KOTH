@@ -404,7 +404,7 @@ class KOTH_ClothingShopModule : CF_ModuleWorld
             if (savedItem && !savedItem.IsRuined())
             {
                 itemClassNames.Insert(savedItem.GetType());
-                GetGame().ObjectDelete(savedItem);
+                savedItem.DeleteSafe();
             }
         }
         

@@ -223,7 +223,7 @@ class KOTH_VehicleSpawn
         if (m_SpawnedVehicle)
         {
             Print("[KOTH_VehicleSpawn] Cleaning up vehicle: " + m_VehicleType);
-            GetGame().ObjectDelete(m_SpawnedVehicle);
+            m_SpawnedVehicle.DeleteSafe();
             m_SpawnedVehicle = null;
         }
     }

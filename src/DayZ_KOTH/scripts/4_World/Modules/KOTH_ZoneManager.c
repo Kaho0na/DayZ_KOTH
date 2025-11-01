@@ -557,7 +557,7 @@ class KOTH_ZoneManager: CF_ModuleWorld
         
         string message = "Zone changed to: " + m_ActiveZone.GetZoneName();
         
-        ref array<Man> players = new array<Man>;
+        array<Man> players = new array<Man>;
         GetGame().GetPlayers(players);
         
         for (int i = 0; i < players.Count(); i++)

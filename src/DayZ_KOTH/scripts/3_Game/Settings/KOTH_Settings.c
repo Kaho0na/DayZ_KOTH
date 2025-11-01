@@ -13,7 +13,7 @@ class KOTH_SettingsBase: ExpansionSettingBase
     int ScoreLimit = 100;
     int CaptureTickSeconds = 5;
     int MinPlayersToInfluence = 1;
-    int PointsPerTickPerPlayer = 1;
+    float PointsPerTickPerPlayer = 1.0;
     float NeutralizeSpeedMultiplier = 1.0;
 
     bool EnablePriorityZoneMovement = true;
@@ -382,7 +382,7 @@ class KOTH_Settings: KOTH_SettingsBase
         ScoreLimit = 100;
         CaptureTickSeconds = 5;
         MinPlayersToInfluence = 1;
-        PointsPerTickPerPlayer = 1;
+        PointsPerTickPerPlayer = 1.0;
         NeutralizeSpeedMultiplier = 1.0;
         
         EnablePriorityZoneMovement = true;

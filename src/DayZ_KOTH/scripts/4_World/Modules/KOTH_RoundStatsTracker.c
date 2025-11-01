@@ -160,7 +160,7 @@ class KOTH_RoundStatsTracker: CF_ModuleWorld
             nickManager.ResetAll();
         }
 
-        ref array<Man> players = new array<Man>;
+        array<Man> players = new array<Man>;
         GetGame().GetPlayers(players);
         
         for (int i = 0; i < players.Count(); i++)
@@ -601,7 +601,7 @@ class KOTH_RoundStatsTracker: CF_ModuleWorld
     
     PlayerBase GetPlayerByUID(string uid)
     {
-        ref array<Man> players = new array<Man>;
+        array<Man> players = new array<Man>;
         GetGame().GetPlayers(players);
         
         for (int i = 0; i < players.Count(); i++)

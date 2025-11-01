@@ -27,7 +27,8 @@ class KOTH_ShopPistols
         
         foreach (EntityAI itemToDelete : itemsToDelete)
         {
-            GetGame().ObjectDelete(itemToDelete);
+
+            itemToDelete.DeleteSafe();
         }
         
         Print("[KOTH_Shop] Cleared " + itemsToDelete.Count() + " pistol magazines and ammo");
@@ -42,7 +43,7 @@ class KOTH_ShopPistols
             EntityAI oldPistol = holster.GetInventory().FindAttachment(InventorySlots.GetSlotIdFromString("Pistol"));
             if (oldPistol)
             {
-                GetGame().ObjectDelete(oldPistol);
+                oldPistol.DeleteSafe();
                 Print("[KOTH_Shop] Deleted old pistol from holster");
             }
             
@@ -114,7 +115,7 @@ class KOTH_ShopPistols
         EntityAI currentWeapon = player.GetHumanInventory().GetEntityInHands();
         if (currentWeapon)
         {
-            GetGame().ObjectDelete(currentWeapon);
+            currentWeapon.DeleteSafe();
         }
         
         EntityAI weapon = player.GetHumanInventory().CreateInHands(item.ClassName);

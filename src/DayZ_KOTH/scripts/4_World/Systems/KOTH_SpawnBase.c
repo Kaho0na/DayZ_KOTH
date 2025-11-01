@@ -188,7 +188,7 @@ class KOTH_SpawnBase
 		if (!npc)
 		{
 			Print("[KOTH_SpawnBase] ERROR: Failed to cast to KOTH_NPCBase: " + npcClassName);
-			GetGame().ObjectDelete(obj);
+			obj.DeleteSafe();
 			return null;
 		}
 		
@@ -287,7 +287,13 @@ class KOTH_SpawnBase
 		{
 			Object o = s_Spawned[i];
 			if (o)
-				GetGame().ObjectDelete(o);
+			{
+				EntityAI entity = EntityAI.Cast(o);
+				if (entity)
+					entity.DeleteSafe();
+				else
+					GetGame().ObjectDelete(o);
+			}
 			s_Spawned.Remove(i);
 		}
 
@@ -317,7 +323,7 @@ class KOTH_SpawnBase
 			if (npc)
 			{
 				Print("[KOTH_SpawnBase] Deleting NPC: " + npc.GetType());
-				GetGame().ObjectDelete(npc);
+				npc.DeleteSafe();
 			}
 			s_SpawnedNPCs.Remove(n);
 		}

@@ -242,10 +242,10 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         
         Print("[KOTH_RoundEndModule] Ejecting players from ALL vehicles and deleting vehicles...");
         
-        ref array<Man> players = new array<Man>;
+        array<Man> players = new array<Man>;
         GetGame().GetPlayers(players);
         
-        ref array<Transport> vehiclesToDelete = new array<Transport>;
+        array<Transport> vehiclesToDelete = new array<Transport>;
         
         for (int i = 0; i < players.Count(); i++)
         {
@@ -290,7 +290,7 @@ class KOTH_RoundEndModule: CF_ModuleWorld
             if (vehicle)
             {
                 Print("[KOTH_RoundEndModule] Deleting vehicle: " + vehicle.GetType());
-                GetGame().ObjectDelete(vehicle);
+                vehicle.DeleteSafe();
             }
         }
         
@@ -404,7 +404,7 @@ class KOTH_RoundEndModule: CF_ModuleWorld
     
     void AwardTeamBonuses(string winningTeam, KOTH_RoundTeamStats eastStats, KOTH_RoundTeamStats westStats, KOTH_Settings settings)
     {
-        ref array<Man> players = new array<Man>;
+        array<Man> players = new array<Man>;
         GetGame().GetPlayers(players);
         
         for (int i = 0; i < players.Count(); i++)
@@ -848,7 +848,7 @@ void TeleportAllPlayers()
         m_ZoneManager.LoadNextZone();
     }
     
-    ref array<Man> players = new array<Man>;
+    array<Man> players = new array<Man>;
     GetGame().GetPlayers(players);
     
     Print("[KOTH_RoundEndModule] Found " + players.Count() + " players to teleport");
@@ -919,7 +919,7 @@ void TeleportAllPlayers()
         Print("[KOTH_RoundEndModule] ============================================");
         Print("[KOTH_RoundEndModule] Starting new round...");
         
-        ref array<Man> players = new array<Man>;
+        array<Man> players = new array<Man>;
         GetGame().GetPlayers(players);
         
         for (int i = 0; i < players.Count(); i++)
@@ -967,7 +967,7 @@ void TeleportAllPlayers()
         KOTH_PriorityZoneManager.StartMovement();
         Print("[KOTH_RoundEndModule] Priority zone movement started");
         
-        ref array<Man> players = new array<Man>;
+        array<Man> players = new array<Man>;
         GetGame().GetPlayers(players);
         
         for (int i = 0; i < players.Count(); i++)
@@ -1026,7 +1026,7 @@ void TeleportAllPlayers()
     
     PlayerBase GetPlayerByUID(string uid)
     {
-        ref array<Man> players = new array<Man>;
+        array<Man> players = new array<Man>;
         GetGame().GetPlayers(players);
         
         for (int i = 0; i < players.Count(); i++)

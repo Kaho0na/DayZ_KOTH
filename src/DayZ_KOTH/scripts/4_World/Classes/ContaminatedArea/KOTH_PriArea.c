@@ -1,7 +1,8 @@
 /**
- * KOTH_PriArea.c (PHASE 4 - EVENT-DRIVEN TRIGGERS)
+ * KOTH_PriArea.c (PHASE 4 - EVENT-DRIVEN TRIGGERS - OPTIMIZED)
  *
  * Priority zone triggers notify GameMode only on enter/exit
+ * Uses built-in trigger insider tracking instead of custom arrays
  * Place in: 4_World/Classes/ContaminatedArea/KOTH_PriArea.c
  */
 
@@ -18,8 +19,6 @@ class KOTH_PriArea : EffectArea
         m_Position = position;
         m_Position[1] = 0;
         
-        //Print("[KOTH_PriArea] Initializing at " + m_Position + " with radius " + radius);
-        
         CreateTrigger(m_Position, m_Radius);
     }
     
@@ -29,7 +28,6 @@ class KOTH_PriArea : EffectArea
         {
             m_KOTH_PriTrigger.SetCollisionCylinder(radius, m_PositiveHeight);
             m_KOTH_PriTrigger.KOTH_Init(this);
-            //Print("[KOTH_PriArea] Trigger created successfully");
         }
         else
         {
@@ -66,27 +64,15 @@ class KOTH_PriArea : EffectArea
 class KOTH_PriAreaTrigger : CylinderTrigger
 {
     protected EffectArea m_KOTH_EffectArea;
-    protected ref array<PlayerBase> m_PlayersInside;
-    protected ref array<PlayerBase> m_AIInside;
-    
-    void KOTH_PriAreaTrigger()
-    {
-        m_PlayersInside = new array<PlayerBase>();
-        m_AIInside = new array<PlayerBase>();
-    }
     
     void KOTH_Init(EffectArea area)
     {
         m_KOTH_EffectArea = area;
-        //Print("[KOTH_PriAreaTrigger] Initialized");
     }
     
     override protected bool CanAddObjectAsInsider(Object object)
     {
-        if (PlayerBase.Cast(object))
-            return true;
-        
-        return false;
+        return PlayerBase.Cast(object) != null;
     }
     
     override bool ShouldRemoveInsider(TriggerInsider insider)
@@ -101,40 +87,17 @@ class KOTH_PriAreaTrigger : CylinderTrigger
         if (!insider)
             return;
         
-        PlayerBase player;
+        PlayerBase player = PlayerBase.Cast(insider.GetObject());
+        if (!player)
+            return;
         
-        if (Class.CastTo(player, insider.GetObject()))
+        if (player.GetIdentity())
         {
-            if (player.GetIdentity())
-            {
-                int playerIdx = m_PlayersInside.Find(player);
-                if (playerIdx == -1)
-                {
-                    m_PlayersInside.Insert(player);
-                    string team = player.GetKOTHTeam();
-                    //Print("[KOTH_PriAreaTrigger] Player entered PRIORITY: " + player.GetIdentity().GetName() + " (Team: " + team + ")");
-                    
-                    player.MessageStatus("[KOTH PRIORITY] You entered the BONUS POINTS zone!");
-                    
-                    // PHASE 4: Notify GameMode of count change
-                    NotifyGameModeCountChanged();
-                }
-            }
-            else
-            {
-                int aiIdx = m_AIInside.Find(player);
-                if (aiIdx == -1)
-                {
-                    m_AIInside.Insert(player);
-                    
-                    string aiFaction = GetExpansionAIFaction(player);
-                    //Print("[KOTH_PriAreaTrigger] AI entered PRIORITY: " + player.GetType() + " (Faction: " + aiFaction + ")");
-                    
-                    // PHASE 4: Notify GameMode of count change
-                    NotifyGameModeCountChanged();
-                }
-            }
+            string team = player.GetKOTHTeam();
+            player.MessageStatus("[KOTH PRIORITY] You entered the BONUS POINTS zone!");
         }
+        
+        NotifyGameModeCountChanged();
     }
     
     override void OnLeaveServerEvent(TriggerInsider insider)
@@ -144,40 +107,18 @@ class KOTH_PriAreaTrigger : CylinderTrigger
         if (!insider)
             return;
         
-        PlayerBase player;
+        PlayerBase player = PlayerBase.Cast(insider.GetObject());
+        if (!player)
+            return;
         
-        if (Class.CastTo(player, insider.GetObject()))
+        if (player.GetIdentity())
         {
-            if (player.GetIdentity())
-            {
-                int playerIdx = m_PlayersInside.Find(player);
-                if (playerIdx != -1)
-                {
-                    m_PlayersInside.Remove(playerIdx);
-                    //Print("[KOTH_PriAreaTrigger] Player left PRIORITY: " + player.GetIdentity().GetName());
-                    
-                    player.MessageStatus("[KOTH PRIORITY] You left the bonus zone");
-                    
-                    // PHASE 4: Notify GameMode of count change
-                    NotifyGameModeCountChanged();
-                }
-            }
-            else
-            {
-                int aiIdx = m_AIInside.Find(player);
-                if (aiIdx != -1)
-                {
-                    m_AIInside.Remove(aiIdx);
-                    //Print("[KOTH_PriAreaTrigger] AI left PRIORITY: " + player.GetType());
-                    
-                    // PHASE 4: Notify GameMode of count change
-                    NotifyGameModeCountChanged();
-                }
-            }
+            player.MessageStatus("[KOTH PRIORITY] You left the bonus zone");
         }
+        
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(NotifyGameModeCountChanged, 50, false);
     }
     
-    // PHASE 4: Event-driven count notification
     void NotifyGameModeCountChanged()
     {
         if (!GetGame().IsServer())
@@ -217,51 +158,77 @@ class KOTH_PriAreaTrigger : CylinderTrigger
     
     bool HasPlayersInside()
     {
-        return m_PlayersInside.Count() > 0 || m_AIInside.Count() > 0;
+        return GetInsiders().Count() > 0;
     }
     
     int GetPlayerCount()
     {
-        return m_PlayersInside.Count() + m_AIInside.Count();
+        return GetInsiders().Count();
     }
     
     array<PlayerBase> GetPlayersInside()
     {
-        return m_PlayersInside;
+        array<PlayerBase> players = new array<PlayerBase>;
+        array<ref TriggerInsider> insiders = GetInsiders();
+        
+        for (int i = 0; i < insiders.Count(); i++)
+        {
+            TriggerInsider insider = insiders[i];
+            if (!insider)
+                continue;
+            
+            PlayerBase player = PlayerBase.Cast(insider.GetObject());
+            if (player && player.IsAlive() && player.GetIdentity())
+                players.Insert(player);
+        }
+        
+        return players;
     }
     
     array<PlayerBase> GetAIInside()
     {
-        return m_AIInside;
+        array<PlayerBase> ais = new array<PlayerBase>;
+        array<ref TriggerInsider> insiders = GetInsiders();
+        
+        for (int i = 0; i < insiders.Count(); i++)
+        {
+            TriggerInsider insider = insiders[i];
+            if (!insider)
+                continue;
+            
+            PlayerBase player = PlayerBase.Cast(insider.GetObject());
+            if (player && player.IsAlive() && !player.GetIdentity())
+                ais.Insert(player);
+        }
+        
+        return ais;
     }
     
     int GetTeamPlayerCount(string teamName)
     {
         int count = 0;
-        int i;
-        PlayerBase player;
-        string factionName;
+        array<ref TriggerInsider> insiders = GetInsiders();
         
-        for (i = 0; i < m_PlayersInside.Count(); i++)
+        for (int i = 0; i < insiders.Count(); i++)
         {
-            player = m_PlayersInside.Get(i);
-            if (player && player.IsAlive() && player.GetKOTHTeam() == teamName)
-            {
-                count++;
-            }
-        }
-        
-        for (i = 0; i < m_AIInside.Count(); i++)
-        {
-            PlayerBase ai = m_AIInside.Get(i);
-            if (!ai || !ai.IsAlive())
+            TriggerInsider insider = insiders[i];
+            if (!insider)
                 continue;
             
-            factionName = GetExpansionAIFaction(ai);
+            PlayerBase player = PlayerBase.Cast(insider.GetObject());
+            if (!player || !player.IsAlive())
+                continue;
             
-            if (factionName == teamName)
+            if (player.GetIdentity())
             {
-                count++;
+                if (player.GetKOTHTeam() == teamName)
+                    count++;
+            }
+            else
+            {
+                string factionName = GetExpansionAIFaction(player);
+                if (factionName == teamName)
+                    count++;
             }
         }
         

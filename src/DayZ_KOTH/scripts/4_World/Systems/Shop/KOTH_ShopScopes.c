@@ -30,7 +30,7 @@ class KOTH_ShopScopes
         {
             if (IsScope(att.GetType()))
             {
-                GetGame().ObjectDelete(att);
+                att.DeleteSafe();
                 Print("[KOTH_Shop] Removed old scope: " + att.GetType());
                 break;
             }

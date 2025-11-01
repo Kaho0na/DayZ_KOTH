@@ -81,7 +81,7 @@ modded class PlayerBase
 
     override bool CanDropEntity(notnull EntityAI item)
     {
-        if (item && (item.IsKindOf("Armband_Red") || item.IsKindOf("Armband_Blue")))
+        if (item && (item.GetType() == "Armband_Red" || item.GetType() == "Armband_Blue"))
         {
             if (m_KOTHTeam == "East" || m_KOTHTeam == "West")
             {

@@ -381,7 +381,7 @@ class KOTH_ShopModule : CF_ModuleWorld
         if (testItem)
         {
             Print("[KOTH_Shop] Test item created successfully - has space!");
-            GetGame().ObjectDelete(testItem);
+            testItem.DeleteSafe();
             return true;
         }
         
