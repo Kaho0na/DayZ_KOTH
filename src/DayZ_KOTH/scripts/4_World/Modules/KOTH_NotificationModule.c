@@ -261,7 +261,7 @@ class KOTH_CompactNotification: ScriptedWidgetEventHandler
             if (money != "")
             {
                 m_Money.Show(true);
-                Widget.Cast(m_Money).SetColor(moneyColor);
+                m_Money.SetColor(moneyColor);
                 m_Money.SetText(money);
             }
             else
@@ -274,7 +274,7 @@ class KOTH_CompactNotification: ScriptedWidgetEventHandler
             if (xp != "")
             {
                 m_XP.Show(true);
-                Widget.Cast(m_XP).SetColor(xpColor);
+                m_XP.SetColor(xpColor);
                 m_XP.SetText(xp);
             }
             else

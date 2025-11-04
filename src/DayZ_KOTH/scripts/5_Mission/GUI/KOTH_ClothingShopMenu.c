@@ -271,36 +271,56 @@ class KOTH_ClothingShopMenu : ExpansionScriptViewMenu
     
     void SetupLoadoutPreview(Widget entryWidget, KOTH_ClothingShopLoadout loadout)
     {
-        PlayerPreviewWidget playerPreview = PlayerPreviewWidget.Cast(entryWidget.FindAnyWidget("LoadoutPreview"));
+        PlayerPreviewWidget playerPreview;
+        playerPreview = PlayerPreviewWidget.Cast(entryWidget.FindAnyWidget("LoadoutPreview"));
         if (!playerPreview)
         {
             Print("[KOTH_ClothingShopMenu] ERROR: LoadoutPreview widget not found");
             return;
         }
-        
-        string previewType = "SurvivorM_Mirek";
-        
-        EntityAI previewEntity = EntityAI.Cast(GetGame().CreateObjectEx(previewType, vector.Zero, ECE_LOCAL | ECE_NOLIFETIME));
+
+        string previewType;
+        previewType = "SurvivorM_Mirek";
+
+        EntityAI previewEntity;
+        DayZPlayer previewPlayer;
+
+        // Create the preview entity
+        previewEntity = EntityAI.Cast(GetGame().CreateObjectEx(previewType, vector.Zero, ECE_LOCAL | ECE_NOLIFETIME));
         if (!previewEntity)
         {
             Print("[KOTH_ClothingShopMenu] ERROR: Failed to create preview entity");
             return;
         }
-        
+
+        // Safe downcast to DayZPlayer for the preview system
+        previewPlayer = DayZPlayer.Cast(previewEntity);
+        if (!previewPlayer)
+        {
+            Print("[KOTH_ClothingShopMenu] ERROR: Preview entity is not a DayZPlayer (Type: " + previewEntity.GetType() + ")");
+            GetGame().ObjectDelete(previewEntity);
+            return;
+        }
+
+        // Store and configure entity
         m_PreviewObjects.Insert(previewEntity);
         previewEntity.DisableSimulation(true);
 
+        // Equip preview with loadout items
         foreach (KOTH_LoadoutItem item : loadout.LoadoutItems)
         {
             SpawnPreviewItemRecursive(previewEntity, item);
         }
-        
-        playerPreview.SetPlayer(previewEntity);
+
+        // Apply preview to the PlayerPreviewWidget
+        playerPreview.SetPlayer(previewPlayer);
         playerPreview.SetModelOrientation(vector.Zero);
         playerPreview.Show(true);
         playerPreview.Update();
+
         Print("[KOTH_ClothingShopMenu] Preview setup complete for: " + loadout.DisplayName);
     }
+
     
     void SpawnPreviewItemRecursive(EntityAI parent, KOTH_LoadoutItem itemData)
     {

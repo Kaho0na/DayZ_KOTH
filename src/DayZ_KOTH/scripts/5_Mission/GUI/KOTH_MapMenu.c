@@ -19,7 +19,7 @@ modded class ExpansionMapMenu extends UIScriptedMenu
     override Widget Init() 
     {
         Print("[KOTH_MapMenu] Init called");
-        Widget layoutRoot = super.Init();
+        layoutRoot = super.Init();
         
         m_MapWidget = MapWidget.Cast(layoutRoot.FindAnyWidget("Map"));
         if (m_MapWidget)

@@ -8,7 +8,7 @@ modded class InGameMenu
 
 	override Widget Init()
 	{
-		Widget layoutRoot = super.Init();
+		layoutRoot = super.Init();
 
 		//! Find the existing Feedback button and relabel it
 		m_ChangeTeamButton = ButtonWidget.Cast(layoutRoot.FindAnyWidget("feedbackbtn"));

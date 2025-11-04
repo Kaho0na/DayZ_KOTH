@@ -115,36 +115,37 @@ class KOTH_HUD: ExpansionScriptView
             KOTH_PlayerRewardManager.SI_OnPlayerStatsChanged.Remove(OnPlayerStatsChanged);
     }
     
-    void OnScoreChanged(int eastScore, int westScore)
+    void OnScoreChanged(int eastValue, int westValue)
     {
-        //Print("[KOTH_HUD] OnScoreChanged called - East: " + eastScore + ", West: " + westScore);
+        //Print("[KOTH_HUD] OnScoreChanged called - East: " + eastValue + ", West: " + westValue);
         
-        if (m_CachedEastScore != eastScore)
+        if (m_CachedEastScore != eastValue)
         {
-            m_CachedEastScore = eastScore;
-            if (this.eastScore)
+            m_CachedEastScore = eastValue;
+            if (eastScore)  // this refers to the widget member
             {
-                this.eastScore.SetText(eastScore.ToString());
-                //Print("[KOTH_HUD] Updated East score display to: " + eastScore);
+                eastScore.SetText(eastValue.ToString());
+                //Print("[KOTH_HUD] Updated East score display to: " + eastValue);
             }
         }
         
-        if (m_CachedWestScore != westScore)
+        if (m_CachedWestScore != westValue)
         {
-            m_CachedWestScore = westScore;
-            if (this.westScore)
+            m_CachedWestScore = westValue;
+            if (westScore)
             {
-                this.westScore.SetText(westScore.ToString());
-                //Print("[KOTH_HUD] Updated West score display to: " + westScore);
+                westScore.SetText(westValue.ToString());
+                //Print("[KOTH_HUD] Updated West score display to: " + westValue);
             }
         }
     }
-    
-    void OnScoreUpdate(int eastScore, int westScore)
+
+    void OnScoreUpdate(int eastValue, int westValue)
     {
-        //Print("[KOTH_HUD] OnScoreUpdate called - East: " + eastScore + ", West: " + westScore);
-        OnScoreChanged(eastScore, westScore);
+        //Print("[KOTH_HUD] OnScoreUpdate called - East: " + eastValue + ", West: " + westValue);
+        OnScoreChanged(eastValue, westValue);
     }
+
     
     void OnCaptureProgressChanged(float progress, string team)
     {
