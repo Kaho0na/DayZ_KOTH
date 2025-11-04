@@ -239,11 +239,31 @@ class KOTH_ZoneManager: CF_ModuleWorld
         
         SyncActiveZoneToAllClients();
         NotifyPlayersZoneChange();
-        
+        KOTH_Settings settings = GetExpansionSettings().GetDayZ_KOTH();
+        if (settings && settings.EnableAI)
+        {
+            KOTH_AIManager aiManager = KOTH_AIManager.GetInstance();
+            aiManager.OnZoneActivated(m_ActiveZone);
+            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SpawnAIWest, 60000, false);
+            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SpawnAIEast, 80000, false);
+        }
         Print("[KOTH_ZoneManager] Zone fully initialized");
         Print("[KOTH_ZoneManager] ═══════════════════════════════════════");
         
         return true;
+    }
+
+    void SpawnAIWest()
+    {
+        KOTH_AIManager aiManager = KOTH_AIManager.GetInstance();
+        aiManager.SpawnSingleAI("West");
+    }
+
+    void SpawnAIEast()
+    {
+        KOTH_AIManager aiManager = KOTH_AIManager.GetInstance();
+        aiManager.SpawnSingleAI("East");
+
     }
     
     private void SpawnZoneBuildings()

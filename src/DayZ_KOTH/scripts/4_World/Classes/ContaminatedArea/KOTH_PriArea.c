@@ -13,20 +13,29 @@ class KOTH_PriArea : EffectArea
     void KOTH_Init(vector position, float radius)
     {
         m_Radius = radius;
-        m_PositiveHeight = 200;
-        m_NegativeHeight = 0;
+        m_PositiveHeight = 300;
+        m_NegativeHeight = -300;
         
         m_Position = position;
-        m_Position[1] = 0;
+        m_Position[1] = GetGame().SurfaceY(position[0], position[2]);
         
         CreateTrigger(m_Position, m_Radius);
     }
     
     override void CreateTrigger(vector pos, int radius)
     {
-        if (Class.CastTo(m_KOTH_PriTrigger, GetGame().CreateObjectEx("KOTH_PriAreaTrigger", pos, ECE_NONE)))
+        pos[1] = GetGame().SurfaceY(pos[0], pos[2]);
+        // Center the trigger vertically so it covers both above and below the terrain
+        vector triggerPos = pos;
+        triggerPos[1] = triggerPos[1] + (m_NegativeHeight / 2);   // lower the origin half of total height
+
+        // Calculate total vertical span
+        float totalHeight = m_PositiveHeight - m_NegativeHeight;   // e.g. 300 - (-300) = 600
+        
+        if (Class.CastTo(m_KOTH_PriTrigger, GetGame().CreateObjectEx("KOTH_PriAreaTrigger", triggerPos, ECE_NONE)))
         {
-            m_KOTH_PriTrigger.SetCollisionCylinder(radius, m_PositiveHeight);
+            // Create a full cylinder that extends both up and down
+            m_KOTH_PriTrigger.SetCollisionCylinder(radius, totalHeight);
             m_KOTH_PriTrigger.KOTH_Init(this);
         }
         else
@@ -34,6 +43,7 @@ class KOTH_PriArea : EffectArea
             Error("[KOTH_PriArea] Failed to create trigger!");
         }
     }
+
     
     override void EEDelete(EntityAI parent)
     {

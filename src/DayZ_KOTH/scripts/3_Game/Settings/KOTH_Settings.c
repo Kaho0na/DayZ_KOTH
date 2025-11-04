@@ -76,6 +76,22 @@ class KOTH_SettingsBase: ExpansionSettingBase
     int VehicleSpawnCheckRadius = 30;
     bool AllowAdminZoneChange = true;
     bool EnableAI = true;
+    int FactionMaxAI = 10;
+    int PlayerThreshold = 40;
+    int SpawnCheckInterval = 90;
+    int AISpawnStagger = 5;
+    float AISpawnBuffer = 100.0;
+    float AISpawnAngleVariation = 30.0;
+    string WestLoadout = "WestLoadout";
+    string EastLoadout = "EastLoadout";
+    float AIAccuracyMin = 0.3;
+    float AIAccuracyMax = 0.6;
+    float AIThreatDistance = 500.0;
+    string AISpeed = "WALK";
+    string AIThreatSpeed = "SPRINT";
+    int AIUnlimitedReload = 0;
+    int AICanBeLooted = 1;
+    string AILootingBehaviour = "WEAPONS | UPGRADE";
 }
 
 class KOTH_Settings: KOTH_SettingsBase
@@ -150,6 +166,22 @@ class KOTH_Settings: KOTH_SettingsBase
         if (!ctx.Read(s.VehicleSpawnCheckRadius)) return false;
         if (!ctx.Read(s.AllowAdminZoneChange)) return false;
         if (!ctx.Read(s.EnableAI)) return false;
+        if (!ctx.Read(s.FactionMaxAI)) return false;
+        if (!ctx.Read(s.PlayerThreshold)) return false;
+        if (!ctx.Read(s.SpawnCheckInterval)) return false;
+        if (!ctx.Read(s.AISpawnStagger)) return false;
+        if (!ctx.Read(s.AISpawnBuffer)) return false;
+        if (!ctx.Read(s.AISpawnAngleVariation)) return false;
+        if (!ctx.Read(s.WestLoadout)) return false;
+        if (!ctx.Read(s.EastLoadout)) return false;
+        if (!ctx.Read(s.AIAccuracyMin)) return false;
+        if (!ctx.Read(s.AIAccuracyMax)) return false;
+        if (!ctx.Read(s.AIThreatDistance)) return false;
+        if (!ctx.Read(s.AISpeed)) return false;
+        if (!ctx.Read(s.AIThreatSpeed)) return false;
+        if (!ctx.Read(s.AIUnlimitedReload)) return false;
+        if (!ctx.Read(s.AICanBeLooted)) return false;
+        if (!ctx.Read(s.AILootingBehaviour)) return false;
 
         CopyInternal(s);
         m_IsLoaded = true;
@@ -221,6 +253,22 @@ class KOTH_Settings: KOTH_SettingsBase
         ctx.Write(VehicleSpawnCheckRadius);
         ctx.Write(AllowAdminZoneChange);
         ctx.Write(EnableAI);
+        ctx.Write(FactionMaxAI);
+        ctx.Write(PlayerThreshold);
+        ctx.Write(SpawnCheckInterval);
+        ctx.Write(AISpawnStagger);
+        ctx.Write(AISpawnBuffer);
+        ctx.Write(AISpawnAngleVariation);
+        ctx.Write(WestLoadout);
+        ctx.Write(EastLoadout);
+        ctx.Write(AIAccuracyMin);
+        ctx.Write(AIAccuracyMax);
+        ctx.Write(AIThreatDistance);
+        ctx.Write(AISpeed);
+        ctx.Write(AIThreatSpeed);
+        ctx.Write(AIUnlimitedReload);
+        ctx.Write(AICanBeLooted);
+        ctx.Write(AILootingBehaviour);
     }
 
     override int Send(PlayerIdentity identity)
@@ -314,6 +362,22 @@ class KOTH_Settings: KOTH_SettingsBase
         VehicleSpawnCheckRadius = s.VehicleSpawnCheckRadius;
         AllowAdminZoneChange = s.AllowAdminZoneChange;
         EnableAI = s.EnableAI;
+        FactionMaxAI = s.FactionMaxAI;
+        PlayerThreshold = s.PlayerThreshold;
+        SpawnCheckInterval = s.SpawnCheckInterval;
+        AISpawnStagger = s.AISpawnStagger;
+        AISpawnBuffer = s.AISpawnBuffer;
+        AISpawnAngleVariation = s.AISpawnAngleVariation;
+        WestLoadout = s.WestLoadout;
+        EastLoadout = s.EastLoadout;
+        AIAccuracyMin = s.AIAccuracyMin;
+        AIAccuracyMax = s.AIAccuracyMax;
+        AIThreatDistance = s.AIThreatDistance;
+        AISpeed = s.AISpeed;
+        AIThreatSpeed = s.AIThreatSpeed;
+        AIUnlimitedReload = s.AIUnlimitedReload;
+        AICanBeLooted = s.AICanBeLooted;
+        AILootingBehaviour = s.AILootingBehaviour;
     }
 
     override bool IsLoaded()
@@ -380,49 +444,49 @@ class KOTH_Settings: KOTH_SettingsBase
         
         ModeName = "King of the Hill";
         ScoreLimit = 100;
-        CaptureTickSeconds = 5;
+        CaptureTickSeconds = 120;
         MinPlayersToInfluence = 1;
         PointsPerTickPerPlayer = 1.0;
         NeutralizeSpeedMultiplier = 1.0;
         
         EnablePriorityZoneMovement = true;
-        PriorityZoneMovementInterval = 120.0;
+        PriorityZoneMovementInterval = 240.0;
         PriorityZoneBonusMultiplier = 2.0;
         
         XPPerKill = 100;
         XPPerRevive = 50;
         XPPerAssist = 25;
-        XPPerCapture = 250;
-        XPCaptureInterval = 10;
+        XPPerCapture = 100;
+        XPCaptureInterval = 30;
         FriendlyFirePenaltyXP = 150;
         SuicidePenaltyXP = 100;
         HeadShotBonusXP = 50;
-        KillStreakBonusXPEnabled = true;
+        KillStreakBonusXPEnabled = false;
         KillStreakThresholds = { 5, 10, 15 };
         KillStreakBonusXP = { 100, 200, 300 };
         GlobalXPMultiplier = 1.0;
         MoneyPerKill = 100;
         MoneyPerRevive = 50;
         MoneyPerAssist = 25;
-        MoneyPerCapture = 300;
+        MoneyPerCapture = 100;
         TeamKillMoneyPenalty = 200;
         SuicideMoneyPenalty = 100;
         HeadShotMoneyBonus = 50;
-        KillStreakMoneyBonusEnabled = true;
+        KillStreakMoneyBonusEnabled = false;
         KillStreakMoneyThresholds = { 5, 10, 15 };
         KillStreakBonusMoney = { 100, 200, 300 };
         GlobalMoneyMultiplier = 1.0;
         
-        EndScreenDisplaySeconds = 30;
-        VoteTimeSeconds = 20;
+        EndScreenDisplaySeconds = 45.0;
+        VoteTimeSeconds = 40.0;
         MaxPlayerLevel = 99;
         
-        MVPBonusXP = 500;
-        MVPBonusMoney = 500;
-        SharpshooterBonusXP = 400;
-        SharpshooterBonusMoney = 400;
-        MedicBonusXP = 300;
-        MedicBonusMoney = 300;
+        MVPBonusXP = 1000;
+        MVPBonusMoney = 1000;
+        SharpshooterBonusXP = 800;
+        SharpshooterBonusMoney = 800;
+        MedicBonusXP = 500;
+        MedicBonusMoney = 500;
         
         WinningTeamXPMultiplier = 1.5;
         WinningTeamMoneyMultiplier = 1.5;
@@ -431,14 +495,30 @@ class KOTH_Settings: KOTH_SettingsBase
         
         MaxTeamImbalance = 3;
         EnableZoneRotation = false;
-        ZoneRotationInterval = 1800.0;
-        ZoneSelectionMode = 0;
+        ZoneRotationInterval = 3600.0;
+        ZoneSelectionMode = 2;
         NotifyPlayersOnZoneChange = true;
         ZoneChangeWarningTime = 60;
         VehicleRespawnCheckInterval = 60;
         VehicleSpawnCheckRadius = 30;
         AllowAdminZoneChange = true;
-        EnableAI = true;
+        EnableAI = false;
+        FactionMaxAI = 10;
+        PlayerThreshold = 40;
+        SpawnCheckInterval = 90;
+        AISpawnStagger = 5;
+        AISpawnBuffer = 100.0;
+        AISpawnAngleVariation = 30.0;
+        WestLoadout = "WestLoadout";
+        EastLoadout = "EastLoadout";
+        AIAccuracyMin = 0.3;
+        AIAccuracyMax = 0.6;
+        AIThreatDistance = 500.0;
+        AISpeed = "WALK";
+        AIThreatSpeed = "SPRINT";
+        AIUnlimitedReload = 0;
+        AICanBeLooted = 1;
+        AILootingBehaviour = "WEAPONS | UPGRADE";
     }
 
     override string SettingName()

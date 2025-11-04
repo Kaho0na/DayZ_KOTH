@@ -30,6 +30,8 @@ class KOTH_RoundEndModule: CF_ModuleWorld
     
     private bool m_RoundEndInProgress;
     private ref KOTH_HUDDataSync m_HUDSync;
+
+    private KOTH_Settings m_Settings;
     
     void KOTH_RoundEndModule()
     {
@@ -133,8 +135,8 @@ class KOTH_RoundEndModule: CF_ModuleWorld
     
     void LoadSettings()
     {
-        KOTH_Settings settings = GetExpansionSettings().GetDayZ_KOTH();
-        if (!settings)
+        m_Settings = GetExpansionSettings().GetDayZ_KOTH();
+        if (!m_Settings)
         {
             m_EndScreenDisplaySeconds = 60;
             m_VoteTimeSeconds = 30;
@@ -143,15 +145,15 @@ class KOTH_RoundEndModule: CF_ModuleWorld
             return;
         }
         
-        m_EndScreenDisplaySeconds = settings.EndScreenDisplaySeconds;
+        m_EndScreenDisplaySeconds = m_Settings.EndScreenDisplaySeconds;
         if(m_EndScreenDisplaySeconds < 5)
         {
             m_EndScreenDisplaySeconds = 10;
         }
 
-        m_VoteTimeSeconds = settings.VoteTimeSeconds;
+        m_VoteTimeSeconds = m_Settings.VoteTimeSeconds;
         
-        if (settings.ZoneSelectionMode == 2)
+        if (m_Settings.ZoneSelectionMode == 2)
             m_VotingEnabled = true;
         else
             m_VotingEnabled = false;
@@ -191,7 +193,7 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         Print("[KOTH_RoundEndModule] Winner: " + winningTeam);
         Print("[KOTH_RoundEndModule] Scores - East: " + eastScore + ", West: " + westScore);
         Print("[KOTH_RoundEndModule] ============================================");
-        
+
         Print("[KOTH_RoundEndModule] STEP 1: Stopping zone triggers...");
         StopZoneTriggers();
 
@@ -340,9 +342,8 @@ class KOTH_RoundEndModule: CF_ModuleWorld
             return;
         
         Print("[KOTH_RoundEndModule] Calculating end-round bonuses...");
-        
-        KOTH_Settings settings = GetExpansionSettings().GetDayZ_KOTH();
-        if (!settings)
+
+        if (!m_Settings)
             return;
         
         KOTH_RoundTeamStats eastStats = m_StatsTracker.GetTeamStats("East");
@@ -354,13 +355,13 @@ class KOTH_RoundEndModule: CF_ModuleWorld
             return;
         }
         
-        AwardTopPerformers(settings);
-        AwardTeamBonuses(winningTeam, eastStats, westStats, settings);
+        AwardTopPerformers(m_Settings);
+        AwardTeamBonuses(winningTeam, eastStats, westStats, m_Settings);
         
         Print("[KOTH_RoundEndModule] Bonuses awarded");
     }
     
-    void AwardTopPerformers(KOTH_Settings settings)
+    void AwardTopPerformers(KOTH_Settings m_Settings)
     {
         KOTH_RoundPlayerStats mvp = m_StatsTracker.GetMVP();
         if (mvp && mvp.Kills > 0)
@@ -368,9 +369,9 @@ class KOTH_RoundEndModule: CF_ModuleWorld
             PlayerBase mvpPlayer = GetPlayerByUID(mvp.PlayerUID);
             if (mvpPlayer)
             {
-                m_RewardManager.AddPlayerXP(mvpPlayer, settings.MVPBonusXP, "MVP Award");
-                m_RewardManager.AddPlayerMoney(mvpPlayer, settings.MVPBonusMoney, "MVP Award");
-                KOTH_NotificationModule.ShowNotificationAdvanced("MVP AWARD!", "$" + settings.MVPBonusMoney.ToString(), ARGB(255, 255, 215, 0), settings.MVPBonusXP.ToString() + "XP", ARGB(255, 255, 215, 0), ARGB(255, 218, 165, 32), 5.0, mvpPlayer.GetIdentity());
+                m_RewardManager.AddPlayerXP(mvpPlayer, m_Settings.MVPBonusXP, "MVP Award");
+                m_RewardManager.AddPlayerMoney(mvpPlayer, m_Settings.MVPBonusMoney, "MVP Award");
+                KOTH_NotificationModule.ShowNotificationAdvanced("MVP AWARD!", "$" + m_Settings.MVPBonusMoney.ToString(), ARGB(255, 255, 215, 0), m_Settings.MVPBonusXP.ToString() + "XP", ARGB(255, 255, 215, 0), ARGB(255, 218, 165, 32), 5.0, mvpPlayer.GetIdentity());
                 Print("[KOTH_RoundEndModule] MVP Award: " + mvp.PlayerName + " (" + mvp.Kills + " kills)");
             }
         }
@@ -381,9 +382,9 @@ class KOTH_RoundEndModule: CF_ModuleWorld
             PlayerBase ssPlayer = GetPlayerByUID(sharpshooter.PlayerUID);
             if (ssPlayer)
             {
-                m_RewardManager.AddPlayerXP(ssPlayer, settings.SharpshooterBonusXP, "Sharpshooter Award");
-                m_RewardManager.AddPlayerMoney(ssPlayer, settings.SharpshooterBonusMoney, "Sharpshooter Award");
-                KOTH_NotificationModule.ShowNotificationAdvanced("SHARPSHOOTER AWARD!", "$" + settings.SharpshooterBonusMoney.ToString(), ARGB(255, 255, 140, 0), settings.SharpshooterBonusXP.ToString() + "XP", ARGB(255, 255, 140, 0), ARGB(255, 255, 69, 0), 5.0, ssPlayer.GetIdentity());
+                m_RewardManager.AddPlayerXP(ssPlayer, m_Settings.SharpshooterBonusXP, "Sharpshooter Award");
+                m_RewardManager.AddPlayerMoney(ssPlayer, m_Settings.SharpshooterBonusMoney, "Sharpshooter Award");
+                KOTH_NotificationModule.ShowNotificationAdvanced("SHARPSHOOTER AWARD!", "$" + m_Settings.SharpshooterBonusMoney.ToString(), ARGB(255, 255, 140, 0), m_Settings.SharpshooterBonusXP.ToString() + "XP", ARGB(255, 255, 140, 0), ARGB(255, 255, 69, 0), 5.0, ssPlayer.GetIdentity());
                 Print("[KOTH_RoundEndModule] Sharpshooter Award: " + sharpshooter.PlayerName + " (" + sharpshooter.Headshots + " headshots)");
             }
         }
@@ -394,15 +395,15 @@ class KOTH_RoundEndModule: CF_ModuleWorld
             PlayerBase medicPlayer = GetPlayerByUID(medic.PlayerUID);
             if (medicPlayer)
             {
-                m_RewardManager.AddPlayerXP(medicPlayer, settings.MedicBonusXP, "Top Medic Award");
-                m_RewardManager.AddPlayerMoney(medicPlayer, settings.MedicBonusMoney, "Top Medic Award");
-                KOTH_NotificationModule.ShowNotificationAdvanced("TOP MEDIC AWARD!", "$" + settings.MedicBonusMoney.ToString(), ARGB(255, 0, 255, 127), settings.MedicBonusXP.ToString() + "XP", ARGB(255, 0, 255, 127), ARGB(255, 60, 179, 113), 5.0, medicPlayer.GetIdentity());
+                m_RewardManager.AddPlayerXP(medicPlayer, m_Settings.MedicBonusXP, "Top Medic Award");
+                m_RewardManager.AddPlayerMoney(medicPlayer, m_Settings.MedicBonusMoney, "Top Medic Award");
+                KOTH_NotificationModule.ShowNotificationAdvanced("TOP MEDIC AWARD!", "$" + m_Settings.MedicBonusMoney.ToString(), ARGB(255, 0, 255, 127), m_Settings.MedicBonusXP.ToString() + "XP", ARGB(255, 0, 255, 127), ARGB(255, 60, 179, 113), 5.0, medicPlayer.GetIdentity());
                 Print("[KOTH_RoundEndModule] Top Medic Award: " + medic.PlayerName + " (" + medic.Revives + " revives)");
             }
         }
     }
     
-    void AwardTeamBonuses(string winningTeam, KOTH_RoundTeamStats eastStats, KOTH_RoundTeamStats westStats, KOTH_Settings settings)
+    void AwardTeamBonuses(string winningTeam, KOTH_RoundTeamStats eastStats, KOTH_RoundTeamStats westStats, KOTH_Settings m_Settings)
     {
         array<Man> players = new array<Man>;
         GetGame().GetPlayers(players);
@@ -425,16 +426,16 @@ class KOTH_RoundEndModule: CF_ModuleWorld
             
             if (team == winningTeam)
             {
-                bonusXP = CalculateWinningBonus(playerStats, team, eastStats, westStats, settings, true);
-                bonusMoney = CalculateWinningBonus(playerStats, team, eastStats, westStats, settings, false);
+                bonusXP = CalculateWinningBonus(playerStats, team, eastStats, westStats, m_Settings, true);
+                bonusMoney = CalculateWinningBonus(playerStats, team, eastStats, westStats, m_Settings, false);
                 m_RewardManager.AddPlayerXP(player, bonusXP, "Victory Bonus");
                 m_RewardManager.AddPlayerMoney(player, bonusMoney, "Victory Bonus");
                 KOTH_NotificationModule.ShowNotificationAdvanced("VICTORY BONUS!", "$" + bonusMoney.ToString(), ARGB(255, 0, 255, 0), bonusXP.ToString() + "XP", ARGB(255, 144, 238, 144), ARGB(255, 34, 139, 34), 5.0, player.GetIdentity());
             }
             else
             {
-                bonusXP = CalculateLosingBonus(playerStats, team, eastStats, westStats, settings, true);
-                bonusMoney = CalculateLosingBonus(playerStats, team, eastStats, westStats, settings, false);
+                bonusXP = CalculateLosingBonus(playerStats, team, eastStats, westStats, m_Settings, true);
+                bonusMoney = CalculateLosingBonus(playerStats, team, eastStats, westStats, m_Settings, false);
                 m_RewardManager.AddPlayerXP(player, bonusXP, "Participation Bonus");
                 m_RewardManager.AddPlayerMoney(player, bonusMoney, "Participation Bonus");
                 KOTH_NotificationModule.ShowNotificationAdvanced("Participation Bonus", "$" + bonusMoney.ToString(), ARGB(255, 169, 169, 169), bonusXP.ToString() + "XP", ARGB(255, 169, 169, 169), ARGB(255, 128, 128, 128), 5.0, player.GetIdentity());
@@ -444,7 +445,7 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         }
     }
     
-    int CalculateWinningBonus(KOTH_RoundPlayerStats playerStats, string team, KOTH_RoundTeamStats eastStats, KOTH_RoundTeamStats westStats, KOTH_Settings settings, bool isXP)
+    int CalculateWinningBonus(KOTH_RoundPlayerStats playerStats, string team, KOTH_RoundTeamStats eastStats, KOTH_RoundTeamStats westStats, KOTH_Settings m_Settings, bool isXP)
     {
         int totalTeamXP;
         int totalTeamMoney;
@@ -461,24 +462,24 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         }
         
         int playerLevel = playerStats.CurrentLevel;
-        int maxLevel = settings.MaxPlayerLevel;
+        int maxLevel = m_Settings.MaxPlayerLevel;
         float playTimeRatio = playerStats.PlayTimeRatio;
         float levelRatio = playerLevel / maxLevel;
         
         int bonus;
         if (isXP)
         {
-            bonus = totalTeamXP * levelRatio * settings.WinningTeamXPMultiplier * playTimeRatio;
+            bonus = totalTeamXP * levelRatio * m_Settings.WinningTeamXPMultiplier * playTimeRatio;
         }
         else
         {
-            bonus = totalTeamMoney * levelRatio * settings.WinningTeamMoneyMultiplier * playTimeRatio;
+            bonus = totalTeamMoney * levelRatio * m_Settings.WinningTeamMoneyMultiplier * playTimeRatio;
         }
         
         return bonus;
     }
     
-    int CalculateLosingBonus(KOTH_RoundPlayerStats playerStats, string team, KOTH_RoundTeamStats eastStats, KOTH_RoundTeamStats westStats, KOTH_Settings settings, bool isXP)
+    int CalculateLosingBonus(KOTH_RoundPlayerStats playerStats, string team, KOTH_RoundTeamStats eastStats, KOTH_RoundTeamStats westStats, KOTH_Settings m_Settings, bool isXP)
     {
         int totalTeamXP;
         int totalTeamMoney;
@@ -497,9 +498,9 @@ class KOTH_RoundEndModule: CF_ModuleWorld
             teamFinalScore = westStats.FinalScore;
         }
         
-        int scoreLimit = settings.ScoreLimit;
+        int scoreLimit = m_Settings.ScoreLimit;
         int playerLevel = playerStats.CurrentLevel;
-        int maxLevel = settings.MaxPlayerLevel;
+        int maxLevel = m_Settings.MaxPlayerLevel;
         float playTimeRatio = playerStats.PlayTimeRatio;
         float scoreRatio = teamFinalScore / scoreLimit;
         float levelRatio = playerLevel / maxLevel;
@@ -507,11 +508,11 @@ class KOTH_RoundEndModule: CF_ModuleWorld
         int bonus;
         if (isXP)
         {
-            bonus = totalTeamXP * scoreRatio * levelRatio * settings.LosingTeamXPMultiplier * playTimeRatio;
+            bonus = totalTeamXP * scoreRatio * levelRatio * m_Settings.LosingTeamXPMultiplier * playTimeRatio;
         }
         else
         {
-            bonus = totalTeamMoney * scoreRatio * levelRatio * settings.LosingTeamMoneyMultiplier * playTimeRatio;
+            bonus = totalTeamMoney * scoreRatio * levelRatio * m_Settings.LosingTeamMoneyMultiplier * playTimeRatio;
         }
         
         return bonus;

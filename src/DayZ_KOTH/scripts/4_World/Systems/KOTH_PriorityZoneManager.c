@@ -106,7 +106,7 @@ class KOTH_PriorityZoneManager
         s_CurrentAngle = Math.RandomFloat(0, 360);
         s_CurrentPriorityRadius = Math.RandomFloat(s_PriorityRadiusMin, s_PriorityRadiusMax);
         s_CurrentPosition = CalculatePositionOnCircle(s_CaptureZoneCenter, s_TrajectoryRadius, s_CurrentAngle);
-        
+        s_CurrentPosition[1] = GetGame().SurfaceY(s_CurrentPosition[0], s_CurrentPosition[2]);
         s_ActivePriorityZone.SetPosition(s_CurrentPosition);
         
         if (s_ActivePriorityZone.GetTrigger())
