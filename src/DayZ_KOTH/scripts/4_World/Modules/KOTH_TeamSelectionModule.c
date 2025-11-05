@@ -227,11 +227,12 @@ class KOTH_TeamSelectionModule: CF_ModuleWorld
         // ───────────────────────────────────────────────
         //  Save player's team selection persistently
         // ───────────────────────────────────────────────
-        KOTH_PlayerData playerData = KOTH_PlayerData.Load(uid);
+        KOTH_Players playerData = KOTH_Players.Load(uid);
+
         if (playerData)
         {
             playerData.SetLastTeamSelection(teamName);
-            playerData.Save(uid);
+            playerData.Save();
             Print("[DayZ_KOTH] Saved team selection (" + teamName + ") for player " + sender.GetName());
         }
         else
@@ -251,13 +252,14 @@ class KOTH_TeamSelectionModule: CF_ModuleWorld
             return;
 
         PlayerBase player = PlayerBase.GetPlayerByUID(sender.GetId());
-        KOTH_PlayerData playerData = KOTH_PlayerData.Load(sender.GetId());
+        KOTH_Players playerData = KOTH_Players.Load(sender.GetId());
+
 
         if (!player)
             return;
         
         playerData.SetLastTeamSelection("None");
-        playerData.Save(sender.GetId());
+        playerData.Save();
 
         player.SetHealth(0);
     }

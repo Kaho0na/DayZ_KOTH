@@ -230,90 +230,121 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         
         SyncPlayerStatsToClient(player.GetIdentity(), data);
     }
-    
+        
+    // Adds money to both the player's Expansion ATM balance and KOTH_Players JSON
     void AddPlayerMoney(PlayerBase player, int moneyAmount, string reason)
     {
+        // 1. Validate player and server
         if (!GetGame().IsServer() || !player || !player.GetIdentity())
             return;
-        
-        string uid = player.GetIdentity().GetId();
+
         PlayerIdentity ident = player.GetIdentity();
-        
+        string uid = ident.GetId();
+
+        // 2. Validate Market module
         if (!m_MarketModule)
         {
             Error("[KOTH_PlayerRewardManager] Market module not initialized!");
             return;
         }
-        
-        ref ExpansionMarketATM_Data atmData = m_MarketModule.GetPlayerATMData(uid);
+
+        ExpansionMarketATM_Data atmData = m_MarketModule.GetPlayerATMData(uid);
         if (!atmData)
         {
             Error("[KOTH_PlayerRewardManager] Failed to get ATM data for player " + ident.GetName());
             return;
         }
-        
+
+        // 3. Load player JSON data
         KOTH_Players data = GetPlayerData(uid);
         if (!data)
+        {
+            Error("[KOTH_PlayerRewardManager] Failed to load player data for " + ident.GetName());
             return;
-        
+        }
+
+        // 4. Apply reward
         int finalMoney = moneyAmount * m_GlobalMoneyMultiplier;
-        
+
         atmData.AddMoney(finalMoney);
         atmData.Save();
+
         data.TotalMoneyinBank += finalMoney;
         SavePlayerData(uid);
-        
-        if (m_StatsTracker)
-        {
-            m_StatsTracker.RecordMoneyGained(uid, ident.GetName(), finalMoney);
-        }
-        
+
+        // 5. Notify & Sync
         SI_OnPlayerMoneyGained.Invoke(uid, finalMoney, reason);
-        
         SyncPlayerStatsToClient(ident, data);
+
+        Print("[KOTH_PlayerRewardManager] Added $" + finalMoney + " to " + ident.GetName() + " (" + reason + ")");
     }
-    
+
+    // Removes money from both the player's Expansion ATM balance and KOTH_Players JSON
     void RemovePlayerMoney(PlayerBase player, int moneyAmount, string reason)
     {
+        // 1. Validate player and server
         if (!GetGame().IsServer() || !player || !player.GetIdentity())
             return;
-        
-        string uid = player.GetIdentity().GetId();
+
         PlayerIdentity ident = player.GetIdentity();
-        
+        string uid = ident.GetId();
+
+        // 2. Validate Market module
         if (!m_MarketModule)
         {
             Error("[KOTH_PlayerRewardManager] Market module not initialized!");
             return;
         }
-        
-        ref ExpansionMarketATM_Data atmData = m_MarketModule.GetPlayerATMData(uid);
+
+        ExpansionMarketATM_Data atmData = m_MarketModule.GetPlayerATMData(uid);
         if (!atmData)
         {
             Error("[KOTH_PlayerRewardManager] Failed to get ATM data for player " + ident.GetName());
             return;
         }
-        
-        int currentBalance = atmData.GetMoney();
-        
-        if (currentBalance < moneyAmount)
+
+        // 3. Load player JSON data
+        KOTH_Players data = GetPlayerData(uid);
+        if (!data)
         {
-            //Print("[KOTH_PlayerRewardManager] Insufficient funds for penalty - Current: $" + currentBalance + ", Penalty: $" + moneyAmount + " - No deduction");
-            ExpansionNotification("Team Kill Penalty", "Insufficient funds for penalty (Balance: $" + currentBalance + ")").Error(ident);
+            Error("[KOTH_PlayerRewardManager] Failed to load player data for " + ident.GetName());
             return;
         }
-        
-        atmData.RemoveMoney(moneyAmount);
-        atmData.Save();
-        
-        KOTH_Players data = GetPlayerData(uid);
-        if (data)
+
+        // 4. Validate balance
+        int atmBalance = atmData.GetMoney();
+        int jsonBalance = data.TotalMoneyinBank;
+        int availableFunds = Math.Min(atmBalance, jsonBalance);
+
+        if (availableFunds < moneyAmount)
         {
-            SyncPlayerStatsToClient(ident, data);
+            ExpansionNotification("Insufficient Funds", "You don't have enough money for this deduction.").Error(ident);
+            Print("[KOTH_PlayerRewardManager] Not enough funds for " + ident.GetName() + " (" + reason + ")");
+            return;
         }
-        
-        //Print("[KOTH_PlayerRewardManager] Removed $" + moneyAmount + " from " + ident.GetName() + " (" + reason + ") - ATM: $" + atmData.GetMoney());
+
+        // 5. Deduct money from both sources
+        if (atmBalance >= moneyAmount)
+        {
+            atmData.RemoveMoney(moneyAmount);
+            atmData.Save();
+        }
+
+        if (jsonBalance >= moneyAmount)
+        {
+            data.TotalMoneyinBank -= moneyAmount;
+            if (data.TotalMoneyinBank < 0)
+                data.TotalMoneyinBank = 0;
+            SavePlayerData(uid);
+        }
+
+        // 6. Notify & Sync
+        SI_OnPlayerMoneyGained.Invoke(uid, -moneyAmount, reason); // negative = deduction
+        SyncPlayerStatsToClient(ident, data);
+
+        Print("[KOTH_PlayerRewardManager] Removed $" + moneyAmount + " from " + ident.GetName() + " (" + reason + ")");
     }
+
     
     void ProcessCaptureReward(PlayerBase player, bool isCapturing)
     {
