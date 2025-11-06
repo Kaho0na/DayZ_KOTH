@@ -429,18 +429,10 @@ class KOTH_ShopModule : CF_ModuleWorld
             return;
         }
         
-        if (atmData)
-        {
-            atmData.RemoveMoney(item.RentPrice);
-            atmData.Save();
-        }
-        
-        playerData.TotalMoneyinBank = playerData.TotalMoneyinBank - item.RentPrice;
-        playerData.Save();
-        
         if (m_RewardManager)
         {
             m_RewardManager.SyncPlayerStatsToClient(ident, playerData);
+            m_RewardManager.RemovePlayerMoney(player, item.RentPrice, "Item Rented");
         }
         
         if (KOTH_ShopScopes.IsScope(itemClass))
@@ -453,18 +445,10 @@ class KOTH_ShopModule : CF_ModuleWorld
             {
                 ExpansionNotification("Shop", "No space in inventory").Error(ident);
                 
-                if (atmData)
-                {
-                    atmData.AddMoney(item.RentPrice);
-                    atmData.Save();
-                }
-                
-                playerData.TotalMoneyinBank = playerData.TotalMoneyinBank + item.RentPrice;
-                playerData.Save();
-                
                 if (m_RewardManager)
                 {
                     m_RewardManager.SyncPlayerStatsToClient(ident, playerData);
+                    m_RewardManager.AddPlayerMoney(player, item.RentPrice, "Refund Rented");
                 }
                 return;
             }
@@ -535,23 +519,23 @@ class KOTH_ShopModule : CF_ModuleWorld
                 if (!HasInventorySpaceForItem(player, itemClass))
                 {
                     ExpansionNotification("Shop", "No space in inventory").Error(ident);
+                    
+                    if (m_RewardManager)
+                    {
+                        m_RewardManager.SyncPlayerStatsToClient(ident, playerData);
+                        m_RewardManager.AddPlayerMoney(player, item.RentPrice, "Refund Bought");
+                    }
                     return;
                 }
             }
             
-            if (atmData)
-            {
-                atmData.RemoveMoney(item.BuyPrice);
-                atmData.Save();
-            }
-            
-            playerData.TotalMoneyinBank = playerData.TotalMoneyinBank - item.BuyPrice;
             playerData.OwnedWeapons.Insert(itemClass);
             playerData.Save();
             
             if (m_RewardManager)
             {
                 m_RewardManager.SyncPlayerStatsToClient(ident, playerData);
+                m_RewardManager.RemovePlayerMoney(player, item.BuyPrice, "Item Bought");
             }
             
             if (IsItemCategory(itemClass))

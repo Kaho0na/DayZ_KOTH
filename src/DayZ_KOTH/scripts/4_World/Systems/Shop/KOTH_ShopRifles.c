@@ -96,19 +96,61 @@ class KOTH_ShopRifles
 
     static void EquipPrimaryWeapon(PlayerBase player, KOTH_ShopItem item)
     {
+        if (!player || !GetGame().IsServer())
+            return;
+
+        if (!item || item.ClassName == "")
+        {
+            Error("[KOTH_Shop] Invalid KOTH_ShopItem or missing ClassName!");
+            return;
+        }
+
         EntityAI currentWeapon = player.GetHumanInventory().GetEntityInHands();
         if (currentWeapon)
         {
+            // Queue deletion and delay weapon spawn to allow cleanup
             currentWeapon.DeleteSafe();
+            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SpawnWeaponInHands, 50, false, player, item);
+            return;
         }
-        
+
+        // If no weapon in hands, spawn immediately
+        SpawnWeaponInHands(player, item);
+    }
+
+    // ------------------------------------------------------------------
+    // Handles actual creation after DeleteSafe delay
+    // ------------------------------------------------------------------
+    protected static void SpawnWeaponInHands(PlayerBase player, KOTH_ShopItem item)
+    {
+        if (!player || !item)
+            return;
+
+        if (!GetGame().IsServer())
+            return;
+
+        // Ensure hands are now clear
+        EntityAI inHands = player.GetHumanInventory().GetEntityInHands();
+        if (inHands)
+        {
+            Print("[KOTH_Shop] Hands still occupied, delaying weapon spawn again for: " + item.ClassName);
+            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SpawnWeaponInHands, 50, false, player, item);
+            return;
+        }
+
+        // Create the new weapon in hands
         EntityAI weapon = player.GetHumanInventory().CreateInHands(item.ClassName);
         if (!weapon)
         {
-            Print("[KOTH_Shop] ERROR: Failed to create weapon: " + item.ClassName);
+            Error("[KOTH_Shop] Failed to create weapon: " + item.ClassName);
             return;
         }
-        
+
+        Print("[KOTH_Shop] Created weapon: " + item.ClassName + " for " + player.GetIdentity().GetName());
+
+        // ------------------------------------------------------------------
+        // Attach default magazine
+        // ------------------------------------------------------------------
         if (item.MagazineClass != "")
         {
             EntityAI mag = weapon.GetInventory().CreateAttachment(item.MagazineClass);
@@ -117,14 +159,33 @@ class KOTH_ShopRifles
                 Magazine magCast = Magazine.Cast(mag);
                 if (magCast)
                     magCast.ServerSetAmmoMax();
+                else
+                    Error("[KOTH_Shop] Magazine class " + item.MagazineClass + " is not a valid Magazine!");
+            }
+            else
+            {
+                Error("[KOTH_Shop] Failed to attach magazine " + item.MagazineClass + " to " + item.ClassName);
             }
         }
-        
+
+        // ------------------------------------------------------------------
+        // Attach all default attachments
+        // ------------------------------------------------------------------
         foreach (string attachment : item.DefaultAttachments)
         {
-            weapon.GetInventory().CreateAttachment(attachment);
+            if (attachment == "")
+                continue;
+
+            EntityAI att = weapon.GetInventory().CreateAttachment(attachment);
+            if (!att)
+                Print("[KOTH_Shop] Failed to attach " + attachment + " to " + item.ClassName);
         }
+
+        Print("[KOTH_Shop] Weapon fully equipped: " + item.ClassName);
     }
+
+
+    
 
     
 

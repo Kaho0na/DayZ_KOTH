@@ -112,19 +112,25 @@ class KOTH_ShopPistols
 
     static void EquipPrimaryWeapon(PlayerBase player, KOTH_ShopItem item)
     {
+        if (!player || !GetGame().IsServer())
+            return;
+
         EntityAI currentWeapon = player.GetHumanInventory().GetEntityInHands();
         if (currentWeapon)
         {
+            // Queue deletion and delay weapon spawn to ensure the slot is freed
             currentWeapon.DeleteSafe();
+            GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(EquipPrimaryWeapon, 50, false, player, item);
+            return;
         }
-        
+
         EntityAI weapon = player.GetHumanInventory().CreateInHands(item.ClassName);
         if (!weapon)
         {
             Print("[KOTH_Shop] ERROR: Failed to create weapon: " + item.ClassName);
             return;
         }
-        
+
         if (item.MagazineClass != "")
         {
             EntityAI mag = weapon.GetInventory().CreateAttachment(item.MagazineClass);
@@ -135,10 +141,13 @@ class KOTH_ShopPistols
                     magCast.ServerSetAmmoMax();
             }
         }
-        
+
         foreach (string attachment : item.DefaultAttachments)
         {
             weapon.GetInventory().CreateAttachment(attachment);
         }
+
+        Print("[KOTH_Shop] Equipped weapon in hands: " + item.ClassName);
     }
+
 }

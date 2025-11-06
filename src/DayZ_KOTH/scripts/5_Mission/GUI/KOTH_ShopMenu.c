@@ -373,7 +373,7 @@ class KOTH_ShopMenu : ExpansionScriptViewMenu
         
         if (testScope)
         {
-            testScope.DeleteSafe();
+            GetGame().ObjectDelete(testScope);
             canAttach = true;
         }
         
