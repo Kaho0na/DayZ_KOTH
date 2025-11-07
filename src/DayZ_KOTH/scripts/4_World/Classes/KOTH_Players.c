@@ -45,9 +45,15 @@ class KOTH_Players : KOTH_PlayersBase
 	}
 
 	// Load from file
-	static KOTH_Players Load(string fileName)
+	static KOTH_Players Load(string fileName, string playerName = "Unknown")
 	{
+		if (fileName.Contains("AI_"))
+		{
+			Print("[KOTH_Players] Skipping AI persistence for: " + fileName);
+			return null;
+		}
 		// Clean up input (remove spaces, ensure .json extension)
+		string playerID = fileName;
 		fileName.Replace(" ", "");
 		if (!ExpansionString.EndsWithIgnoreCase(fileName, ".json"))
 			fileName += ".json";
@@ -64,7 +70,7 @@ class KOTH_Players : KOTH_PlayersBase
 		else
 		{
 			Print("[KOTH_Players] No existing player file found for " + fileName + ". Creating new defaults.");
-			settings.Defaults();
+			settings.InitializeNew(playerID, playerName);
 			settings.m_FileName = fileName.Substring(0, fileName.IndexOf(".json")); // store raw UID for later saves
 			settings.Save();
 		}
@@ -81,7 +87,7 @@ class KOTH_Players : KOTH_PlayersBase
 	void Save()
 	{
 		string path = EXPANSION_KOTH_Players + m_FileName + ".json";
-
+		Print("[KOTH_Players] Saving player data to: " + m_FileName);
 		// Ensure the directory exists before saving
 		if (!FileExist(EXPANSION_KOTH_Players))
 		{
@@ -94,12 +100,12 @@ class KOTH_Players : KOTH_PlayersBase
 		Print("[KOTH_Players] Saved player data: " + path);
 	}
 
-	// Defaults if file not found
-	void Defaults()
+	// Initialize new player data with defaults
+	void InitializeNew(string playerID, string playerName)
 	{
-		PlayerID = "";
-		PlayerName = "New Player";
-		TotalMoneyinBank = 0;
+		PlayerID = playerID;
+		PlayerName = playerName;
+		TotalMoneyinBank = 10000;
 		TotalExperienceEarned = 0;
 		CurrentLevel = 1;
 		TotalTimePlayed = 0;

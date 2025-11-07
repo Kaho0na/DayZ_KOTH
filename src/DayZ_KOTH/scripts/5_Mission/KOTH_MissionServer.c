@@ -106,43 +106,35 @@ modded class MissionServer
         if (!GetGame().IsDedicatedServer())
             return;
 
-        if (!identity)
+        // Ignore AI entities
+        if (!player)
             return;
 
+        // Expansion AI usually have null or nickname-based fake identities
+        if (!identity || !identity.GetId() || identity.GetName().Contains("AI_") || player.GetIdentity() == null)
+        {
+            string aiName = KOTH_AINicknameManager.GetInstance().GetOrAssignNickname(player);
+            Print("[KOTH] Skipping persistence for AI entity: " + aiName + " (" + player.GetType() + ")");
+            return;
+        }
+
+        // Player Persistence
         string playerID = identity.GetId();
-        string filePath = EXPANSION_KOTH_Players + playerID + ".json";
+        string playerName = identity.GetName();
 
-        if (!FileExist(EXPANSION_KOTH_Players))
-            MakeDirectory(EXPANSION_KOTH_Players);
+        KOTH_Players playerData = KOTH_Players.Load(playerID, playerName);
+Print("[MissionServer][DEBUG] KOTH_Players.Load called for " + playerName + " (" + playerID + ")");
+Print("[MissionServer][DEBUG] Returned playerData: " + string.Format("%1", playerData));
 
-        KOTH_Players playerData;
-
-        if (FileExist(filePath))
+        if (!playerData)
         {
-            playerData = KOTH_Players.Load(playerID);
-            Print("[DayZ_KOTH] Loaded existing player file for " + identity.GetName());
-        }
-        else
-        {
-            playerData = new KOTH_Players();
-            playerData.m_FileName = playerID;
-            playerData.PlayerID = playerID;
-            playerData.PlayerName = identity.GetName();
-            playerData.TotalMoneyinBank = 0;
-            playerData.TotalExperienceEarned = 0;
-            playerData.CurrentLevel = 1;
-            playerData.TotalTimePlayed = 0;
-            playerData.LongestKill = 0;
-            playerData.LongestHeadshot = 0;
-            playerData.HighestKillstreak = 0;
-            playerData.TotalEnemiesKilled = 0;
-            playerData.LastTeamSelection = "None";
-
-            playerData.Save();
-
-            Print("[DayZ_KOTH] Created new player file for " + identity.GetName() + " (" + playerID + ")");
+            Error("[DayZ_KOTH] Failed to load player data for " + identity.GetName() + " (" + playerID + ")");
+            return;
         }
 
+        Print("[DayZ_KOTH] Player data initialized for " + identity.GetName() + " (" + playerID + ")");
+
+        // Zone Manager & Spawn Handling
         KOTH_ZoneManager zoneManager;
         CF_Modules<KOTH_ZoneManager>.Get(zoneManager);
 
@@ -160,6 +152,7 @@ modded class MissionServer
 
         vector spawnPos;
 
+        // Handle Team Spawn
         if (playerData.LastTeamSelection == "East")
         {
             KOTH_PlayerLoadout.SetPlayerLoadout(player, "East");
@@ -168,7 +161,6 @@ modded class MissionServer
             Print("[KOTH] " + playerData.PlayerName + " spawning at EAST base: " + spawnPos);
             GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(KOTH_SpawnUtils.SpawnPlayerAtPosition, 500, false, player, spawnPos);
             
-            // PHASE 3: Sync initial stats to client
             SyncInitialStatsToClient(player, identity, playerData);
         }
         else if (playerData.LastTeamSelection == "West")
@@ -179,7 +171,6 @@ modded class MissionServer
             Print("[KOTH] " + playerData.PlayerName + " spawning at WEST base: " + spawnPos);
             GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(KOTH_SpawnUtils.SpawnPlayerAtPosition, 500, false, player, spawnPos);
             
-            // PHASE 3: Sync initial stats to client
             SyncInitialStatsToClient(player, identity, playerData);
         }
         else
@@ -231,26 +222,26 @@ modded class MissionServer
     //! UTILITY METHODS
     //! ═══════════════════════════════════════════════════════════════
     
-    void CheckPlayerArmbands()
-    {
-        array<Man> players = new array<Man>;
-        GetGame().GetPlayers(players);
+    // void CheckPlayerArmbands()
+    // {
+    //     array<Man> players = new array<Man>;
+    //     GetGame().GetPlayers(players);
         
-        for (int i = 0; i < players.Count(); i++)
-        {
-            PlayerBase player = PlayerBase.Cast(players.Get(i));
-            if (player && player.GetIdentity())
-            {
-                string uid = player.GetIdentity().GetId();
-                KOTH_Players playerData = KOTH_Players.Load(uid);
+    //     for (int i = 0; i < players.Count(); i++)
+    //     {
+    //         PlayerBase player = PlayerBase.Cast(players.Get(i));
+    //         if (player && player.GetIdentity())
+    //         {
+    //             string uid = player.GetIdentity().GetId();
+    //             KOTH_Players playerData = KOTH_Players.Load(uid);
                 
-                if (playerData && playerData.LastTeamSelection != "None")
-                {
-                    KOTH_PlayerLoadout.CheckAndRestoreArmband(player, playerData.LastTeamSelection);
-                }
-            }
-        }
-    }
+    //             if (playerData && playerData.LastTeamSelection != "None")
+    //             {
+    //                 KOTH_PlayerLoadout.CheckAndRestoreArmband(player, playerData.LastTeamSelection);
+    //             }
+    //         }
+    //     }
+    // }
 
     // TEMP: Shop keybind test
     override void OnUpdate(float timeslice)

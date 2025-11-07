@@ -171,14 +171,23 @@ class KOTH_ShopModule : CF_ModuleWorld
         Print("[KOTH_Shop] SERVER: Building shop data RPC... Player faction: " + playerFaction);
         
         auto rpc = Expansion_CreateRPC("RPC_ReceiveShopData");
+        // Send player data
         rpc.Write(playerData.CurrentLevel);
         rpc.Write(playerData.TotalMoneyinBank);
         rpc.Write(playerFaction);
         
+        // Send owned weapons
         rpc.Write(playerData.OwnedWeapons.Count());
         foreach (string ownedItem : playerData.OwnedWeapons)
         {
             rpc.Write(ownedItem);
+        }
+
+        // Send owned attachments
+        rpc.Write(playerData.OwnedAttachments.Count());
+        foreach (string ownedAttachment : playerData.OwnedAttachments)
+        {
+            rpc.Write(ownedAttachment);
         }
         
         rpc.Write(m_Categories.Count());
@@ -267,24 +276,37 @@ class KOTH_ShopModule : CF_ModuleWorld
         Print("[KOTH_Shop] CLIENT: Player faction is " + playerFaction);
         
         array<string> ownedItems = new array<string>();
-        int ownedCount;
-        if (!ctx.Read(ownedCount))
+        int ownedWeaponsCount;
+        if (!ctx.Read(ownedWeaponsCount))
             return;
         
-        for (int i = 0; i < ownedCount; i++)
+        for (int i = 0; i < ownedWeaponsCount; i++)
         {
             string ownedWeapon;
             if (!ctx.Read(ownedWeapon))
                 return;
             ownedItems.Insert(ownedWeapon);
         }
-        
+
+        // Read owned attachments
+        int ownedAttachmentsCount;
+        if (!ctx.Read(ownedAttachmentsCount))
+            return;
+
+        for (int j = 0; j < ownedAttachmentsCount; j++)
+        {
+            string ownedAttachment;
+            if (!ctx.Read(ownedAttachment))
+                return;
+            ownedItems.Insert(ownedAttachment);
+        }
+                
         array<ref KOTH_ShopCategory> categories = new array<ref KOTH_ShopCategory>();
         int catCount;
         if (!ctx.Read(catCount))
             return;
         
-        for (int j = 0; j < catCount; j++)
+        for (int k = 0; k < catCount; k++)
         {
             string categoryName;
             if (!ctx.Read(categoryName))
@@ -298,7 +320,7 @@ class KOTH_ShopModule : CF_ModuleWorld
             category.Category = categoryName;
             category.Items = new array<ref KOTH_ShopItem>();
             
-            for (int k = 0; k < itemCount; k++)
+            for (int l = 0; l < itemCount; l++)
             {
                 KOTH_ShopItem item = new KOTH_ShopItem();
                 
@@ -324,7 +346,7 @@ class KOTH_ShopModule : CF_ModuleWorld
                     return;
                 
                 item.DefaultAttachments = new array<string>();
-                for (int l = 0; l < attCount; l++)
+                for (int m = 0; m < attCount; m++)
                 {
                     string att;
                     if (!ctx.Read(att))
@@ -474,38 +496,50 @@ class KOTH_ShopModule : CF_ModuleWorld
     {
         if (!player)
             return;
-        
+
         PlayerIdentity ident = player.GetIdentity();
+        if (!ident)
+            return;
+
         string uid = ident.GetId();
-        
-        KOTH_Players playerData = KOTH_Players.Load(uid);
+        string playerName = ident.GetName();
+
+        KOTH_Players playerData = KOTH_Players.Load(uid, playerName);
         if (!playerData)
         {
             ExpansionNotification("Shop Error", "Player data not found").Error(ident);
             return;
         }
-        
-        ExpansionMarketATM_Data atmData;
-        if (m_MarketModule)
-        {
-            atmData = m_MarketModule.GetPlayerATMData(uid);
-        }
-        
+
         KOTH_ShopItem item = GetItem(itemClass);
         if (!item)
         {
             ExpansionNotification("Shop Error", "Item not found in shop").Error(ident);
             return;
         }
-        
+
+        // ────────────────────────────────────────────────
+        // Validate requirements
+        // ────────────────────────────────────────────────
         if (playerData.CurrentLevel < item.RequiredLevel)
         {
             ExpansionNotification("Shop", "You need level " + item.RequiredLevel.ToString() + " to buy this item").Error(ident);
             return;
         }
-        
-        bool alreadyOwned = playerData.OwnedWeapons.Find(itemClass) != -1;
-        
+
+        bool isScope = KOTH_ShopScopes.IsScope(itemClass);
+        bool isPistol = KOTH_ShopPistols.IsPistol(itemClass);
+        bool isItem = IsItemCategory(itemClass);
+
+        bool alreadyOwned = false;
+        if (isScope)
+            alreadyOwned = playerData.OwnedAttachments.Find(itemClass) != -1;
+        else
+            alreadyOwned = playerData.OwnedWeapons.Find(itemClass) != -1;
+
+        // ────────────────────────────────────────────────
+        // Buying new item
+        // ────────────────────────────────────────────────
         if (!alreadyOwned)
         {
             if (playerData.TotalMoneyinBank < item.BuyPrice)
@@ -513,90 +547,73 @@ class KOTH_ShopModule : CF_ModuleWorld
                 ExpansionNotification("Shop", "Not enough money. Need $" + item.BuyPrice.ToString()).Error(ident);
                 return;
             }
-            
-            if (IsItemCategory(itemClass))
+
+            if (isItem && !HasInventorySpaceForItem(player, itemClass))
             {
-                if (!HasInventorySpaceForItem(player, itemClass))
-                {
-                    ExpansionNotification("Shop", "No space in inventory").Error(ident);
-                    
-                    if (m_RewardManager)
-                    {
-                        m_RewardManager.SyncPlayerStatsToClient(ident, playerData);
-                        m_RewardManager.AddPlayerMoney(player, item.RentPrice, "Refund Bought");
-                    }
-                    return;
-                }
+                ExpansionNotification("Shop", "No space in inventory").Error(ident);
+                if (m_RewardManager)
+                    m_RewardManager.SyncPlayerStatsToClient(ident, playerData);
+                return;
             }
-            
-            playerData.OwnedWeapons.Insert(itemClass);
+
+            // Track ownership
+            if (isScope)
+                playerData.AddOwnedAttachment(itemClass);
+            else
+                playerData.AddOwnedWeapon(itemClass);
             playerData.Save();
-            
+            // Equip
+            EquipPurchasedItem(player, itemClass, item);
+
+            // Deduct money
             if (m_RewardManager)
             {
                 m_RewardManager.SyncPlayerStatsToClient(ident, playerData);
                 m_RewardManager.RemovePlayerMoney(player, item.BuyPrice, "Item Bought");
             }
-            
-            if (IsItemCategory(itemClass))
-            {
-                KOTH_ShopItems.EquipItem(player, item);
-            }
-            else if (KOTH_ShopScopes.IsScope(itemClass))
-            {
-                KOTH_ShopScopes.EquipScope(player, item);
-            }
-            else if (KOTH_ShopPistols.IsPistol(itemClass))
-            {
-                KOTH_ShopPistols.ClearPistolMagazines(player);
-                KOTH_ShopPistols.EquipPistol(player, item);
-                KOTH_ShopRifles.GiveStandardLoadout(player, item);
-            }
-            else
-            {
-                KOTH_ShopRifles.ClearRifleMagazines(player);
-                KOTH_ShopRifles.EquipPrimaryWeapon(player, item);
-                KOTH_ShopRifles.GiveStandardLoadout(player, item);
-            }
-            
+
             SendShopResult(player, true, "Purchased " + item.DisplayName + " for $" + item.BuyPrice.ToString(), itemClass, true);
         }
         else
         {
-            if (IsItemCategory(itemClass))
+            // ────────────────────────────────────────────────
+            // Already owned → re-equip
+            // ────────────────────────────────────────────────
+            if (isItem && !HasInventorySpaceForItem(player, itemClass))
             {
-                if (!HasInventorySpaceForItem(player, itemClass))
-                {
-                    ExpansionNotification("Shop", "No space in inventory").Error(ident);
-                    return;
-                }
+                ExpansionNotification("Shop", "No space in inventory").Error(ident);
+                return;
             }
-            
-            if (IsItemCategory(itemClass))
-            {
-                KOTH_ShopItems.EquipItem(player, item);
-            }
-            else if (KOTH_ShopScopes.IsScope(itemClass))
-            {
-                KOTH_ShopScopes.EquipScope(player, item);
-            }
-            else if (KOTH_ShopPistols.IsPistol(itemClass))
-            {
-                KOTH_ShopPistols.ClearPistolMagazines(player);
-                KOTH_ShopPistols.EquipPistol(player, item);
-                KOTH_ShopRifles.GiveStandardLoadout(player, item);
-            }
-            else
-            {
-                KOTH_ShopRifles.ClearRifleMagazines(player);
-                KOTH_ShopRifles.EquipPrimaryWeapon(player, item);
-                KOTH_ShopRifles.GiveStandardLoadout(player, item);
-            }
-            
+
+            EquipPurchasedItem(player, itemClass, item);
             SendShopResult(player, true, "Equipped " + item.DisplayName, itemClass, false);
         }
     }
-    
+
+    void EquipPurchasedItem(PlayerBase player, string itemClass, KOTH_ShopItem item)
+    {
+        if (IsItemCategory(itemClass))
+        {
+            KOTH_ShopItems.EquipItem(player, item);
+        }
+        else if (KOTH_ShopScopes.IsScope(itemClass))
+        {
+            KOTH_ShopScopes.EquipScope(player, item);
+        }
+        else if (KOTH_ShopPistols.IsPistol(itemClass))
+        {
+            KOTH_ShopPistols.ClearPistolMagazines(player);
+            KOTH_ShopPistols.EquipPistol(player, item);
+            KOTH_ShopRifles.GiveStandardLoadout(player, item);
+        }
+        else
+        {
+            KOTH_ShopRifles.ClearRifleMagazines(player);
+            KOTH_ShopRifles.EquipPrimaryWeapon(player, item);
+            KOTH_ShopRifles.GiveStandardLoadout(player, item);
+        }
+    }
+
     protected void RPC_ShopResult(PlayerIdentity sender, Object target, ParamsReadContext ctx)
     {
         if (GetGame().IsServer())

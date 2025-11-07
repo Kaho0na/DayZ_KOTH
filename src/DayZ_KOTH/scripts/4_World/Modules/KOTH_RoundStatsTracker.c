@@ -592,9 +592,13 @@ class KOTH_RoundStatsTracker: CF_ModuleWorld
         if (!rewardManager)
             return 1;
         
-        KOTH_Players data = rewardManager.GetPlayerData(uid);
+        KOTH_Players data = KOTH_Players.Load(uid);
+        
         if (!data)
+        {
+            Print("[KOTH_RoundStatsTracker] WARNING: GetPlayerLevel() failed to load data for UID " + uid);
             return 1;
+        }
         
         return data.CurrentLevel;
     }

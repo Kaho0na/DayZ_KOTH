@@ -144,55 +144,13 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         return s_Instance;
     }
     
-    KOTH_Players GetPlayerData(string uid)
-    {
-        if (!GetGame().IsServer())
-            return null;
-        
-        if (m_PlayerDataCache.Contains(uid))
-        {
-            return m_PlayerDataCache.Get(uid);
-        }
-        
-        KOTH_Players data = KOTH_Players.Load(uid);
-        if (data)
-        {
-            m_PlayerDataCache.Set(uid, data);
-        }
-        
-        return data;
-    }
-    
-    void SavePlayerData(string uid)
-    {
-        if (!GetGame().IsServer())
-            return;
-        
-        if (!m_PlayerDataCache.Contains(uid))
-            return;
-        
-        KOTH_Players data = m_PlayerDataCache.Get(uid);
-        if (data)
-        {
-            data.Save();
-        }
-    }
-    
-    void ClearPlayerCache(string uid)
-    {
-        if (!GetGame().IsServer())
-            return;
-        
-        m_PlayerDataCache.Remove(uid);
-    }
-    
     void AddPlayerXP(PlayerBase player, int xpAmount, string reason)
     {
         if (!GetGame().IsServer() || !player || !player.GetIdentity())
             return;
         
         string uid = player.GetIdentity().GetId();
-        KOTH_Players data = GetPlayerData(uid);
+        KOTH_Players data = KOTH_Players.Load(uid);
         
         if (!data)
             return;
@@ -214,7 +172,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
             //Print("[KOTH_PlayerRewardManager] Player " + player.GetIdentity().GetName() + " leveled up! Level " + oldLevel + " → " + newLevel);
         }
         
-        SavePlayerData(uid);
+        data.Save();
         
         if (m_StatsTracker)
         {
@@ -256,7 +214,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         }
 
         // 3. Load player JSON data
-        KOTH_Players data = GetPlayerData(uid);
+        KOTH_Players data = KOTH_Players.Load(uid);
         if (!data)
         {
             Error("[KOTH_PlayerRewardManager] Failed to load player data for " + ident.GetName());
@@ -270,7 +228,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         atmData.Save();
 
         data.TotalMoneyinBank += finalMoney;
-        SavePlayerData(uid);
+        data.Save();
 
         // 5. Notify & Sync
         SI_OnPlayerMoneyGained.Invoke(uid, finalMoney, reason);
@@ -304,8 +262,8 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
         }
 
         // 3. Load player JSON data
-        KOTH_Players data = GetPlayerData(uid);
-        if (!data)
+        KOTH_Players playerData = KOTH_Players.Load(uid);
+        if (!playerData)
         {
             Error("[KOTH_PlayerRewardManager] Failed to load player data for " + ident.GetName());
             return;
@@ -313,10 +271,9 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
 
         // 4. Validate balance
         int atmBalance = atmData.GetMoney();
-        int jsonBalance = data.TotalMoneyinBank;
-        int availableFunds = Math.Min(atmBalance, jsonBalance);
+        int kothBalance = playerData.TotalMoneyinBank;
 
-        if (availableFunds < moneyAmount)
+        if (kothBalance < moneyAmount)
         {
             ExpansionNotification("Insufficient Funds", "You don't have enough money for this deduction.").Error(ident);
             Print("[KOTH_PlayerRewardManager] Not enough funds for " + ident.GetName() + " (" + reason + ")");
@@ -330,17 +287,17 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
             atmData.Save();
         }
 
-        if (jsonBalance >= moneyAmount)
+        if (kothBalance >= moneyAmount)
         {
-            data.TotalMoneyinBank -= moneyAmount;
-            if (data.TotalMoneyinBank < 0)
-                data.TotalMoneyinBank = 0;
-            SavePlayerData(uid);
+            playerData.TotalMoneyinBank -= moneyAmount;
+            if (playerData.TotalMoneyinBank < 0)
+                playerData.TotalMoneyinBank = 0;
+            playerData.Save();
         }
 
         // 6. Notify & Sync
         SI_OnPlayerMoneyGained.Invoke(uid, -moneyAmount, reason); // negative = deduction
-        SyncPlayerStatsToClient(ident, data);
+        SyncPlayerStatsToClient(ident, playerData);
 
         Print("[KOTH_PlayerRewardManager] Removed $" + moneyAmount + " from " + ident.GetName() + " (" + reason + ")");
     }
@@ -586,7 +543,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
             
             if (killerIdent)
             {
-                KOTH_Players data = GetPlayerData(killerUID);
+                KOTH_Players data = KOTH_Players.Load(killerUID);
                 if (!data)
                     return;
                 
@@ -610,7 +567,7 @@ class KOTH_PlayerRewardManager: CF_ModuleWorld
                 }
                 
                 IncrementKillstreak(killerUID, data);
-                SavePlayerData(killerUID);
+                data.Save();
                 
                 AddPlayerMoney(killer, moneyReward, rewardType);
                 AddPlayerXP(killer, xpReward, rewardType);
