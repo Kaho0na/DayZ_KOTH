@@ -470,7 +470,6 @@ class KOTH_ShopModule : CF_ModuleWorld
                 if (m_RewardManager)
                 {
                     m_RewardManager.SyncPlayerStatsToClient(ident, playerData);
-                    m_RewardManager.AddPlayerMoney(player, item.RentPrice, "Refund Rented");
                 }
                 return;
             }

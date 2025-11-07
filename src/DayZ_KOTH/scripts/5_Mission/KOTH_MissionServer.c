@@ -23,8 +23,6 @@ modded class MissionServer
         
         //GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(KOTH_AIDebugHelper.DebugAllEntitiesInGame, 10000, false);
         //GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(KOTH_AIDebugHelper.TestAIInZone, 15000, true);
-
-    
     }
 
 
@@ -123,8 +121,6 @@ modded class MissionServer
         string playerName = identity.GetName();
 
         KOTH_Players playerData = KOTH_Players.Load(playerID, playerName);
-Print("[MissionServer][DEBUG] KOTH_Players.Load called for " + playerName + " (" + playerID + ")");
-Print("[MissionServer][DEBUG] Returned playerData: " + string.Format("%1", playerData));
 
         if (!playerData)
         {
@@ -217,48 +213,5 @@ Print("[MissionServer][DEBUG] Returned playerData: " + string.Format("%1", playe
             Print("[KOTH] Scheduled initial stats sync for " + identity.GetName());
         }
     }
-    
-    //! ═══════════════════════════════════════════════════════════════
-    //! UTILITY METHODS
-    //! ═══════════════════════════════════════════════════════════════
-    
-    // void CheckPlayerArmbands()
-    // {
-    //     array<Man> players = new array<Man>;
-    //     GetGame().GetPlayers(players);
-        
-    //     for (int i = 0; i < players.Count(); i++)
-    //     {
-    //         PlayerBase player = PlayerBase.Cast(players.Get(i));
-    //         if (player && player.GetIdentity())
-    //         {
-    //             string uid = player.GetIdentity().GetId();
-    //             KOTH_Players playerData = KOTH_Players.Load(uid);
-                
-    //             if (playerData && playerData.LastTeamSelection != "None")
-    //             {
-    //                 KOTH_PlayerLoadout.CheckAndRestoreArmband(player, playerData.LastTeamSelection);
-    //             }
-    //         }
-    //     }
-    // }
 
-    // TEMP: Shop keybind test
-    override void OnUpdate(float timeslice)
-    {
-        super.OnUpdate(timeslice);
-        
-        // TEMP: Shop keybind test (L key)
-        Input input = GetGame().GetInput();
-        if (input.LocalPress("UALookAround")) // L key
-        {
-            Print("[KOTH_Shop] Shop keybind pressed, opening shop menu");
-            PlayerBase player = PlayerBase.Cast(GetGame().GetPlayer());
-            if (player && player.GetIdentity())
-            {
-                Print("[KOTH_Shop] Requesting shop open for player " + player.GetIdentity().GetName());
-                KOTH_ShopModule.GetInstance().RequestShopOpen(player, player.GetIdentity());
-            }
-        }
-    }
 }

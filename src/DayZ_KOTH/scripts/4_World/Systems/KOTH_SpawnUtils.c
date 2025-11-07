@@ -18,29 +18,16 @@ class KOTH_SpawnUtils
         float offsetX = Math.RandomFloatInclusive(-2.0, 2.0);
         float offsetZ = Math.RandomFloatInclusive(-2.0, 2.0);
 
-        vector finalPos = Vector(spawnPos[0] + offsetX, spawnPos[1], spawnPos[2] + offsetZ);
-
-        vector rayStart = Vector(finalPos[0], finalPos[1] + 10, finalPos[2]);
-        vector rayEnd = Vector(finalPos[0], finalPos[1] - 10, finalPos[2]);
-        vector hitPos;
-        vector hitNormal;
-        int hitComp;
-
-        bool hit = DayZPhysics.RaycastRV(rayStart, rayEnd, hitPos, hitNormal, hitComp, null, null, player, false, false, ObjIntersectView, 0.5);
-
-        if (hit)
-        {
-            hitPos[1] = hitPos[1] + 0.1;
-            player.SetPosition(hitPos);
-            Print("[KOTH] Player spawned at: " + hitPos + " (offset X:" + offsetX + " Z:" + offsetZ + ")");
-        }
-        else
-        {
-            finalPos[1] = finalPos[1] + 0.1;
-            player.SetPosition(finalPos);
-            Print("[KOTH] Player spawned (no raycast) at: " + finalPos + " (offset X:" + offsetX + " Z:" + offsetZ + ")");
-        }
-
+        // Use the SAME platform height calculation as NPCs
+        float baseYOffset = -2.0;  // Match KOTH_SpawnBase baseYOffset
+        float platformSurfaceY = 3.38896;  // Match NPC dy value (platform top surface)
+        
+        // Calculate final position using platform-relative coordinates
+        vector finalPos = Vector(spawnPos[0] + offsetX, spawnPos[1] + platformSurfaceY + baseYOffset, spawnPos[2] + offsetZ);
+        
+        player.SetPosition(finalPos);
+        
+        Print("[KOTH] Player spawned at: " + finalPos.ToString() + " (offset X:" + offsetX + " Z:" + offsetZ + ")");
         player.MessageStatus("[KOTH] You have spawned safely at your team's base!");
     }
-};
+}

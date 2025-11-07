@@ -2,11 +2,6 @@
  * KOTH_PlayerBase.c (UNIFIED VERSION)
  *
  * King of the Hill by Kahoona
- * Features:
- * - Headshot tracking
- * - Assist/Revive system with anti-farm
- * - Armband protection (cannot drop team armbands)
- * - Safe zone weapon restrictions (cannot drop or shoulder weapons in SZ)
  *
  * Place in: 4_World/Entities/KOTH_PlayerBase.c
  */
