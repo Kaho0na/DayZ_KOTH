@@ -148,21 +148,23 @@ class KOTH_AIManager: CF_ModuleWorld
         bool attackPriority = hasValidPriority && (Math.RandomIntInclusive(0, 1) == 0);
 
         // Choose destination
-        vector targetPos;
+        vector targetCenter;
         if (attackPriority)
-        {
-            targetPos = priorityPos;
-            Print("[KOTH_AIManager] AI assigned to attack PRIORITY zone at: " + targetPos.ToString());
-        }
+            targetCenter = priorityPos;
         else
-        {
-            targetPos = m_CurrentZone.GetAOZoneCenter();
-            Print("[KOTH_AIManager] AI assigned to attack AO center at: " + targetPos.ToString());
-        }
+            targetCenter = m_CurrentZone.GetAOZoneCenter();
+
+        // Add random offset within 100m radius to spread AIs
+        float waypointAngle = Math.RandomFloat(0, 360);
+        float waypointRadius = Math.RandomFloat(0, 100);
+        float waypointOffsetX = waypointRadius * Math.Cos(waypointAngle * Math.DEG2RAD);
+        float waypointOffsetZ = waypointRadius * Math.Sin(waypointAngle * Math.DEG2RAD);
+        
+        vector targetPos = Vector(targetCenter[0] + waypointOffsetX, targetCenter[1], targetCenter[2] + waypointOffsetZ);
+        targetPos[1] = GetGame().SurfaceY(targetPos[0], targetPos[2]);
 
         // Add chosen destination
         config.Waypoints.Insert(targetPos);
-
         
         auto patrol = eAIDynamicPatrol.CreateEx(config, finalSpawn, true);
         
@@ -216,7 +218,7 @@ class KOTH_AIManager: CF_ModuleWorld
         float newZ = direction[0] * sinAngle + direction[2] * cosAngle;
         direction = Vector(newX, 0, newZ).Normalized();
         
-        float spawnDistance = aoRadius + (settings.AISpawnBuffer * 0.5);
+        float spawnDistance = aoRadius + settings.AISpawnBuffer;
         vector spawnPos = aoCenter - (direction * spawnDistance);
         spawnPos[1] = GetGame().SurfaceY(spawnPos[0], spawnPos[2]);
         
