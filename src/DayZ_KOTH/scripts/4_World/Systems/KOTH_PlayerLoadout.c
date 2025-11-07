@@ -136,8 +136,9 @@ class KOTH_PlayerLoadout
         if (item)
         {
             knife = item.GetInventory().CreateInInventory("CombatKnife");
-            item.GetInventory().CreateInInventory("Mag_PP19_64rnd");
-            item.GetInventory().CreateInInventory("Mag_PP19_64rnd");
+            item.GetInventory().CreateInInventory("Mag_CZ75_15Rnd");
+            item.GetInventory().CreateInInventory("Mag_CZ75_15Rnd");
+
         }
         
         player.GetInventory().CreateInInventory("Sneakers_Red");
@@ -147,8 +148,9 @@ class KOTH_PlayerLoadout
         {
             grenade = item.GetInventory().CreateAttachment("RGD5Grenade");
             item.GetInventory().CreateAttachment("RGD5Grenade");
-            item.GetInventory().CreateInInventory("Mag_CZ75_15Rnd");
-            item.GetInventory().CreateInInventory("Mag_CZ75_15Rnd");
+            item.GetInventory().CreateInInventory("Mag_PP19_64rnd");
+            item.GetInventory().CreateInInventory("Mag_PP19_64rnd");
+
         }
         
         player.GetInventory().CreateInInventory("BoonieHat_Red");
