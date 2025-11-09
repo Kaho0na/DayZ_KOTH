@@ -728,10 +728,10 @@ FrameWidgetClass KOTH_RoundEndMenu {
          vexactsize 0
          Padding 3
          Margin 0
-         "Size To Content H" 1
-         "Size To Content V" 1
+         "Size To Content H" 0
+         "Size To Content V" 0
          content_halign center
-         content_valign center
+         content_valign top
          Columns 1
          Rows 100
          scriptclass "ViewBinding"

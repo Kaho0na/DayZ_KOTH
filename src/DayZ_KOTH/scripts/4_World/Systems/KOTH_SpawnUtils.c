@@ -27,7 +27,5 @@ class KOTH_SpawnUtils
         
         player.SetPosition(finalPos);
         
-        Print("[KOTH] Player spawned at: " + finalPos.ToString() + " (offset X:" + offsetX + " Z:" + offsetZ + ")");
-        player.MessageStatus("[KOTH] You have spawned safely at your team's base!");
-    }
+        Print("[KOTH] Player spawned at: " + finalPos.ToString() + " (offset X:" + offsetX + " Z:" + offsetZ + ")");    }
 }

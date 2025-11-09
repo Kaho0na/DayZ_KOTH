@@ -52,7 +52,7 @@ class KOTH_PlayerLoadout
                 }
             }
         }
-        
+        SetPlayerStats(player);
         Print("[KOTH_PlayerLoadout] Applied " + team + " loadout to player: " + player.GetIdentity().GetName());
     }
     
