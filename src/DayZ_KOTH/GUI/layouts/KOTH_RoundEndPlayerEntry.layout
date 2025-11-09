@@ -1,12 +1,12 @@
 FrameWidgetClass KOTH_RoundEndPlayerEntry {
  ignorepointer 0
  position 0 0
- size 1 50
+ size 1 0.08
  halign center_ref
  hexactpos 0
  vexactpos 0
  hexactsize 0
- vexactsize 1
+ vexactsize 0
  {
   ButtonWidgetClass RowBackground {
    ignorepointer 0
@@ -30,7 +30,7 @@ FrameWidgetClass KOTH_RoundEndPlayerEntry {
      text "PlayerName"
      font "gui/fonts/metron"
      "exact text" 1
-     "exact text size" 14
+     "exact text size" 18
      "size to text h" 0
      "size to text v" 0
      "text halign" left
@@ -55,7 +55,7 @@ FrameWidgetClass KOTH_RoundEndPlayerEntry {
      text "99"
      font "gui/fonts/metron"
      "exact text" 1
-     "exact text size" 14
+     "exact text size" 18
      "size to text h" 0
      "size to text v" 0
      "text halign" center
@@ -80,7 +80,7 @@ FrameWidgetClass KOTH_RoundEndPlayerEntry {
      text "0"
      font "gui/fonts/metron"
      "exact text" 1
-     "exact text size" 14
+     "exact text size" 18
      "size to text h" 0
      "size to text v" 0
      "text halign" center
@@ -105,7 +105,7 @@ FrameWidgetClass KOTH_RoundEndPlayerEntry {
      text "0"
      font "gui/fonts/metron"
      "exact text" 1
-     "exact text size" 14
+     "exact text size" 18
      "size to text h" 0
      "size to text v" 0
      "text halign" center
@@ -130,7 +130,7 @@ FrameWidgetClass KOTH_RoundEndPlayerEntry {
      text "0.00"
      font "gui/fonts/metron"
      "exact text" 1
-     "exact text size" 14
+     "exact text size" 18
      "size to text h" 0
      "size to text v" 0
      "text halign" center
@@ -155,7 +155,7 @@ FrameWidgetClass KOTH_RoundEndPlayerEntry {
      text "0"
      font "gui/fonts/metron"
      "exact text" 1
-     "exact text size" 14
+     "exact text size" 18
      "size to text h" 0
      "size to text v" 0
      "text halign" center
@@ -180,7 +180,7 @@ FrameWidgetClass KOTH_RoundEndPlayerEntry {
      text "0"
      font "gui/fonts/metron"
      "exact text" 1
-     "exact text size" 14
+     "exact text size" 18
      "size to text h" 0
      "size to text v" 0
      "text halign" center
@@ -205,7 +205,7 @@ FrameWidgetClass KOTH_RoundEndPlayerEntry {
      text "0"
      font "gui/fonts/metron"
      "exact text" 1
-     "exact text size" 14
+     "exact text size" 18
      "size to text h" 0
      "size to text v" 0
      "text halign" center
@@ -230,7 +230,7 @@ FrameWidgetClass KOTH_RoundEndPlayerEntry {
      text "$0"
      font "gui/fonts/metron"
      "exact text" 1
-     "exact text size" 14
+     "exact text size" 18
      "size to text h" 0
      "size to text v" 0
      "text halign" center
