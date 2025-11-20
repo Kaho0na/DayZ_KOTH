@@ -198,6 +198,8 @@ class KOTH_SpawnBase
 		ExpansionHumanLoadout.Apply(npc, loadoutClass, true);
 		npc.Update();
 		
+		s_Spawned.Insert(npc);
+		
 		Print("[KOTH_SpawnBase] NPC spawned successfully: " + npcClassName);
 		return npc;
 	}
@@ -283,26 +285,15 @@ class KOTH_SpawnBase
 
 		Print("[KOTH_SpawnBase] Despawning all bases, vehicles, and NPCs...");
 
-		for (int i = s_Spawned.Count() - 1; i >= 0; i--)
+		for (int n = s_SpawnedNPCs.Count() - 1; n >= 0; n--)
 		{
-			Object o = s_Spawned[i];
-			if (o)
+			KOTH_NPCBase npc = s_SpawnedNPCs[n];
+			if (npc)
 			{
-				EntityAI entity = EntityAI.Cast(o);
-				if (entity)
-					entity.DeleteSafe();
-				else
-					GetGame().ObjectDelete(o);
+				Print("[KOTH_SpawnBase] Deleting NPC: " + npc.GetType());
+				GetGame().ObjectDelete(npc);
 			}
-			s_Spawned.Remove(i);
-		}
-
-		for (int j = s_SafeZones.Count() - 1; j >= 0; j--)
-		{
-			ExpansionZone z = s_SafeZones[j];
-			if (z)
-				delete z;
-			s_SafeZones.Remove(j);
+			s_SpawnedNPCs.Remove(n);
 		}
 
 		for (int k = s_VehicleSpawners.Count() - 1; k >= 0; k--)
@@ -317,15 +308,26 @@ class KOTH_SpawnBase
 			s_VehicleSpawners.Remove(k);
 		}
 
-		for (int n = s_SpawnedNPCs.Count() - 1; n >= 0; n--)
+		for (int i = s_Spawned.Count() - 1; i >= 0; i--)
 		{
-			KOTH_NPCBase npc = s_SpawnedNPCs[n];
-			if (npc)
+			Object o = s_Spawned[i];
+			if (o)
 			{
-				Print("[KOTH_SpawnBase] Deleting NPC: " + npc.GetType());
-				npc.DeleteSafe();
+				EntityAI entity = EntityAI.Cast(o);
+				if (entity)
+					GetGame().ObjectDelete(entity);
+				else
+					GetGame().ObjectDelete(o);
 			}
-			s_SpawnedNPCs.Remove(n);
+			s_Spawned.Remove(i);
+		}
+
+		for (int j = s_SafeZones.Count() - 1; j >= 0; j--)
+		{
+			ExpansionZone z = s_SafeZones[j];
+			if (z)
+				delete z;
+			s_SafeZones.Remove(j);
 		}
 
 		Print("[KOTH_SpawnBase] All bases, vehicles, and NPCs despawned");
