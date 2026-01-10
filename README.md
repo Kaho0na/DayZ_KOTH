@@ -1,5 +1,7 @@
 I’ve been working on bringing one of Arma 3’s most iconic experiences"King of the Hill" into DayZ.
 
+https://steamcommunity.com/sharedfiles/filedetails/?id=3596230116
+
 This mod completely reimagines how DayZ is played. Instead of looting and surviving, players join one of two factions West (Blue) or East (Red) and battle for control over key mission zones scattered across Chernarus. The goal is simple: capture and hold the hill to earn points and win the round.
 
 Here’s what’s inside right now:
