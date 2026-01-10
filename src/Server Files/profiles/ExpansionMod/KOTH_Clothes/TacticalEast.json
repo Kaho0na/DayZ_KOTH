@@ -1,0 +1,39 @@
+{
+    "DisplayName": "Tactical Operative",
+    "Faction": "East",
+    "RequiredLevel": 12,
+    "Loadout": [
+        {
+            "ClassName": "TacticalShirt_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "CargoPants_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "CombatBoots_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "DryBag_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "Balaclava3Holes_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "UKAssVest_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "RadarCap_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "TacticalGloves_Black",
+            "Attachments": []
+        }
+    ]
+}

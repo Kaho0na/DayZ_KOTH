@@ -1,0 +1,75 @@
+{
+    "DisplayName": "Combat Medic",
+    "Faction": "West",
+    "RequiredLevel": 4,
+    "Loadout": [
+        {
+            "ClassName": "BDUJacket",
+            "Attachments": []
+        },
+        {
+            "ClassName": "BDUPants",
+            "Attachments": []
+        },
+        {
+            "ClassName": "CombatBoots_Beige",
+            "Attachments": []
+        },
+        {
+            "ClassName": "AliceBag_NearBubble",
+            "Attachments": []
+        },
+        {
+            "ClassName": "UKAssVest_Camo",
+            "Attachments": []
+        },
+				{
+            "ClassName": "BadageDressing",
+            "Attachments": []
+        },
+		{
+            "ClassName": "BadageDressing",
+            "Attachments": []
+        },
+		{
+            "ClassName": "BadageDressing",
+            "Attachments": []
+        },
+		{
+            "ClassName": "BadageDressing",
+            "Attachments": []
+        },
+		{
+            "ClassName": "BadageDressing",
+            "Attachments": []
+        },
+		{
+            "ClassName": "Epinephrine",
+            "Attachments": []
+        },
+		{
+            "ClassName": "Epinephrine",
+            "Attachments": []
+        },
+		{
+            "ClassName": "Morphine",
+            "Attachments": []
+        },
+		{
+            "ClassName": "SalineBagIV",
+            "Attachments": []
+        },
+		{
+            "ClassName": "SalineBagIV",
+            "Attachments": []
+        },
+        {
+            "ClassName": "BaseballCap_Blue",
+            "Attachments": []
+        },
+        {
+            "ClassName": "SurgicalGloves_White",
+            "Attachments": []
+        }
+    ]
+}

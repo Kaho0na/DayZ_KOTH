@@ -1,0 +1,86 @@
+{
+    "m_Version": 12,
+    "DisplayName": "#STR_EXPANSION_MARKET_CATEGORY_RIFLES",
+    "Icon": "Deliver",
+    "Color": "FBFCFEFF",
+    "IsExchange": 0,
+    "InitStockPercent": 75.0,
+    "Items": [
+        {
+            "ClassName": "mosin9130",
+            "MaxPriceThreshold": 2050,
+            "MinPriceThreshold": 1230,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+        {
+            "ClassName": "ssg82",
+            "MaxPriceThreshold": 6600,
+            "MinPriceThreshold": 3960,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [
+                "mag_ssg82_5rnd"
+            ],
+            "Variants": []
+        },
+        {
+            "ClassName": "sks",
+            "MaxPriceThreshold": 1635,
+            "MinPriceThreshold": 980,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [
+                "sks_bayonet"
+            ],
+            "Variants": []
+        },
+		        {
+            "ClassName": "vss",
+            "MaxPriceThreshold": 9810,
+            "MinPriceThreshold": 5885,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [
+                "mag_vss_10rnd"
+            ],
+            "Variants": []
+        },
+        {
+            "ClassName": "vikhr",
+            "MaxPriceThreshold": 10070,
+            "MinPriceThreshold": 6040,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [
+                "mag_vikhr_30rnd"
+            ],
+            "Variants": []
+        },
+        {
+            "ClassName": "svd",
+            "MaxPriceThreshold": 2040,
+            "MinPriceThreshold": 1225,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [
+                "mag_svd_10rnd"
+            ],
+            "Variants": []
+        }
+    ]
+}

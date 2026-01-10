@@ -1,0 +1,31 @@
+{
+    "DisplayName": "Cowboy",
+    "Faction": "West",
+    "RequiredLevel": 8,
+    "Loadout": [
+        {
+            "ClassName": "Shirt_BlueCheckBright",
+            "Attachments": []
+        },
+        {
+            "ClassName": "Jeans_Blue",
+            "Attachments": []
+        },
+        {
+            "ClassName": "WorkingBoots_Yellow",
+            "Attachments": []
+        },
+        {
+            "ClassName": "HuntingBag_Hannah",
+            "Attachments": []
+        },
+        {
+            "ClassName": "CowboyHat_Brown",
+            "Attachments": []
+        },
+        {
+            "ClassName": "WorkingGloves_Beige",
+            "Attachments": []
+        }
+    ]
+}

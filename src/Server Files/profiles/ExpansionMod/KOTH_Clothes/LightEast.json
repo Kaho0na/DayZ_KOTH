@@ -1,0 +1,39 @@
+{
+    "DisplayName": "Light Infantry",
+    "Faction": "East",
+    "RequiredLevel": 1,
+    "Loadout": [
+        {
+            "ClassName": "TTsKOJacket_Camo",
+            "Attachments": []
+        },
+        {
+            "ClassName": "TTSKOPants",
+            "Attachments": []
+        },
+        {
+            "ClassName": "TTSKOBoots",
+            "Attachments": []
+        },
+        {
+            "ClassName": "AssaultBag_Ttsko",
+            "Attachments": []
+        },
+        {
+            "ClassName": "BalaclavaMask_Beige",
+            "Attachments": []
+        },
+        {
+            "ClassName": "SmershVest",
+            "Attachments": []
+        },
+        {
+            "ClassName": "Ssh68Helmet",
+            "Attachments": []
+        },
+        {
+            "ClassName": "WoolGlovesFingerless_Tan",
+            "Attachments": []
+        }
+    ]
+}

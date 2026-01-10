@@ -1,0 +1,43 @@
+{
+    "DisplayName": "Tactical Operative",
+    "Faction": "West",
+    "RequiredLevel": 12,
+    "Loadout": [
+        {
+            "ClassName": "M65Jacket_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "CargoPants_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "CombatBoots_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "AssaultBag_Black",
+            "Attachments": []
+        },
+		{
+            "ClassName": "HighCapacityVest_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "BalaclavaMask_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "ChestHolster_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "BaseballCap_CMMG_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "TacticalGloves_Black",
+            "Attachments": []
+        }
+    ]
+}

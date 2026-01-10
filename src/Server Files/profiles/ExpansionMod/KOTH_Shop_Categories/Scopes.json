@@ -1,0 +1,149 @@
+{
+    "Category": "Scopes",
+    "Items": [
+        {
+            "ClassName": "BUISOptic",
+            "DisplayName": "BUIS Iron Sights",
+            "RentPrice": 50,
+            "BuyPrice": 3000,
+            "RequiredLevel": 1,
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "PistolOptic",
+            "DisplayName": "Pistol Optic",
+            "RentPrice": 75,
+            "BuyPrice": 4500,
+            "RequiredLevel": 2,
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "ReflexOptic",
+            "DisplayName": "Reflex Sight",
+            "RentPrice": 100,
+            "BuyPrice": 6000,
+            "RequiredLevel": 3,
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "KobraOptic",
+            "DisplayName": "Kobra Sight",
+            "RentPrice": 125,
+            "BuyPrice": 7500,
+            "RequiredLevel": 4,
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "M68Optic",
+            "DisplayName": "M68 Aimpoint",
+            "RentPrice": 150,
+            "BuyPrice": 9000,
+            "RequiredLevel": 5,
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "M4_T3NRDSOptic",
+            "DisplayName": "M4 T3N RDS",
+            "RentPrice": 175,
+            "BuyPrice": 10500,
+            "RequiredLevel": 6,
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "FNP45_MRDSOptic",
+            "DisplayName": "FNX-45 MRDS",
+            "RentPrice": 200,
+            "BuyPrice": 12000,
+            "RequiredLevel": 7,
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "ACOGOptic",
+            "DisplayName": "ACOG Scope (4x)",
+            "RentPrice": 250,
+            "BuyPrice": 15000,
+            "RequiredLevel": 9,
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "ACOGOptic_6x",
+            "DisplayName": "ACOG Scope (6x)",
+            "RentPrice": 300,
+            "BuyPrice": 18000,
+            "RequiredLevel": 11,
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "KashtanOptic",
+            "DisplayName": "Kashtan Scope",
+            "RentPrice": 325,
+            "BuyPrice": 19500,
+            "RequiredLevel": 12,
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "PUScopeOptic",
+            "DisplayName": "PU Scope",
+            "RentPrice": 350,
+            "BuyPrice": 21000,
+            "RequiredLevel": 13,
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "PSO1Optic",
+            "DisplayName": "PSO-1 Scope",
+            "RentPrice": 400,
+            "BuyPrice": 24000,
+            "RequiredLevel": 14,
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "PSO11Optic",
+            "DisplayName": "PSO-11 Scope",
+            "RentPrice": 450,
+            "BuyPrice": 27000,
+            "RequiredLevel": 15,
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "HuntingOptic",
+            "DisplayName": "Hunting Scope (3.5-7x)",
+            "RentPrice": 475,
+            "BuyPrice": 28500,
+            "RequiredLevel": 16,
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "KazuarOptic",
+            "DisplayName": "Kazuar Night Vision Scope",
+            "RentPrice": 600,
+            "BuyPrice": 36000,
+            "RequiredLevel": 18,
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "StarlightOptic",
+            "DisplayName": "Starlight NV Scope",
+            "RentPrice": 700,
+            "BuyPrice": 42000,
+            "RequiredLevel": 20,
+            "Faction": "Both",
+            "DefaultAttachments": []
+        }
+    ]
+}

@@ -1,0 +1,44 @@
+{
+    "DisplayName": "Heavy Infantry",
+    "Faction": "West",
+    "RequiredLevel": 7,
+    "Loadout": [
+        {
+            "ClassName": "USMCJacket_Woodland",
+            "Attachments": []
+        },
+        {
+            "ClassName": "USMCPants_Woodland",
+            "Attachments": []
+        },
+        {
+            "ClassName": "CombatBoots_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "AliceBag_Camo",
+            "Attachments": []
+        },
+        {
+            "ClassName": "PlateCarrierVest_Green",
+            "Attachments": [
+                {
+                    "ClassName": "PlateCarrierPouches_Green",
+                    "Attachments": []
+                },
+                {
+                    "ClassName": "PlateCarrierHolster_Green",
+                    "Attachments": []
+                }
+            ]
+        },
+        {
+            "ClassName": "Mich2001Helmet",
+            "Attachments": []
+        },
+        {
+            "ClassName": "TacticalGloves_Black",
+            "Attachments": []
+        }
+    ]
+}

@@ -1,0 +1,26 @@
+{
+    "ClassName": "ExpansionUAZ",
+    "DisplayName": "UAZ 469 (East)",
+    "RentPrice": 2500,
+    "Faction": "East",
+    "RequiredLevel": 15,
+    "MaxCount": 5,
+    "Attachments": [
+        "ExpansionUAZWheel",
+        "ExpansionUAZWheel",
+		"ExpansionUAZWheel",
+        "ExpansionUAZWheel",
+        "ExpansionUAZWheel",
+        "ExpansionUAZWheel",
+        "ExpansionUAZDoorDriver",
+		"ExpansionUAZDoorCoDriver",
+        "ExpansionUAZDoorCargo1",
+		"ExpansionUAZDoorCargo2",
+        "ExpansionUAZDoorHood",
+        "CarBattery",
+        "CarRadiator",
+        "SparkPlug",
+        "HeadlightH7",
+        "HeadlightH7"	
+    ]
+}

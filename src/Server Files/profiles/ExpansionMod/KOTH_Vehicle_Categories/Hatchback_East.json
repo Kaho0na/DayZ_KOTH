@@ -1,0 +1,26 @@
+{
+    "ClassName": "Hatchback_02",
+    "DisplayName": "Hatchback (East)",
+    "RentPrice": 1000,
+    "Faction": "East",
+    "RequiredLevel": 1,
+    "MaxCount": 5,
+    "Attachments": [
+        "Hatchback_02_Wheel",
+        "Hatchback_02_Wheel",
+        "Hatchback_02_Wheel",
+        "Hatchback_02_Wheel",
+        "Hatchback_02_Wheel",
+        "Hatchback_02_Door_1_1",
+        "Hatchback_02_Door_1_2",
+        "Hatchback_02_Door_2_1",
+        "Hatchback_02_Door_2_2",
+        "Hatchback_02_Hood",
+        "Hatchback_02_Trunk",
+        "CarBattery",
+        "CarRadiator",
+        "SparkPlug",
+        "HeadlightH7",
+        "HeadlightH7"
+    ]
+}

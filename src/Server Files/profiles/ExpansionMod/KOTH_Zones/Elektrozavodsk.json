@@ -1,0 +1,11 @@
+{
+  "ZoneID": 7,
+  "ZoneName": "Elektrozavodsk",
+  "EastSpawnBuilding": [11740.91, 3369.27],
+  "WestSpawnBuilding": [8597.17, 2434.11],
+  "EastSafeZoneRadius": 150,
+  "WestSafeZoneRadius": 150,
+  "AOZoneCenter": [10257.50, 2158.04],
+  "AOZoneRadius": 350,
+  "PriorityAORadius": 150
+}

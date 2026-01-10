@@ -1,0 +1,11 @@
+{
+  "ZoneID": 8,
+  "ZoneName": "Krasnostav",
+  "EastSpawnBuilding": [9231.94, 11644.67],
+  "WestSpawnBuilding": [13034.76, 12513.72],
+  "EastSafeZoneRadius": 150,
+  "WestSafeZoneRadius": 150,
+  "AOZoneCenter": [11116.83, 12322.22],
+  "AOZoneRadius": 350,
+  "PriorityAORadius": 100
+}

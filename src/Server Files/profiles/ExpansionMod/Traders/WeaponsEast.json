@@ -1,0 +1,30 @@
+{
+    "m_Version": 13,
+    "DisplayName": "East Trader",
+    "MinRequiredReputation": 0,
+    "MaxRequiredReputation": 2147483647,
+    "RequiredFaction": "East",
+    "RequiredCompletedQuestID": -1,
+    "TraderIcon": "Shotgun",
+    "Currencies": [
+        "expansionbanknotehryvnia"
+    ],
+    "DisplayCurrencyValue": 1,
+    "DisplayCurrencyName": "",
+    "UseCategoryOrder": 0,
+    "Categories": [
+        "Assault_Rifles_East",
+        "Assault_Rifles_Common",
+        "Submachine_Guns_East",
+        "Rifles_East",
+        "Rifles_Common",
+        "Shotguns",
+        "Launchers",
+        "Ammo_Boxes",
+        "Explosives_And_Grenades",
+        "Magazines",
+        "Muzzles",
+        "Optics"
+    ],
+    "Items": {}
+}

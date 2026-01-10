@@ -1,0 +1,79 @@
+{
+    "DisplayName": "Combat Medic",
+    "Faction": "East",
+    "RequiredLevel": 4,
+    "Loadout": [
+        {
+            "ClassName": "TTsKOJacket_Camo",
+            "Attachments": []
+        },
+        {
+            "ClassName": "TTSKOPants",
+            "Attachments": []
+        },
+        {
+            "ClassName": "CombatBoots_Grey",
+            "Attachments": []
+        },
+        {
+            "ClassName": "MedicalScrubsShirt_Blue",
+            "Attachments": []
+        },
+        {
+            "ClassName": "SmershVest",
+            "Attachments": []
+        },
+        {
+            "ClassName": "FlatCap_Red",
+            "Attachments": []
+        },
+		{
+            "ClassName": "TortillaBag",
+            "Attachments": []
+        },
+		{
+            "ClassName": "BadageDressing",
+            "Attachments": []
+        },
+		{
+            "ClassName": "BadageDressing",
+            "Attachments": []
+        },
+		{
+            "ClassName": "BadageDressing",
+            "Attachments": []
+        },
+		{
+            "ClassName": "BadageDressing",
+            "Attachments": []
+        },
+		{
+            "ClassName": "BadageDressing",
+            "Attachments": []
+        },
+		{
+            "ClassName": "Epinephrine",
+            "Attachments": []
+        },
+		{
+            "ClassName": "Epinephrine",
+            "Attachments": []
+        },
+		{
+            "ClassName": "Morphine",
+            "Attachments": []
+        },
+		{
+            "ClassName": "SalineBagIV",
+            "Attachments": []
+        },
+		{
+            "ClassName": "SalineBagIV",
+            "Attachments": []
+        },
+        {
+            "ClassName": "SurgicalGloves_LightBlue",
+            "Attachments": []
+        }
+    ]
+}

@@ -1,0 +1,35 @@
+{
+    "DisplayName": "Recon Infantry",
+    "Faction": "West",
+    "RequiredLevel": 4,
+    "Loadout": [
+        {
+            "ClassName": "USMCJacket_Woodland",
+            "Attachments": []
+        },
+        {
+            "ClassName": "USMCPants_Woodland",
+            "Attachments": []
+        },
+        {
+            "ClassName": "JungleBoots_Brown",
+            "Attachments": []
+        },
+        {
+            "ClassName": "TortillaBag",
+            "Attachments": []
+        },
+        {
+            "ClassName": "UKAssVest_Olive",
+            "Attachments": []
+        },
+        {
+            "ClassName": "BoonieHat_Olive",
+            "Attachments": []
+        },
+        {
+            "ClassName": "TacticalGloves_Green",
+            "Attachments": []
+        }
+    ]
+}

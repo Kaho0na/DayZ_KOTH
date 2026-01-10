@@ -1,0 +1,40 @@
+{
+    "m_Version": 5,
+    "CanBuildAnywhere": 0,
+    "AllowBuildingWithoutATerritory": 0,
+    "DeployableOutsideATerritory": [
+        "ExpansionSatchel",
+        "LandMineTrap",
+        "TripwireTrap",
+
+    ],
+    "DeployableInsideAEnemyTerritory": [
+    ],
+    "CanCraftVanillaBasebuilding": 0,
+    "CanCraftExpansionBasebuilding": 0,
+    "DestroyFlagOnDismantle": 1,
+    "DismantleOutsideTerritory": 0,
+    "DismantleInsideTerritory": 0,
+    "DismantleAnywhere": 0,
+    "CodelockActionsAnywhere": 0,
+    "CodeLockLength": 4,
+    "DoDamageWhenEnterWrongCodeLock": 1,
+    "DamageWhenEnterWrongCodeLock": 10.0,
+    "RememberCode": 1,
+    "CanCraftTerritoryFlagKit": 0,
+    "SimpleTerritory": 1,
+    "AutomaticFlagOnCreation": 1,
+    "GetTerritoryFlagKitAfterBuild": 0,
+    "BuildZoneRequiredCustomMessage": "",
+    "Zones": [
+    ],
+    "ZonesAreNoBuildZones": 0,
+    "CodelockAttachMode": 1,
+    "DismantleFlagMode": 1,
+    "FlagMenuMode": 1,
+    "PreventItemAccessThroughObstructingItems": 1,
+    "EnableVirtualStorage": 0,
+    "VirtualStorageExcludedContainers": [
+        "ExpansionAirdropContainerBase"
+    ]
+}

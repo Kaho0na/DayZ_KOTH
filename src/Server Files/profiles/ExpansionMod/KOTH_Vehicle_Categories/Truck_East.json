@@ -1,0 +1,26 @@
+{
+    "ClassName": "Truck_01_Covered_Red",
+    "DisplayName": "M3S Truck (East)",
+    "RentPrice": 5000,
+    "Faction": "East",
+    "RequiredLevel": 35,
+    "MaxCount": 5,
+    "Attachments": [
+        "Truck_01_Wheel",
+        "Truck_01_Wheel",
+		"Truck_01_Wheel",
+        "Truck_01_Wheel",
+        "Truck_01_WheelDouble",
+        "Truck_01_WheelDouble",
+		"Truck_01_WheelDouble",
+        "Truck_01_WheelDouble",
+		"Truck_01_WheelDouble",
+        "Truck_01_WheelDouble",
+        "Truck_01_Door_1_1_Red",
+        "Truck_01_Door_2_1_Red",
+        "Truck_01_Hood_Red",
+        "TruckBattery",
+        "HeadlightH7",
+        "HeadlightH7"
+    ]
+}

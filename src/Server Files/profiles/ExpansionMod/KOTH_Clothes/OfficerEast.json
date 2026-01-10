@@ -1,0 +1,48 @@
+{
+    "DisplayName": "Officer",
+    "Faction": "East",
+    "RequiredLevel": 25,
+    "Loadout": [
+        {
+            "ClassName": "TTsKOJacket_Camo",
+            "Attachments": []
+        },
+        {
+            "ClassName": "TTSKOPants",
+            "Attachments": []
+        },
+        {
+            "ClassName": "CombatBoots_Beige",
+            "Attachments": []
+        },
+        {
+            "ClassName": "AssaultBag_Ttsko",
+            "Attachments": []
+        },
+        {
+            "ClassName": "PlateCarrierVest",
+            "Attachments": [
+                {
+                    "ClassName": "PlateCarrierPouches",
+                    "Attachments": []
+                },
+                {
+                    "ClassName": "PlateCarrierHolster",
+                    "Attachments": []
+                }
+            ]
+        },
+        {
+            "ClassName": "BallisticHelmet_Green",
+            "Attachments": []
+        },
+        {
+            "ClassName": "TacticalGloves_Green",
+            "Attachments": []
+        },
+        {
+            "ClassName": "MilitaryBelt",
+            "Attachments": []
+        }
+    ]
+}

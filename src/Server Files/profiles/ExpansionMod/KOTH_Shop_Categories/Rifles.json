@@ -1,0 +1,375 @@
+{
+    "Category": "Rifles",
+    "Items": [
+        {
+            "ClassName": "Izh18",
+            "DisplayName": "IZH-18 Rifle",
+            "AmmoType": "7.62x39mm",
+            "RentPrice": 250,
+            "BuyPrice": 15000,
+            "RequiredLevel": 1,
+            "MagazineClass": "Ammo_762x39",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "CZ527",
+            "DisplayName": "CZ 527 Carbine",
+            "AmmoType": "7.62x39mm",
+            "RentPrice": 300,
+            "BuyPrice": 18000,
+            "RequiredLevel": 2,
+            "MagazineClass": "Mag_CZ527_5rnd",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "SawedoffB95",
+            "DisplayName": "Sawed-Off Blaze 95",
+            "AmmoType": "308Win",
+            "RentPrice": 350,
+            "BuyPrice": 21000,
+            "RequiredLevel": 3,
+            "MagazineClass": "Ammo_308Win",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "SawedoffMosin9130",
+            "DisplayName": "Sawed-Off Mosin 9130",
+            "AmmoType": "7.62x54mmR",
+            "RentPrice": 350,
+            "BuyPrice": 21000,
+            "RequiredLevel": 3,
+            "MagazineClass": "Ammo_762x54",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "AKS74U",
+            "DisplayName": "AKS-74U",
+            "AmmoType": "5.45x39mm",
+            "RentPrice": 400,
+            "BuyPrice": 24000,
+            "RequiredLevel": 4,
+            "MagazineClass": "Mag_AK74_30Rnd",
+            "Faction": "East",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "Mosin9130",
+            "DisplayName": "Mosin 9130",
+            "AmmoType": "7.62x54mmR",
+            "RentPrice": 400,
+            "BuyPrice": 24000,
+            "RequiredLevel": 5,
+            "MagazineClass": "Ammo_762x54",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "Repeater",
+            "DisplayName": "Repeater",
+            "AmmoType": "357",
+            "RentPrice": 350,
+            "BuyPrice": 21000,
+            "RequiredLevel": 5,
+            "MagazineClass": "Ammo_357",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "Izh18Shotgun",
+            "DisplayName": "IZH-18 Shotgun",
+            "AmmoType": "12Gauge",
+            "RentPrice": 350,
+            "BuyPrice": 21000,
+            "RequiredLevel": 5,
+            "MagazineClass": "Ammo_12gaSlug",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "SKS",
+            "DisplayName": "SKS",
+            "AmmoType": "7.62x39mm",
+            "RentPrice": 350,
+            "BuyPrice": 21000,
+            "RequiredLevel": 5,
+            "MagazineClass": "Ammo_762x39",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "B95",
+            "DisplayName": "Blaze 95 Double Rifle",
+            "AmmoType": "308Win",
+            "RentPrice": 450,
+            "BuyPrice": 27000,
+            "RequiredLevel": 7,
+            "MagazineClass": "Ammo_308Win",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "Izh43Shotgun",
+            "DisplayName": "IZH-43 Shotgun",
+            "AmmoType": "12Gauge",
+            "RentPrice": 400,
+            "BuyPrice": 24000,
+            "RequiredLevel": 7,
+            "MagazineClass": "Ammo_12gaSlug",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "Mp133Shotgun",
+            "DisplayName": "MP-133 Shotgun",
+            "AmmoType": "12Gauge",
+            "RentPrice": 450,
+            "BuyPrice": 27000,
+            "RequiredLevel": 9,
+            "MagazineClass": "Ammo_12gaSlug",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "AK74",
+            "DisplayName": "AK-74",
+            "AmmoType": "5.45x39mm",
+            "RentPrice": 500,
+            "BuyPrice": 30000,
+            "RequiredLevel": 12,
+            "MagazineClass": "Mag_AK74_30Rnd",
+            "Faction": "East",
+            "DefaultAttachments": [
+                "AK74_WoodBttstck",
+                "AK74_Hndgrd"
+            ]
+        },
+        {
+            "ClassName": "Saiga",
+            "DisplayName": "Saiga 12",
+            "AmmoType": "12Gauge",
+            "RentPrice": 500,
+            "BuyPrice": 30000,
+            "RequiredLevel": 12,
+            "MagazineClass": "Mag_Saiga_8Rnd",
+            "Faction": "East",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "R12",
+            "DisplayName": "R12 Shotgun",
+            "AmmoType": "12Gauge",
+            "RentPrice": 500,
+            "BuyPrice": 30000,
+            "RequiredLevel": 12,
+            "MagazineClass": "Ammo_12gaSlug",
+            "Faction": "West",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "AK101",
+            "DisplayName": "AK-101",
+            "AmmoType": "5.56x45mm",
+            "RentPrice": 550,
+            "BuyPrice": 33000,
+            "RequiredLevel": 14,
+            "MagazineClass": "Mag_AK101_30Rnd",
+            "Faction": "East",
+            "DefaultAttachments": [
+                "AK_PlasticBttstck",
+                "AK_RailHndgrd"
+            ]
+        },
+        {
+            "ClassName": "SSG82",
+            "DisplayName": "SSG 82",
+            "AmmoType": "5.45x39mm",
+            "RentPrice": 800,
+            "BuyPrice": 48000,
+            "RequiredLevel": 17,
+            "MagazineClass": "Mag_SSG82_5rnd",
+            "Faction": "East",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "M16A2",
+            "DisplayName": "M16A2",
+            "AmmoType": "5.56x45mm",
+            "RentPrice": 650,
+            "BuyPrice": 39000,
+            "RequiredLevel": 18,
+            "MagazineClass": "Mag_STANAG_30Rnd",
+            "Faction": "West",
+            "DefaultAttachments": [
+                "M4_CarryHandleOptic"
+            ]
+        },
+        {
+            "ClassName": "AKM",
+            "DisplayName": "AKM",
+            "AmmoType": "7.62x39mm",
+            "RentPrice": 900,
+            "BuyPrice": 54000,
+            "RequiredLevel": 22,
+            "MagazineClass": "Mag_AKM_30Rnd",
+            "Faction": "East",
+            "DefaultAttachments": [
+                "AK_WoodBttstck",
+                "AK_WoodHndgrd"
+            ]
+        },
+        {
+            "ClassName": "Aug",
+            "DisplayName": "AUG A1",
+            "AmmoType": "5.56x45mm",
+            "RentPrice": 900,
+            "BuyPrice": 54000,
+            "RequiredLevel": 23,
+            "MagazineClass": "Mag_Aug_30Rnd",
+            "Faction": "West",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "AugShort",
+            "DisplayName": "AUG Short",
+            "AmmoType": "5.56x45mm",
+            "RentPrice": 950,
+            "BuyPrice": 57000,
+            "RequiredLevel": 25,
+            "MagazineClass": "Mag_Aug_30Rnd",
+            "Faction": "West",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "FAMAS",
+            "DisplayName": "FAMAS",
+            "AmmoType": "5.56x45mm",
+            "RentPrice": 950,
+            "BuyPrice": 57000,
+            "RequiredLevel": 25,
+            "MagazineClass": "Mag_FAMAS_25Rnd",
+            "Faction": "West",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "CZ550",
+            "DisplayName": "CZ 550",
+            "AmmoType": "308Win",
+            "RentPrice": 1000,
+            "BuyPrice": 60000,
+            "RequiredLevel": 26,
+            "MagazineClass": "Mag_CZ550_4rnd",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "Scout",
+            "DisplayName": "Scout",
+            "AmmoType": "308Win",
+            "RentPrice": 1000,
+            "BuyPrice": 60000,
+            "RequiredLevel": 26,
+            "MagazineClass": "Mag_Scout_5Rnd",
+            "Faction": "West",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "Winchester70",
+            "DisplayName": "Winchester 70",
+            "AmmoType": "308Win",
+            "RentPrice": 1000,
+            "BuyPrice": 60000,
+            "RequiredLevel": 26,
+            "MagazineClass": "Ammo_308Win",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "ASVAL",
+            "DisplayName": "AS VAL",
+            "AmmoType": "9x39mm",
+            "RentPrice": 1200,
+            "BuyPrice": 72000,
+            "RequiredLevel": 30,
+            "MagazineClass": "Mag_VAL_20Rnd",
+            "Faction": "East",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "VSS",
+            "DisplayName": "VSS Vintorez",
+            "AmmoType": "9x39mm",
+            "RentPrice": 1300,
+            "BuyPrice": 78000,
+            "RequiredLevel": 31,
+            "MagazineClass": "Mag_VSS_10Rnd",
+            "Faction": "East",
+            "DefaultAttachments": [
+                "PSO11Optic"
+            ]
+        },
+        {
+            "ClassName": "Vikhr",
+            "DisplayName": "Vikhr",
+            "AmmoType": "9x39mm",
+            "RentPrice": 1250,
+            "BuyPrice": 75000,
+            "RequiredLevel": 32,
+            "MagazineClass": "Mag_Vikhr_30Rnd",
+            "Faction": "East",
+            "DefaultAttachments": []
+        },
+		{
+            "ClassName": "M4A1",
+            "DisplayName": "M4A1 Carbine",
+            "AmmoType": "5.56x45mm",
+            "RentPrice": 1400,
+            "BuyPrice": 84000,
+            "RequiredLevel": 35,
+            "MagazineClass": "Mag_STANAG_30Rnd",
+            "Faction": "West",
+            "DefaultAttachments": [
+                "M4_OEBttstck",
+                "M4_RISHndgrd"
+            ]
+        },
+        {
+            "ClassName": "FAL",
+            "DisplayName": "FAL 7.62 Rifle",
+            "AmmoType": "308Win",
+            "RentPrice": 1700,
+            "BuyPrice": 102000,
+            "RequiredLevel": 41,
+            "MagazineClass": "Mag_FAL_20Rnd",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "M14",
+            "DisplayName": "M14 DMR",
+            "AmmoType": "308Win",
+            "RentPrice": 2000,
+            "BuyPrice": 120000,
+            "RequiredLevel": 45,
+            "MagazineClass": "Mag_M14_20Rnd",
+            "Faction": "West",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "SVD",
+            "DisplayName": "SVD Dragunov",
+            "AmmoType": "7.62x54mmR",
+            "RentPrice": 1800,
+            "BuyPrice": 108000,
+            "RequiredLevel": 45,
+            "MagazineClass": "Mag_SVD_10Rnd",
+            "Faction": "East",
+            "DefaultAttachments": [
+                "PSO1Optic"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,11 @@
+{
+  "ZoneID": 4,
+  "ZoneName": "Novodmitrovsk",
+  "EastSpawnBuilding": [9678.62, 13839.65],
+  "WestSpawnBuilding": [13550.94, 13762.86],
+  "EastSafeZoneRadius": 150,
+  "WestSafeZoneRadius": 150,
+  "AOZoneCenter": [11612.59 ,14567.75],
+  "AOZoneRadius": 500,
+  "PriorityAORadius": 125
+}

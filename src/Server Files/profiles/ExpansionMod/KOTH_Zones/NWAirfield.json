@@ -1,0 +1,11 @@
+{
+  "ZoneID": 1,
+  "ZoneName": "NWAirfield",
+  "EastSpawnBuilding": [2883.22, 11398.73],
+  "WestSpawnBuilding": [6652.99, 10076.69],
+  "EastSafeZoneRadius": 150,
+  "WestSafeZoneRadius": 150,
+  "AOZoneCenter": [4724.36, 10609.39],
+  "AOZoneRadius": 500,
+  "PriorityAORadius": 125
+}

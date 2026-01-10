@@ -1,0 +1,39 @@
+{
+    "DisplayName": "Light Infantry",
+    "Faction": "West",
+    "RequiredLevel": 1,
+    "Loadout": [
+        {
+            "ClassName": "BDUJacket",
+            "Attachments": []
+        },
+        {
+            "ClassName": "BDUPants",
+            "Attachments": []
+        },
+        {
+            "ClassName": "JungleBoots_Green",
+            "Attachments": []
+        },
+        {
+            "ClassName": "ArmyPouch_Green",
+            "Attachments": []
+        },
+        {
+            "ClassName": "BalaclavaMask_BDU",
+            "Attachments": []
+        },
+        {
+            "ClassName": "UKAssVest_Camo",
+            "Attachments": []
+        },
+        {
+            "ClassName": "BallisticHelmet_BDU",
+            "Attachments": []
+        },
+        {
+            "ClassName": "TacticalGloves_Green",
+            "Attachments": []
+        }
+    ]
+}

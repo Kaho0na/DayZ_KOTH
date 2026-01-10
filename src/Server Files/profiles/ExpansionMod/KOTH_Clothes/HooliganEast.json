@@ -1,0 +1,35 @@
+{
+    "DisplayName": "Hooligan",
+    "Faction": "East",
+    "RequiredLevel": 5,
+    "Loadout": [
+        {
+            "ClassName": "TrackSuitJacket_Red",
+            "Attachments": []
+        },
+        {
+            "ClassName": "TrackSuitPants_Red",
+            "Attachments": []
+        },
+        {
+            "ClassName": "Sneakers_Red",
+            "Attachments": []
+        },
+        {
+            "ClassName": "ChildBag_Red",
+            "Attachments": []
+        },
+        {
+            "ClassName": "Bandana_RedPattern",
+            "Attachments": []
+        },
+        {
+            "ClassName": "BoonieHat_Red",
+            "Attachments": []
+        },
+        {
+            "ClassName": "SkiGloves_Red",
+            "Attachments": []
+        }
+    ]
+}

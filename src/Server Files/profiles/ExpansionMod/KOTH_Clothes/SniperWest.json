@@ -1,0 +1,48 @@
+{
+    "DisplayName": "Marksman Infantry",
+    "Faction": "West",
+    "RequiredLevel": 10,
+    "Loadout": [
+        {
+            "ClassName": "M65Jacket_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "CargoPants_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "MilitaryBoots_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "GhillieSuit_Mossy",
+            "Attachments": []
+        },
+        {
+            "ClassName": "BalaclavaMask_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "PlateCarrierVest_Black",
+            "Attachments": [
+                {
+                    "ClassName": "PlateCarrierPouches_Black",
+                    "Attachments": []
+                },
+                {
+                    "ClassName": "PlateCarrierHolster_Black",
+                    "Attachments": []
+                }
+            ]
+        },
+        {
+            "ClassName": "GhillieHood_Mossy",
+            "Attachments": []
+        },
+        {
+            "ClassName": "TacticalGloves_Green",
+            "Attachments": []
+        }
+    ]
+}

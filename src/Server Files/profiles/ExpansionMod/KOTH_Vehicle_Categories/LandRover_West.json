@@ -1,0 +1,27 @@
+{
+    "ClassName": "Expansion_Landrover_Blue",
+    "DisplayName": "Landrover (West)",
+    "RentPrice": 2500,
+    "Faction": "West",
+    "RequiredLevel": 15,
+    "MaxCount": 5,
+    "Attachments": [
+        "Expansion_Landrover_Wheel",
+        "Expansion_Landrover_Wheel",
+		"Expansion_Landrover_Wheel",
+        "Expansion_Landrover_Wheel",
+        "Expansion_Landrover_Wheel",
+        "Expansion_Landrover_Wheel",
+        "Expansion_Landrover_Codriverdoor_Blue",
+		"Expansion_Landrover_Left_Blue",
+        "Expansion_Landrover_Right_Blue",
+		"Expansion_Landrover_Driverdoor_Blue",
+        "Expansion_Landrover_Hood_Blue",
+        "Expansion_Landrover_Trunk_Blue",
+        "CarBattery",
+        "CarRadiator",
+        "SparkPlug",
+        "HeadlightH7",
+        "HeadlightH7"	
+    ]
+}

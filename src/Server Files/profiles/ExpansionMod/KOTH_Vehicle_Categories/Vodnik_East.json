@@ -1,0 +1,26 @@
+{
+    "ClassName": "ExpansionVodnik",
+    "DisplayName": "Vodnik (East)",
+    "RentPrice": 7500,
+    "Faction": "East",
+    "RequiredLevel": 45,
+    "MaxCount": 5,
+    "Attachments": [
+        "ExpansionVodnikWheel",
+        "ExpansionVodnikWheel",
+		"ExpansionVodnikWheel",
+        "ExpansionVodnikWheel",
+        "ExpansionVodnikWheel",
+        "ExpansionVodnikDoorDriver",
+		"ExpansionVodnikDoorCoDriver",
+        "Expansion_Landrover_Right_Blue",
+		"Expansion_Landrover_Driverdoor_Blue",
+        "Expansion_Landrover_Hood_Blue",
+        "Expansion_Landrover_Trunk_Blue",
+        "TruckBattery",
+        "CarRadiator",
+        "SparkPlug",
+        "HeadlightH7",
+        "HeadlightH7"
+    ]
+}

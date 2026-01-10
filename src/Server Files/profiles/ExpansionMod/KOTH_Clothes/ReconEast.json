@@ -1,0 +1,39 @@
+{
+    "DisplayName": "Recon Infantry",
+    "Faction": "East",
+    "RequiredLevel": 4,
+    "Loadout": [
+        {
+            "ClassName": "GorkaEJacket_Flat",
+            "Attachments": []
+        },
+        {
+            "ClassName": "GorkaPants_Flat",
+            "Attachments": []
+        },
+        {
+            "ClassName": "CombatBoots_Beige",
+            "Attachments": []
+        },
+        {
+            "ClassName": "SmershBag",
+            "Attachments": []
+        },
+        {
+            "ClassName": "SmershVest",
+            "Attachments": []
+        },
+        {
+            "ClassName": "BaseballCap_Olive",
+            "Attachments": []
+        },
+        {
+            "ClassName": "WoolGloves_Tan",
+            "Attachments": []
+        },
+        {
+            "ClassName": "MilitaryBelt",
+            "Attachments": []
+        }
+    ]
+}

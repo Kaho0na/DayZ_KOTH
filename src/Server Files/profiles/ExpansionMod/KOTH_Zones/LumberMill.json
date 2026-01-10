@@ -1,0 +1,11 @@
+{
+  "ZoneID": 9,
+  "ZoneName": "LumberMill",
+  "EastSpawnBuilding": [13055.17, 8051.82],
+  "WestSpawnBuilding": [13559.20, 11776.39],
+  "EastSafeZoneRadius": 150,
+  "WestSafeZoneRadius": 150,
+  "AOZoneCenter": [12893.81, 9981.42],
+  "AOZoneRadius": 500,
+  "PriorityAORadius": 120
+}

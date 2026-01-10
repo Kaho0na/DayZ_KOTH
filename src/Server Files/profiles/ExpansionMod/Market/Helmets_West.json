@@ -1,0 +1,87 @@
+{
+    "m_Version": 12,
+    "DisplayName": "HELMETS",
+    "Icon": "Deliver",
+    "Color": "FBFCFEFF",
+    "IsExchange": 0,
+    "InitStockPercent": 75.0,
+    "Items": [
+        {
+            "ClassName": "mich2001helmet",
+            "MaxPriceThreshold": 13055,
+            "MinPriceThreshold": 7830,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+		{
+            "ClassName": "expansionmich2001desert",
+            "MaxPriceThreshold": 13055,
+            "MinPriceThreshold": 7830,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+		{
+            "ClassName": "ballistichelmet_bdu",
+            "MaxPriceThreshold": 1770,
+            "MinPriceThreshold": 1060,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+		        {
+            "ClassName": "ballistichelmet_desert",
+            "MaxPriceThreshold": 1770,
+            "MinPriceThreshold": 1060,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+		        {
+            "ClassName": "ballistichelmet_woodland",
+            "MaxPriceThreshold": 1770,
+            "MinPriceThreshold": 1060,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+        {
+            "ClassName": "ballistichelmet_navy",
+            "MaxPriceThreshold": 240,
+            "MinPriceThreshold": 145,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+        {
+            "ClassName": "ballistichelmet_winter",
+            "MaxPriceThreshold": 1800,
+            "MinPriceThreshold": 1080,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        }
+    ]
+}

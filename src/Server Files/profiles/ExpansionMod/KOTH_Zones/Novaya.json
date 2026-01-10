@@ -1,0 +1,11 @@
+{
+  "ZoneID": 6,
+  "ZoneName": "Novaya",
+  "EastSpawnBuilding": [1710.88, 12252.23],
+  "WestSpawnBuilding": [5287.20, 12728.55],
+  "EastSafeZoneRadius": 150,
+  "WestSafeZoneRadius": 150,
+  "AOZoneCenter": [3433.42, 13069.76],
+  "AOZoneRadius": 350,
+  "PriorityAORadius": 100
+}

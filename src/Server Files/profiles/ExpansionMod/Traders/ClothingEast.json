@@ -1,0 +1,34 @@
+{
+    "m_Version": 13,
+    "DisplayName": "#STR_EXPANSION_MARKET_TRADER_CLOTHING",
+    "MinRequiredReputation": 0,
+    "MaxRequiredReputation": 2147483647,
+    "RequiredFaction": "",
+    "RequiredCompletedQuestID": -1,
+    "TraderIcon": "Backpack",
+    "Currencies": [
+        "expansionbanknotehryvnia"
+    ],
+    "DisplayCurrencyValue": 1,
+    "DisplayCurrencyName": "",
+    "UseCategoryOrder": 0,
+    "Categories": [
+        "Jackets_East",
+        "Shirts_And_TShirts",
+        "Pants_East",
+        "Boots_East",
+        "Helmets_East",
+        "Ghillies",
+        "Hats",
+        "Vests",
+        "Masks",
+        "Backpacks",
+        "Eyewear",
+        "Gloves",
+        "Holsters_And_Pouches",
+        "Bandanas",
+        "Belts",
+        "Electronics"
+    ],
+    "Items": {}
+}

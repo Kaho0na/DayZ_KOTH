@@ -1,0 +1,48 @@
+{
+    "DisplayName": "Marksman Infantry",
+    "Faction": "East",
+    "RequiredLevel": 10,
+    "Loadout": [
+        {
+            "ClassName": "GorkaEJacket_Winter",
+            "Attachments": []
+        },
+        {
+            "ClassName": "GorkaPants_Winter",
+            "Attachments": []
+        },
+        {
+            "ClassName": "MilitaryBoots_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "GhillieSuit_Tan",
+            "Attachments": []
+        },
+        {
+            "ClassName": "BalaclavaMask_BlackSkull",
+            "Attachments": []
+        },
+        {
+            "ClassName": "PlateCarrierVest_Black",
+            "Attachments": [
+                {
+                    "ClassName": "PlateCarrierPouches_Black",
+                    "Attachments": []
+                },
+                {
+                    "ClassName": "PlateCarrierHolster_Black",
+                    "Attachments": []
+                }
+            ]
+        },
+        {
+            "ClassName": "GhillieHood_Tan",
+            "Attachments": []
+        },
+        {
+            "ClassName": "TacticalGloves_Green",
+            "Attachments": []
+        }
+    ]
+}

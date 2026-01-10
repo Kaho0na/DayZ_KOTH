@@ -1,0 +1,44 @@
+{
+    "DisplayName": "Officer",
+    "Faction": "West",
+    "RequiredLevel": 25,
+    "Loadout": [
+        {
+            "ClassName": "USMCJacket_Desert",
+            "Attachments": []
+        },
+        {
+            "ClassName": "USMCPants_Desert",
+            "Attachments": []
+        },
+        {
+            "ClassName": "CombatBoots_Beige",
+            "Attachments": []
+        },
+        {
+            "ClassName": "PlateCarrierVest_Green",
+            "Attachments": [
+                {
+                    "ClassName": "PlateCarrierPouches_Green",
+                    "Attachments": []
+                },
+                {
+                    "ClassName": "PlateCarrierHolster_Green",
+                    "Attachments": []
+                }
+            ]
+        },
+        {
+            "ClassName": "MilitaryBeret_UN",
+            "Attachments": []
+        },
+        {
+            "ClassName": "TacticalGloves_Beige",
+            "Attachments": []
+        },
+        {
+            "ClassName": "MilitaryBelt",
+            "Attachments": []
+        }
+    ]
+}

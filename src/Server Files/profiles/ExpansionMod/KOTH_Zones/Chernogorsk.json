@@ -1,0 +1,11 @@
+{
+  "ZoneID": 2,
+  "ZoneName": "Chernogorsk",
+  "EastSpawnBuilding": [4890.6758, 2600.3997],
+  "WestSpawnBuilding": [8129.4468, 3299.1377],
+  "EastSafeZoneRadius": 150,
+  "WestSafeZoneRadius": 150,
+  "AOZoneCenter": [6513.01, 2500.22],
+  "AOZoneRadius": 300,
+  "PriorityAORadius": 125
+}

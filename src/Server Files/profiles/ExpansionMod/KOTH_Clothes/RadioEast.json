@@ -1,0 +1,48 @@
+{
+    "DisplayName": "Radio Operator",
+    "Faction": "East",
+    "RequiredLevel": 15,
+    "Loadout": [
+        {
+            "ClassName": "GorkaEJacket_Summer",
+            "Attachments": []
+        },
+        {
+            "ClassName": "GorkaPants_Summer",
+            "Attachments": []
+        },
+        {
+            "ClassName": "CombatBoots_Grey",
+            "Attachments": []
+        },
+        {
+            "ClassName": "BaseRadio",
+            "Attachments": []
+        },
+        {
+            "ClassName": "Balaclava3Holes_Beige",
+            "Attachments": []
+        },
+        {
+            "ClassName": "PlateCarrierVest",
+            "Attachments": [
+                {
+                    "ClassName": "PlateCarrierPouches",
+                    "Attachments": []
+                },
+                {
+                    "ClassName": "PlateCarrierHolster",
+                    "Attachments": []
+                }
+            ]
+        },
+        {
+            "ClassName": "BallisticHelmet_Green",
+            "Attachments": []
+        },
+        {
+            "ClassName": "WoolGloves_Green",
+            "Attachments": []
+        }
+    ]
+}

@@ -1,0 +1,137 @@
+{
+    "Category": "Pistols",
+    "Items": [
+        {
+            "ClassName": "MakarovIJ70",
+            "DisplayName": "Makarov IJ-70",
+            "AmmoType": "9x18mm",
+            "RentPrice": 100,
+            "BuyPrice": 6000,
+            "RequiredLevel": 1,
+            "MagazineClass": "Mag_IJ70_8Rnd",
+            "Faction": "East",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "MKII",
+            "DisplayName": "MKII",
+            "AmmoType": ".22LR",
+            "RentPrice": 100,
+            "BuyPrice": 6000,
+            "RequiredLevel": 1,
+            "MagazineClass": "Mag_MKII_10Rnd",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "Derringer_Black",
+            "DisplayName": "Derringer",
+            "AmmoType": ".45ACP",
+            "RentPrice": 150,
+            "BuyPrice": 9000,
+            "RequiredLevel": 1,
+            "MagazineClass": "Ammo_357",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "P1",
+            "DisplayName": "P1 Pistol",
+            "AmmoType": "9x19mm",
+            "RentPrice": 350,
+            "BuyPrice": 9000,
+            "RequiredLevel": 3,
+            "MagazineClass": "Mag_P1_8Rnd",
+            "Faction": "East",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "Glock19",
+            "DisplayName": "Glock 19",
+            "AmmoType": "9x19mm",
+            "RentPrice": 350,
+            "BuyPrice": 21000,
+            "RequiredLevel": 3,
+            "MagazineClass": "Mag_Glock_15Rnd",
+            "Faction": "West",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "Magnum",
+            "DisplayName": "Magnum Revolver",
+            "AmmoType": ".357",
+            "RentPrice": 300,
+            "BuyPrice": 18000,
+            "RequiredLevel": 4,
+            "MagazineClass": "Ammo_357",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "FNX45",
+            "DisplayName": "FNX45",
+            "AmmoType": ".45ACP",
+            "RentPrice": 400,
+            "BuyPrice": 24000,
+            "RequiredLevel": 5,
+            "MagazineClass": "Mag_FNX45_15Rnd",
+            "Faction": "West",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "CZ75",
+            "DisplayName": "CZ-75",
+            "AmmoType": "9x19mm",
+            "RentPrice": 400,
+            "BuyPrice": 24000,
+            "RequiredLevel": 5,
+            "MagazineClass": "Mag_CZ75_15Rnd",
+            "Faction": "East",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "Colt1911",
+            "DisplayName": "Colt 1911",
+            "AmmoType": ".45ACP",
+            "RentPrice": 450,
+            "BuyPrice": 27000,
+            "RequiredLevel": 10,
+            "MagazineClass": "Mag_1911_7Rnd",
+            "Faction": "West",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "Deagle",
+            "DisplayName": "Desert Eagle",
+            "AmmoType": ".357",
+            "RentPrice": 800,
+            "BuyPrice": 48000,
+            "RequiredLevel": 15,
+            "MagazineClass": "Mag_Deagle_9Rnd",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "Engraved1911",
+            "DisplayName": "Engraved 1911",
+            "AmmoType": ".45ACP",
+            "RentPrice": 600,
+            "BuyPrice": 35000,
+            "RequiredLevel": 15,
+            "MagazineClass": "Mag_1911_7Rnd",
+            "Faction": "West",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "Deagle_Gold",
+            "DisplayName": "Desert Eagle (Gold)",
+            "AmmoType": ".357",
+            "RentPrice": 950,
+            "BuyPrice": 60000,
+            "RequiredLevel": 25,
+            "MagazineClass": "Mag_Deagle_9Rnd",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        }
+    ]
+}

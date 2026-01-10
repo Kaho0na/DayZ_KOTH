@@ -1,0 +1,54 @@
+{
+    "m_Version": 12,
+    "DisplayName": "TACTICAL SHIRTS",
+    "Icon": "Deliver",
+    "Color": "FBFCFEFF",
+    "IsExchange": 0,
+    "InitStockPercent": 75.0,
+    "Items": [
+        {
+            "ClassName": "tacticalshirt_grey",
+            "MaxPriceThreshold": 1725,
+            "MinPriceThreshold": 1035,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+		{
+            "ClassName": "tacticalshirt_tan",
+            "MaxPriceThreshold": 1725,
+            "MinPriceThreshold": 1035,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+		{
+            "ClassName": "tacticalshirt_olive",
+            "MaxPriceThreshold": 1725,
+            "MinPriceThreshold": 1035,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+        {
+            "ClassName": "tacticalshirt_black",
+            "MaxPriceThreshold": 11545,
+            "MinPriceThreshold": 6925,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        }
+    ]
+}

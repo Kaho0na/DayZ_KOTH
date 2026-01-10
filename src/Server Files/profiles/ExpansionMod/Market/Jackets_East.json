@@ -1,0 +1,103 @@
+{
+    "m_Version": 12,
+    "DisplayName": "JACKETS",
+    "Icon": "Deliver",
+    "Color": "FBFCFEFF",
+    "IsExchange": 0,
+    "InitStockPercent": 75.0,
+    "Items": [
+        {
+            "ClassName": "ttskojacket_camo",
+            "MaxPriceThreshold": 1725,
+            "MinPriceThreshold": 1035,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+        {
+            "ClassName": "gorkaejacket_summer",
+            "MaxPriceThreshold": 1755,
+            "MinPriceThreshold": 1055,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+		{
+            "ClassName": "gorkaejacket_flat",
+            "MaxPriceThreshold": 1755,
+            "MinPriceThreshold": 1055,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": [
+                "gorkaejacket_flat",
+                "gorkaejacket_autumn",
+                "gorkaejacket_pautrev",
+                "gorkaejacket_winter"
+            ]
+        },
+				{
+            "ClassName": "gorkaejacket_autumn",
+            "MaxPriceThreshold": 1755,
+            "MinPriceThreshold": 1055,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+				{
+            "ClassName": "gorkaejacket_pautrev",
+            "MaxPriceThreshold": 1755,
+            "MinPriceThreshold": 1055,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+				{
+            "ClassName": "gorkaejacket_winter",
+            "MaxPriceThreshold": 1755,
+            "MinPriceThreshold": 1055,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+        {
+            "ClassName": "omkjacket_navy",
+            "MaxPriceThreshold": 240,
+            "MinPriceThreshold": 145,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+        {
+            "ClassName": "navyuniformjacket",
+            "MaxPriceThreshold": 240,
+            "MinPriceThreshold": 145,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        }
+    ]
+}

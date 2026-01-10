@@ -1,0 +1,137 @@
+{
+    "Category": "Items",
+    "Items": [
+        {
+            "ClassName": "WeaponCleaningKit",
+            "DisplayName": "Weapon Cleaning Kit",
+            "AmmoType": "",
+            "RentPrice": 50,
+            "BuyPrice": 3000,
+            "RequiredLevel": 1,
+            "MagazineClass": "",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "Compass",
+            "DisplayName": "Compass",
+            "AmmoType": "",
+            "RentPrice": 40,
+            "BuyPrice": 2400,
+            "RequiredLevel": 1,
+            "MagazineClass": "",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "SewingKit",
+            "DisplayName": "Sewing Kit",
+            "AmmoType": "",
+            "RentPrice": 75,
+            "BuyPrice": 4500,
+            "RequiredLevel": 3,
+            "MagazineClass": "",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "LeatherSewingKit",
+            "DisplayName": "Leather Sewing Kit",
+            "AmmoType": "",
+            "RentPrice": 100,
+            "BuyPrice": 6000,
+            "RequiredLevel": 6,
+            "MagazineClass": "",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "EpoxyPutty",
+            "DisplayName": "Epoxy Putty",
+            "AmmoType": "",
+            "RentPrice": 150,
+            "BuyPrice": 9000,
+            "RequiredLevel": 8,
+            "MagazineClass": "",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "Binoculars",
+            "DisplayName": "Binoculars",
+            "AmmoType": "",
+            "RentPrice": 200,
+            "BuyPrice": 12000,
+            "RequiredLevel": 10,
+            "MagazineClass": "",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "Handcuffs",
+            "DisplayName": "Handcuffs",
+            "AmmoType": "",
+            "RentPrice": 200,
+            "BuyPrice": 12000,
+            "RequiredLevel": 12,
+            "MagazineClass": "",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "Lockpick",
+            "DisplayName": "Lockpick",
+            "AmmoType": "",
+            "RentPrice": 250,
+            "BuyPrice": 15000,
+            "RequiredLevel": 15,
+            "MagazineClass": "",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "Rangefinder",
+            "DisplayName": "Rangefinder",
+            "AmmoType": "",
+            "RentPrice": 350,
+            "BuyPrice": 21000,
+            "RequiredLevel": 18,
+            "MagazineClass": "",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "GPSReceiver",
+            "DisplayName": "GPS Receiver",
+            "AmmoType": "",
+            "RentPrice": 500,
+            "BuyPrice": 30000,
+            "RequiredLevel": 20,
+            "MagazineClass": "",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "LandMineTrap",
+            "DisplayName": "Land Mine Trap",
+            "AmmoType": "",
+            "RentPrice": 2500,
+            "BuyPrice": 150000,
+            "RequiredLevel": 45,
+            "MagazineClass": "",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        },
+        {
+            "ClassName": "ClaymoreMine",
+            "DisplayName": "Claymore Mine",
+            "AmmoType": "",
+            "RentPrice": 3000,
+            "BuyPrice": 180000,
+            "RequiredLevel": 50,
+            "MagazineClass": "",
+            "Faction": "Both",
+            "DefaultAttachments": []
+        }
+    ]
+}

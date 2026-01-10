@@ -1,0 +1,103 @@
+{
+    "m_Version": 12,
+    "DisplayName": "PANTS",
+    "Icon": "Deliver",
+    "Color": "FBFCFEFF",
+    "IsExchange": 0,
+    "InitStockPercent": 75.0,
+    "Items": [
+        {
+            "ClassName": "ttskopants",
+            "MaxPriceThreshold": 1725,
+            "MinPriceThreshold": 1035,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+        {
+            "ClassName": "gorkapants_summer",
+            "MaxPriceThreshold": 1755,
+            "MinPriceThreshold": 1055,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": [
+                "gorkapants_autumn",
+                "gorkapants_flat",
+                "gorkapants_pautrev",
+                "gorkapants_winter"
+            ]
+        },
+		{
+            "ClassName": "gorkapants_autumn",
+            "MaxPriceThreshold": 1755,
+            "MinPriceThreshold": 1055,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+		{
+            "ClassName": "gorkapants_flat",
+            "MaxPriceThreshold": 1755,
+            "MinPriceThreshold": 1055,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+		{
+            "ClassName": "gorkapants_pautrev",
+            "MaxPriceThreshold": 1755,
+            "MinPriceThreshold": 1055,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+		{
+            "ClassName": "gorkapants_winter",
+            "MaxPriceThreshold": 1755,
+            "MinPriceThreshold": 1055,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+        {
+            "ClassName": "omkpants_navy",
+            "MaxPriceThreshold": 240,
+            "MinPriceThreshold": 145,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+        {
+            "ClassName": "navyuniformpants",
+            "MaxPriceThreshold": 240,
+            "MinPriceThreshold": 145,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        }
+    ]
+}

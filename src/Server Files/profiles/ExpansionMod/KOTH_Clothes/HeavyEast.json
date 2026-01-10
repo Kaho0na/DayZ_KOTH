@@ -1,0 +1,44 @@
+{
+    "DisplayName": "Heavy Infantry",
+    "Faction": "East",
+    "RequiredLevel": 7,
+    "Loadout": [
+        {
+            "ClassName": "OMKJacket_Navy",
+            "Attachments": []
+        },
+        {
+            "ClassName": "OMKPants_Navy",
+            "Attachments": []
+        },
+        {
+            "ClassName": "CombatBoots_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "TortillaBag",
+            "Attachments": []
+        },
+        {
+            "ClassName": "PlateCarrierVest_Black",
+            "Attachments": [
+                {
+                    "ClassName": "PlateCarrierPouches_Black",
+                    "Attachments": []
+                },
+                {
+                    "ClassName": "PlateCarrierHolster_Black",
+                    "Attachments": []
+                }
+            ]
+        },
+        {
+            "ClassName": "GorkaHelmet_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "TacticalGloves_Black",
+            "Attachments": []
+        }
+    ]
+}

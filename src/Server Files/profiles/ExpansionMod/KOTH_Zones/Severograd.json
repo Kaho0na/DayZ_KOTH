@@ -1,0 +1,11 @@
+{
+  "ZoneID": 5,
+  "ZoneName": "Severograd",
+  "EastSpawnBuilding": [5994.88, 12715.91],
+  "WestSpawnBuilding": [9371.44, 13457.62],
+  "EastSafeZoneRadius": 150,
+  "WestSafeZoneRadius": 150,
+  "AOZoneCenter": [7948.78 ,12667.31],
+  "AOZoneRadius": 400,
+  "PriorityAORadius": 125
+}

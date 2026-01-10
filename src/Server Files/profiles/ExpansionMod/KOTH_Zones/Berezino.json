@@ -1,0 +1,11 @@
+{
+  "ZoneID": 10,
+  "ZoneName": "Berezino",
+  "EastSpawnBuilding": [13068.30, 7806.37],
+  "WestSpawnBuilding": [13409.01, 10951.57],
+  "EastSafeZoneRadius": 150,
+  "WestSafeZoneRadius": 150,
+  "AOZoneCenter": [12116.13, 9355.40],
+  "AOZoneRadius": 500,
+  "PriorityAORadius": 120
+}

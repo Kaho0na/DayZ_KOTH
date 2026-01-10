@@ -1,0 +1,31 @@
+{
+    "DisplayName": "Tanker",
+    "Faction": "East",
+    "RequiredLevel": 8,
+    "Loadout": [
+        {
+            "ClassName": "Shirt_BlueCheck",
+            "Attachments": []
+        },
+        {
+            "ClassName": "Jeans_Black",
+            "Attachments": []
+        },
+        {
+            "ClassName": "WorkingBoots_Brown",
+            "Attachments": []
+        },
+        {
+            "ClassName": "TaloonBag_Blue",
+            "Attachments": []
+        },
+        {
+            "ClassName": "TankerHelmet",
+            "Attachments": []
+        },
+        {
+            "ClassName": "WorkingGloves_Black",
+            "Attachments": []
+        }
+    ]
+}

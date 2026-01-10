@@ -1,0 +1,76 @@
+{
+    "m_Version": 12,
+    "DisplayName": "EYEWEAR",
+    "Icon": "Deliver",
+    "Color": "FBFCFEFF",
+    "IsExchange": 0,
+    "InitStockPercent": 75.0,
+    "Items": [
+        {
+            "ClassName": "aviatorglasses",
+            "MaxPriceThreshold": 840,
+            "MinPriceThreshold": 505,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+        {
+            "ClassName": "tacticalgoggles",
+            "MaxPriceThreshold": 9150,
+            "MinPriceThreshold": 5490,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+        {
+            "ClassName": "nvgheadstrap",
+            "MaxPriceThreshold": 16160,
+            "MinPriceThreshold": 9695,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": []
+        },
+        {
+            "ClassName": "skigoggles_blackyellow",
+            "MaxPriceThreshold": 240,
+            "MinPriceThreshold": 145,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": [
+                "skigoggles_whiteclear",
+                "skigoggles_whitedark"
+            ]
+        },
+        {
+            "ClassName": "eyemask_black",
+            "MaxPriceThreshold": 590,
+            "MinPriceThreshold": 355,
+            "SellPricePercent": -1.0,
+            "MaxStockThreshold": 100,
+            "MinStockThreshold": 1,
+            "QuantityPercent": -1,
+            "SpawnAttachments": [],
+            "Variants": [
+                "eyemask_blue",
+                "eyemask_christmas",
+                "eyemask_dead",
+                "eyemask_newyears",
+                "eyemask_red",
+                "eyemask_valentines",
+                "eyemask_yellow"
+            ]
+        }
+    ]
+}

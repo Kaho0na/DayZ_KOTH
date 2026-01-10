@@ -1,0 +1,11 @@
+{
+  "ZoneID": 3,
+  "ZoneName": "Zelenogorsk",
+  "EastSpawnBuilding": [4358.85, 5649.79],
+  "WestSpawnBuilding": [1819.75, 4092.50],
+  "EastSafeZoneRadius": 150,
+  "WestSafeZoneRadius": 150,
+  "AOZoneCenter": [2642.14 ,5269.70],
+  "AOZoneRadius": 300,
+  "PriorityAORadius": 125
+}
