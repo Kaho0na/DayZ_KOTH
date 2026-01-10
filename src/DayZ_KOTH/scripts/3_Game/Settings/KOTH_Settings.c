@@ -8,13 +8,11 @@
 
 class KOTH_SettingsBase: ExpansionSettingBase
 {
-    string ModeName = "King of the Hill";
 
     int ScoreLimit = 100;
     int CaptureTickSeconds = 5;
     int MinPlayersToInfluence = 1;
     float PointsPerTickPerPlayer = 1.0;
-    float NeutralizeSpeedMultiplier = 1.0;
 
     bool EnablePriorityZoneMovement = true;
     float PriorityZoneMovementInterval = 120.0;
@@ -28,11 +26,6 @@ class KOTH_SettingsBase: ExpansionSettingBase
     int FriendlyFirePenaltyXP = 150;
     int SuicidePenaltyXP = 100;
     int HeadShotBonusXP = 50;
-
-    bool KillStreakBonusXPEnabled = true;
-    ref array<int> KillStreakThresholds = { 5, 10, 15 };
-    ref array<int> KillStreakBonusXP = { 100, 200, 300 };
-
     float GlobalXPMultiplier = 1.0;
 
     int MoneyPerKill = 100;
@@ -42,11 +35,6 @@ class KOTH_SettingsBase: ExpansionSettingBase
     int TeamKillMoneyPenalty = 200;
     int SuicideMoneyPenalty = 100;
     int HeadShotMoneyBonus = 50;
-
-    bool KillStreakMoneyBonusEnabled = true;
-    ref array<int> KillStreakMoneyThresholds = { 5, 10, 15 };
-    ref array<int> KillStreakBonusMoney = { 100, 200, 300 };
-
     float GlobalMoneyMultiplier = 1.0;
 
     float EndScreenDisplaySeconds = 30;
@@ -64,22 +52,14 @@ class KOTH_SettingsBase: ExpansionSettingBase
     float WinningTeamMoneyMultiplier = 1.5;
     float LosingTeamXPMultiplier = 0.5;
     float LosingTeamMoneyMultiplier = 0.5;
-
-    int MaxTeamImbalance = 3;
     
     bool EnableZoneRotation = false;
     float ZoneRotationInterval = 1800.0;
     int ZoneSelectionMode = 0;
-    bool NotifyPlayersOnZoneChange = true;
-    int ZoneChangeWarningTime = 60;
     int VehicleRespawnCheckInterval = 60;
     int VehicleSpawnCheckRadius = 30;
-    bool AllowAdminZoneChange = true;
     bool EnableAI = true;
     int FactionMaxAI = 10;
-    int PlayerThreshold = 40;
-    int SpawnCheckInterval = 90;
-    int AISpawnStagger = 5;
     float AISpawnBuffer = 100.0;
     float AISpawnAngleVariation = 30.0;
     string WestLoadout = "WestLoadout";
@@ -105,12 +85,10 @@ class KOTH_Settings: KOTH_SettingsBase
     {
         KOTH_Settings s = new KOTH_Settings;
 
-        if (!ctx.Read(s.ModeName)) return false;
         if (!ctx.Read(s.ScoreLimit)) return false;
         if (!ctx.Read(s.CaptureTickSeconds)) return false;
         if (!ctx.Read(s.MinPlayersToInfluence)) return false;
         if (!ctx.Read(s.PointsPerTickPerPlayer)) return false;
-        if (!ctx.Read(s.NeutralizeSpeedMultiplier)) return false;
         
         if (!ctx.Read(s.EnablePriorityZoneMovement)) return false;
         if (!ctx.Read(s.PriorityZoneMovementInterval)) return false;
@@ -124,9 +102,6 @@ class KOTH_Settings: KOTH_SettingsBase
         if (!ctx.Read(s.FriendlyFirePenaltyXP)) return false;
         if (!ctx.Read(s.SuicidePenaltyXP)) return false;
         if (!ctx.Read(s.HeadShotBonusXP)) return false;
-        if (!ctx.Read(s.KillStreakBonusXPEnabled)) return false;
-        if (!ctx.Read(s.KillStreakThresholds)) return false;
-        if (!ctx.Read(s.KillStreakBonusXP)) return false;
         if (!ctx.Read(s.GlobalXPMultiplier)) return false;
         if (!ctx.Read(s.MoneyPerKill)) return false;
         if (!ctx.Read(s.MoneyPerRevive)) return false;
@@ -135,9 +110,6 @@ class KOTH_Settings: KOTH_SettingsBase
         if (!ctx.Read(s.TeamKillMoneyPenalty)) return false;
         if (!ctx.Read(s.SuicideMoneyPenalty)) return false;
         if (!ctx.Read(s.HeadShotMoneyBonus)) return false;
-        if (!ctx.Read(s.KillStreakMoneyBonusEnabled)) return false;
-        if (!ctx.Read(s.KillStreakMoneyThresholds)) return false;
-        if (!ctx.Read(s.KillStreakBonusMoney)) return false;
         if (!ctx.Read(s.GlobalMoneyMultiplier)) return false;
         
         if (!ctx.Read(s.EndScreenDisplaySeconds)) return false;
@@ -156,20 +128,13 @@ class KOTH_Settings: KOTH_SettingsBase
         if (!ctx.Read(s.LosingTeamXPMultiplier)) return false;
         if (!ctx.Read(s.LosingTeamMoneyMultiplier)) return false;
         
-        if (!ctx.Read(s.MaxTeamImbalance)) return false;
         if (!ctx.Read(s.EnableZoneRotation)) return false;
         if (!ctx.Read(s.ZoneRotationInterval)) return false;
         if (!ctx.Read(s.ZoneSelectionMode)) return false;
-        if (!ctx.Read(s.NotifyPlayersOnZoneChange)) return false;
-        if (!ctx.Read(s.ZoneChangeWarningTime)) return false;
         if (!ctx.Read(s.VehicleRespawnCheckInterval)) return false;
         if (!ctx.Read(s.VehicleSpawnCheckRadius)) return false;
-        if (!ctx.Read(s.AllowAdminZoneChange)) return false;
         if (!ctx.Read(s.EnableAI)) return false;
         if (!ctx.Read(s.FactionMaxAI)) return false;
-        if (!ctx.Read(s.PlayerThreshold)) return false;
-        if (!ctx.Read(s.SpawnCheckInterval)) return false;
-        if (!ctx.Read(s.AISpawnStagger)) return false;
         if (!ctx.Read(s.AISpawnBuffer)) return false;
         if (!ctx.Read(s.AISpawnAngleVariation)) return false;
         if (!ctx.Read(s.WestLoadout)) return false;
@@ -192,12 +157,10 @@ class KOTH_Settings: KOTH_SettingsBase
 
     override void OnSend(ParamsWriteContext ctx)
     {
-        ctx.Write(ModeName);
         ctx.Write(ScoreLimit);
         ctx.Write(CaptureTickSeconds);
         ctx.Write(MinPlayersToInfluence);
         ctx.Write(PointsPerTickPerPlayer);
-        ctx.Write(NeutralizeSpeedMultiplier);
         
         ctx.Write(EnablePriorityZoneMovement);
         ctx.Write(PriorityZoneMovementInterval);
@@ -211,9 +174,6 @@ class KOTH_Settings: KOTH_SettingsBase
         ctx.Write(FriendlyFirePenaltyXP);
         ctx.Write(SuicidePenaltyXP);
         ctx.Write(HeadShotBonusXP);
-        ctx.Write(KillStreakBonusXPEnabled);
-        ctx.Write(KillStreakThresholds);
-        ctx.Write(KillStreakBonusXP);
         ctx.Write(GlobalXPMultiplier);
         ctx.Write(MoneyPerKill);
         ctx.Write(MoneyPerRevive);
@@ -222,9 +182,6 @@ class KOTH_Settings: KOTH_SettingsBase
         ctx.Write(TeamKillMoneyPenalty);
         ctx.Write(SuicideMoneyPenalty);
         ctx.Write(HeadShotMoneyBonus);
-        ctx.Write(KillStreakMoneyBonusEnabled);
-        ctx.Write(KillStreakMoneyThresholds);
-        ctx.Write(KillStreakBonusMoney);
         ctx.Write(GlobalMoneyMultiplier);
         
         ctx.Write(EndScreenDisplaySeconds);
@@ -243,20 +200,13 @@ class KOTH_Settings: KOTH_SettingsBase
         ctx.Write(LosingTeamXPMultiplier);
         ctx.Write(LosingTeamMoneyMultiplier);
         
-        ctx.Write(MaxTeamImbalance);
         ctx.Write(EnableZoneRotation);
         ctx.Write(ZoneRotationInterval);
         ctx.Write(ZoneSelectionMode);
-        ctx.Write(NotifyPlayersOnZoneChange);
-        ctx.Write(ZoneChangeWarningTime);
         ctx.Write(VehicleRespawnCheckInterval);
         ctx.Write(VehicleSpawnCheckRadius);
-        ctx.Write(AllowAdminZoneChange);
         ctx.Write(EnableAI);
         ctx.Write(FactionMaxAI);
-        ctx.Write(PlayerThreshold);
-        ctx.Write(SpawnCheckInterval);
-        ctx.Write(AISpawnStagger);
         ctx.Write(AISpawnBuffer);
         ctx.Write(AISpawnAngleVariation);
         ctx.Write(WestLoadout);
@@ -301,12 +251,10 @@ class KOTH_Settings: KOTH_SettingsBase
 
     private void CopyInternal(KOTH_SettingsBase s)
     {
-        ModeName = s.ModeName;
         ScoreLimit = s.ScoreLimit;
         CaptureTickSeconds = s.CaptureTickSeconds;
         MinPlayersToInfluence = s.MinPlayersToInfluence;
         PointsPerTickPerPlayer = s.PointsPerTickPerPlayer;
-        NeutralizeSpeedMultiplier = s.NeutralizeSpeedMultiplier;
         
         EnablePriorityZoneMovement = s.EnablePriorityZoneMovement;
         PriorityZoneMovementInterval = s.PriorityZoneMovementInterval;
@@ -320,9 +268,6 @@ class KOTH_Settings: KOTH_SettingsBase
         FriendlyFirePenaltyXP = s.FriendlyFirePenaltyXP;
         SuicidePenaltyXP = s.SuicidePenaltyXP;
         HeadShotBonusXP = s.HeadShotBonusXP;
-        KillStreakBonusXPEnabled = s.KillStreakBonusXPEnabled;
-        KillStreakThresholds = s.KillStreakThresholds;
-        KillStreakBonusXP = s.KillStreakBonusXP;
         GlobalXPMultiplier = s.GlobalXPMultiplier;
         MoneyPerKill = s.MoneyPerKill;
         MoneyPerRevive = s.MoneyPerRevive;
@@ -331,9 +276,6 @@ class KOTH_Settings: KOTH_SettingsBase
         TeamKillMoneyPenalty = s.TeamKillMoneyPenalty;
         SuicideMoneyPenalty = s.SuicideMoneyPenalty;
         HeadShotMoneyBonus = s.HeadShotMoneyBonus;
-        KillStreakMoneyBonusEnabled = s.KillStreakMoneyBonusEnabled;
-        KillStreakMoneyThresholds = s.KillStreakMoneyThresholds;
-        KillStreakBonusMoney = s.KillStreakBonusMoney;
         GlobalMoneyMultiplier = s.GlobalMoneyMultiplier;
         
         EndScreenDisplaySeconds = s.EndScreenDisplaySeconds;
@@ -352,20 +294,13 @@ class KOTH_Settings: KOTH_SettingsBase
         LosingTeamXPMultiplier = s.LosingTeamXPMultiplier;
         LosingTeamMoneyMultiplier = s.LosingTeamMoneyMultiplier;
         
-        MaxTeamImbalance = s.MaxTeamImbalance;
         EnableZoneRotation = s.EnableZoneRotation;
         ZoneRotationInterval = s.ZoneRotationInterval;
         ZoneSelectionMode = s.ZoneSelectionMode;
-        NotifyPlayersOnZoneChange = s.NotifyPlayersOnZoneChange;
-        ZoneChangeWarningTime = s.ZoneChangeWarningTime;
         VehicleRespawnCheckInterval = s.VehicleRespawnCheckInterval;
         VehicleSpawnCheckRadius = s.VehicleSpawnCheckRadius;
-        AllowAdminZoneChange = s.AllowAdminZoneChange;
         EnableAI = s.EnableAI;
         FactionMaxAI = s.FactionMaxAI;
-        PlayerThreshold = s.PlayerThreshold;
-        SpawnCheckInterval = s.SpawnCheckInterval;
-        AISpawnStagger = s.AISpawnStagger;
         AISpawnBuffer = s.AISpawnBuffer;
         AISpawnAngleVariation = s.AISpawnAngleVariation;
         WestLoadout = s.WestLoadout;
@@ -442,12 +377,10 @@ class KOTH_Settings: KOTH_SettingsBase
     {
         m_Version = VERSION;
         
-        ModeName = "King of the Hill";
         ScoreLimit = 100;
-        CaptureTickSeconds = 120;
+        CaptureTickSeconds = 30;
         MinPlayersToInfluence = 1;
         PointsPerTickPerPlayer = 1.0;
-        NeutralizeSpeedMultiplier = 1.0;
         
         EnablePriorityZoneMovement = true;
         PriorityZoneMovementInterval = 240.0;
@@ -461,9 +394,6 @@ class KOTH_Settings: KOTH_SettingsBase
         FriendlyFirePenaltyXP = 150;
         SuicidePenaltyXP = 100;
         HeadShotBonusXP = 50;
-        KillStreakBonusXPEnabled = false;
-        KillStreakThresholds = { 5, 10, 15 };
-        KillStreakBonusXP = { 100, 200, 300 };
         GlobalXPMultiplier = 1.0;
         MoneyPerKill = 100;
         MoneyPerRevive = 50;
@@ -472,9 +402,6 @@ class KOTH_Settings: KOTH_SettingsBase
         TeamKillMoneyPenalty = 200;
         SuicideMoneyPenalty = 100;
         HeadShotMoneyBonus = 50;
-        KillStreakMoneyBonusEnabled = false;
-        KillStreakMoneyThresholds = { 5, 10, 15 };
-        KillStreakBonusMoney = { 100, 200, 300 };
         GlobalMoneyMultiplier = 1.0;
         
         EndScreenDisplaySeconds = 45.0;
@@ -493,20 +420,13 @@ class KOTH_Settings: KOTH_SettingsBase
         LosingTeamXPMultiplier = 0.5;
         LosingTeamMoneyMultiplier = 0.5;
         
-        MaxTeamImbalance = 3;
         EnableZoneRotation = false;
         ZoneRotationInterval = 3600.0;
         ZoneSelectionMode = 2;
-        NotifyPlayersOnZoneChange = true;
-        ZoneChangeWarningTime = 60;
         VehicleRespawnCheckInterval = 60;
         VehicleSpawnCheckRadius = 30;
-        AllowAdminZoneChange = true;
-        EnableAI = false;
-        FactionMaxAI = 10;
-        PlayerThreshold = 40;
-        SpawnCheckInterval = 90;
-        AISpawnStagger = 5;
+        EnableAI = true;
+        FactionMaxAI = 5;
         AISpawnBuffer = 100.0;
         AISpawnAngleVariation = 30.0;
         WestLoadout = "WestLoadout";
