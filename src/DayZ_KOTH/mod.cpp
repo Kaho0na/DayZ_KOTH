@@ -1,0 +1,11 @@
+name = "DayZ King of the Hill";
+picture = "DayZ_KOTH/logo.paa";
+logo = "DayZ_KOTH/logo.paa";
+logoSmall = "DayZ_KOTH/logo.paa";
+logoOver = "DayZ_KOTH/logo.paa";
+tooltip = "DayZ King of the Hill";
+overview = "KOTH_DayZ | Arma 3 King of the hill DayZ Mod";
+action = "";
+author = "Kahoona";
+authorID = "76561199197369229";
+version = "1.2";

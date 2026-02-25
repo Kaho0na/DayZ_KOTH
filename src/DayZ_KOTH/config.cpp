@@ -26,7 +26,7 @@ class CfgMods
 		credits="Kahoona";
 		author="Kahoona";
 		authorID="76561199197369229";
-		version="1.0.0";
+		version="1.2.2";
 		overview="King of the Hill faction warfare mod with shop system, vehicles, and territory control";
 		tooltip="Kahoona - King of the Hill Mod";
 		extra=0;
