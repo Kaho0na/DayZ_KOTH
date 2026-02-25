@@ -1,8 +1,9 @@
 /**
- * KOTH_MapMenu.c (WITH PRIORITY ZONE REDRAW)
+ * KOTH_MapMenu.c (WITH LBMASTER SUPPORT)
  *
  * King of the Hill by Kahoona
  * Client-side map with priority zone updates
+ * Skips Expansion circle drawing when LBMaster Advanced Groups is active
  * Place in: 5_Mission/GUI/KOTH_MapMenu.c
  */
 
@@ -32,13 +33,20 @@ modded class ExpansionMapMenu extends UIScriptedMenu
             return layoutRoot;
         }
 
+#ifdef LBmaster_Groups
+        Print("[KOTH_MapMenu] LBMaster detected - server handles map markers");
+#else
         InitKOTHRPC();
         RequestKOTHZones();
+#endif
         return layoutRoot;
     }
 
     void InitKOTHRPC()
     {
+#ifdef LBmaster_Groups
+        return;
+#endif
         if (!GetGame().IsServer())
         {
             GetRPCManager().AddRPC("KOTH_MapMenu", "ReceiveKOTHZones", this, SingleplayerExecutionType.Client);
@@ -48,12 +56,18 @@ modded class ExpansionMapMenu extends UIScriptedMenu
 
     void RequestKOTHZones()
     {
+#ifdef LBmaster_Groups
+        return;
+#endif
         Print("[KOTH_MapMenu] Sending RequestKOTHZones RPC to server");
         GetRPCManager().SendRPC("KOTH_MapMenu", "RequestKOTHZones", null, true, null);
     }
 
     void ReceiveKOTHZones(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
     {
+#ifdef LBmaster_Groups
+        return;
+#endif
         if (type != CallType.Client)
             return;
 
@@ -74,6 +88,9 @@ modded class ExpansionMapMenu extends UIScriptedMenu
 
     void RedrawAllZones()
     {
+#ifdef LBmaster_Groups
+        return;
+#endif
         if (!m_MapWidget)
         {
             Print("[KOTH_MapMenu] MapWidget is null, cannot redraw");

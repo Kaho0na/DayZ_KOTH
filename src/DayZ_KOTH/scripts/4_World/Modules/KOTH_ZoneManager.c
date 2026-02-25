@@ -345,11 +345,21 @@ class KOTH_ZoneManager: CF_ModuleWorld
         }
         
         Print("[KOTH_ZoneManager] Map circle data prepared - " + zoneNames.Count() + " circles");
+        // LBMaster integration - create server markers if available
+        if (GetGame().IsServer() && KOTH_LBMasterMapMarkers.IsLBMasterAvailable())
+        {
+            KOTH_LBMasterMapMarkers.GetInstance().CreateOrUpdateMarkers(zoneNames, zonePositions, zoneRadii, zoneColors, zoneDrawCircles);
+        }
     }
     
     private void CleanupCurrentZone()
     {
         Print("[KOTH_ZoneManager] Cleaning up current zone...");
+
+        if (KOTH_LBMasterMapMarkers.IsLBMasterAvailable())
+        {
+            KOTH_LBMasterMapMarkers.GetInstance().CleanupMarkers();
+        }
         
         KOTH_SpawnBase.DespawnAll();
         KOTH_PriorityZoneManager.Cleanup();
@@ -496,6 +506,12 @@ class KOTH_ZoneManager: CF_ModuleWorld
         m_PriorityZoneRadius = radius;
         
         PrepareMapCircleData();
+
+        // LBMaster integration - update priority zone marker directly
+        if (GetGame().IsServer() && KOTH_LBMasterMapMarkers.IsLBMasterAvailable())
+        {
+            KOTH_LBMasterMapMarkers.GetInstance().UpdatePriorityZone("Priority Zone", position, radius, ARGB(255, 220, 200, 60));
+        }
         
         auto rpc = Expansion_CreateRPC("RPC_SyncPriorityZone");
         rpc.Write(position);
